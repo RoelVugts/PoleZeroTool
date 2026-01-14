@@ -44,6 +44,7 @@ target_sources(${PROJECT_NAME} PRIVATE ${SOURCE_FILES})
 
 target_compile_definitions(${PROJECT_NAME}
         PUBLIC
+        JUCE_DONT_SET_USING_JUCE_NAMESPACE
         JUCE_VST3_CAN_REPLACE_VST2=0
         JUCE_REPORT_APP_USAGE=0
         JUCE_LOG_ASSERTIONS=1

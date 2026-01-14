@@ -1,0 +1,202 @@
+#pragma once
+
+#include "RoundedCornerComponent.h"
+
+#include <JuceHeader.h>
+
+class PoZePlot : public RoundedCornerComponent
+{
+public:
+
+    //======================================================================
+    // Point in a Pole-Zero plot, representing either a Pole or a Zero
+    class Point : public RoundedCornerComponent
+    {
+    public:
+
+        enum class Type { zero, pole };
+
+        class Listener
+        {
+        public:
+            Listener() = default;
+            virtual ~Listener() = default;
+            virtual void pointValueChanged ([[maybe_unused]] Point* emitter) {}
+            virtual void doubleClickedOnPoint ([[maybe_unused]] Point* emitter) {}
+            virtual void clickedOnPoint ([[maybe_unused]] Point* emitter, [[maybe_unused]] bool altClick) {}
+            JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Listener)
+        };
+
+        void addListener (Listener* listener) { listeners.add (listener); }
+        void removeListener (Listener* listener) { listeners.remove (listener); }
+
+        //======================================================================
+        explicit Point(Type type);
+
+        //======================================================================
+
+        /** Set point value.
+         *
+         * @param x                         x value, should be in the current x range
+         * @param y                         y value, should be in the current y range
+         * @param sendNotification          Send notification to listeners
+         */
+        void setValue(float x, float y, bool sendNotification);
+
+        /** Set point with normalized values.
+         *
+         * @param x                         Ranging from 0 (left) to 1 (right)
+         * @param y                         Ranging from 0 (bottom) to 1 (top)
+         * @param sendNotification          Send notification to listeners
+         */
+        void setNormalizedValue (float x, float y, bool sendNotification);
+
+        /** Sets the x and y range of the points value.
+         *
+         * @param xRange                    The x (horizontal / real) range
+         * @param yRange                    The y (vertical / imaginary) range
+         */
+        void setRange(const juce::NormalisableRange<float>& xRange, const juce::NormalisableRange<float>& yRange);
+
+        // Set this to be painted as a pole or a zero.
+        void setType(Type type);
+
+        //======================================================================
+        /** Returns the normalized position of the point.
+         *
+         *  @returns                        Normalized position where 0.0 is left or bottom,
+         *                                  1.0 is right or top
+         */
+        juce::Point<float> getValue() const noexcept;
+
+        // Returns the points Y value on the plot.
+        float getXValue() const noexcept;
+
+        // Returns the points X value on the plot.
+        float getYValue() const noexcept;
+
+        // Returns the type (Pole or Zero)
+        Type getType() const { return type; }
+
+        void updatePosition();
+        //======================================================================
+        void paintWithinCorners (juce::Graphics& g) override;
+        void resized() override;
+
+        //======================================================================
+        class LookAndFeelMethods
+        {
+        public:
+            virtual ~LookAndFeelMethods() = default;
+            virtual void drawPoZePoint (juce::Graphics& g, Point& p, bool mouseIsOverOrDragging) = 0;
+        };
+
+    private:
+        //======================================================================
+        void mouseDown (const juce::MouseEvent& event) override;
+        void mouseDrag (const juce::MouseEvent& event) override;
+        void mouseUp (const juce::MouseEvent& event) override;
+        void mouseDoubleClick (const juce::MouseEvent& event) override;
+        void mouseEnter(const MouseEvent& event) override;
+        void mouseExit(const MouseEvent& event) override;
+
+        juce::NormalisableRange<float> xRange;
+        juce::NormalisableRange<float> yRange;
+
+        float x { 0.0f };
+        float y { 0.5f };
+
+        juce::ComponentDragger dragger;
+        juce::ComponentBoundsConstrainer constrainer;
+        juce::ListenerList<Listener> listeners;
+        Type type { Type::pole };
+
+        bool mouseIsOver { false };
+
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Point)
+    };
+
+    //======================================================================
+    //PoZePlot
+
+    //======================================================================
+    class Listener
+    {
+    public:
+        Listener() = default;
+        virtual ~Listener() = default;
+        virtual void pointAdded ([[maybe_unused]] PoZePlot* emitter, [[maybe_unused]] int indexOfAddedPoint) {}
+        virtual void pointRemoved ([[maybe_unused]] PoZePlot* emitter, [[maybe_unused]] int indexOfRemovedPoint) {}
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Listener)
+    };
+
+    void addListener (Listener* listener) { listeners.add (listener); }
+    void removeListener (Listener* listener) { listeners.remove (listener); }
+
+    //======================================================================
+    enum ColourIds { backgroundColourId = 0x200100 };
+
+    //======================================================================
+    PoZePlot();
+
+    //======================================================================
+    /** Adds a Pole or Zero to the plot.
+     *
+     * @param type                          If the added point should be a Pole or Zero
+     * @param x                             The x (real) value
+     * @param y                             The y (imag) value
+     * @param sendNotification              Send notification to listeners
+     */
+    Point* addPoint (Point::Type type, float x, float y, bool sendNotification);
+
+    /** Removes a Pole or Zero from the plot.
+     *
+     * @param index                         The index to remove.
+     */
+    void removePoint(int index, bool sendNotification);
+
+    /** Removes all the Poles and Zeros from the plot.
+     *
+     * @param sendNotification              Send notification to listeners
+     */
+    void removeAllPoints(bool sendNotification);
+
+    //======================================================================
+    /** Sets the x and y range of the Pole-Zero plot.
+     *
+     * @param xRange                    The x (horizontal / real) range
+     * @param yRange                    The y (vertical / imaginary) range
+     */
+    void setRange(const juce::NormalisableRange<float>& xRange, const juce::NormalisableRange<float>& yRange);
+
+    //======================================================================
+    void paintWithinCorners (juce::Graphics& g) override;
+    void resized() override;
+
+private:
+
+    void mouseDown(const juce::MouseEvent& event) override;
+
+     //======================================================================
+    // Forwarding listener
+    class PointListener : public Point::Listener
+    {
+    public:
+        explicit PointListener (PoZePlot& p) : owner (p) {}
+        void clickedOnPoint (Point* p, bool altClick) override;
+    private:
+        PoZePlot& owner;
+    };
+
+    void clickedOnPoint (Point* point, bool altClick);
+
+    PointListener pointListener { *this };
+
+    juce::OwnedArray<PoZePlot::Point> points;
+    juce::NormalisableRange<float> xRange {}, yRange {};
+    juce::Rectangle<float> unitCircleArea;
+
+    juce::ListenerList<Listener> listeners;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PoZePlot)
+};
