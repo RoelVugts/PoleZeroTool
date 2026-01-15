@@ -173,11 +173,15 @@ public:
     void paintWithinCorners (juce::Graphics& g) override;
     void resized() override;
 
+    //======================================================================
+    Point* getPoint(int index);
+    int getNumPoints() const { return points.size(); }
+
 private:
 
     void mouseDown(const juce::MouseEvent& event) override;
 
-     //======================================================================
+    //======================================================================
     // Forwarding listener
     class PointListener : public Point::Listener
     {

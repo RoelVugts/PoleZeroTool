@@ -4,12 +4,12 @@
 
 //==============================================================
 const juce::Identifier PointState::IDs::type { "Point" };
-const juce::Identifier PointState::IDs::isPole { "IsPole" };
+const juce::Identifier PointState::IDs::pointType { "Type" };
 const juce::Identifier PointState::IDs::value { "Value" };
 
 PointState::PointState (juce::ValueTree tree_)
     : TreeWrapper (tree_)
-    , isPole (tree_, IDs::isPole, PoZePlot::Point::Type::zero)
+    , pointType (tree_, IDs::pointType, PoZePlot::Point::Type::zero)
     , value (tree_, IDs::value, { 0.0f, 0.0f })
 {
 
@@ -17,7 +17,7 @@ PointState::PointState (juce::ValueTree tree_)
 
 void PointState::setState (const PointState& other)
 {
-    isPole.setValue (other.isPole.getValue());
+    pointType.setValue (other.pointType.getValue());
     value.setValue (other.value.getValue());
 }
 

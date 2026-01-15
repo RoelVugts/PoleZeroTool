@@ -141,7 +141,7 @@ void PoZePlot::Point::mouseExit (const juce::MouseEvent& event)
 //PoZePlot
 
 PoZePlot::PoZePlot()
-    : xRange(-2.0f, 2.0f), yRange (-2.0f, 2.0f)
+    : xRange(-1.5f, 1.5f), yRange (-1.5f, 1.5f)
 {
     setColour (backgroundColourId, juce::Colours::black);
 }
@@ -188,6 +188,14 @@ void PoZePlot::setRange (const juce::NormalisableRange<float>& xRange_, const ju
     for (auto* point : points)
         point->setRange (xRange_, yRange_);
 }
+
+PoZePlot::Point* PoZePlot::getPoint (int index)
+{
+    jassert(isPositiveAndBelow (index, points.size()));
+
+    return points.getUnchecked (index);
+}
+
 
 
 void PoZePlot::paintWithinCorners(juce::Graphics& g)

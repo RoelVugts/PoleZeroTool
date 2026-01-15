@@ -17,7 +17,7 @@ public:
     struct IDs
     {
         static const juce::Identifier type;
-        static const juce::Identifier isPole;
+        static const juce::Identifier pointType;
         static const juce::Identifier value;
     };
 
@@ -25,7 +25,7 @@ public:
 
     void setState(const PointState& other);
 
-    TreePropertyWrapper<PoZePlot::Point::Type> isPole;
+    TreePropertyWrapper<PoZePlot::Point::Type> pointType;
     TreePropertyWrapper<std::complex<float>> value;
 };
 

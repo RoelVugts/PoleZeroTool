@@ -2,6 +2,7 @@
 
 #include <JuceHeader.h>
 
+#include "../Data/Attachments/PoZePlotAttachment.h"
 #include "Components/PoZePlot.h"
 #include "LookAndFeel.h"
 
@@ -9,10 +10,12 @@ class GUI : public juce::Component
 {
 public:
 
-    GUI()
+    GUI(AudioPluginAudioProcessor& p)
+        : state(p.state)
     {
-        xyPad.setColour (PoZePlot::ColourIds::backgroundColourId, LAF::Colours::darkBackgroundColour);
-        addAndMakeVisible (xyPad);
+        poZePlot.setColour (PoZePlot::ColourIds::backgroundColourId, LAF::Colours::darkBackgroundColour);
+        poZePlotAttachment = std::make_unique<PoZePlotAttachment>(state.poleZeroState, poZePlot, &p.undoManager);
+        addAndMakeVisible (poZePlot);
     }
 
     void resized() override
@@ -26,8 +29,13 @@ public:
 
         const float xyPadSize = std::min(width, height) * 0.45f;
         auto xyPadArea = bounds.removeFromTop (xyPadSize).removeFromLeft (xyPadSize);
-        xyPad.setBounds (xyPadArea.toNearestInt());
+        poZePlot.setBounds (xyPadArea.toNearestInt());
     }
 
-    PoZePlot xyPad;
+private:
+    State state;
+    PoZePlot poZePlot;
+    std::unique_ptr<PoZePlotAttachment> poZePlotAttachment;
+
+
 };

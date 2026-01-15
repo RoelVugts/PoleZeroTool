@@ -2,6 +2,8 @@
 
 #include <JuceHeader.h>
 
+#include "../Data/State.h"
+
 //==============================================================================
 class AudioPluginAudioProcessor final : public juce::AudioProcessor
 {
@@ -42,9 +44,11 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-private:
-
+    //==============================================================================
+    State state { juce::ValueTree(State::IDs::type) };
     juce::UndoManager undoManager;
+
+private:
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)

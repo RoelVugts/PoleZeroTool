@@ -124,19 +124,27 @@ public:
     /** Creates and adds a new default child to the valueTree.
      *  This will also trigger a call to the childAdded callbacks.
      *  @param index     index (-1 will add to end of list)
-     *  @param um        Undomanager
      */
     void add (int index = -1)
     {
         // Construct new child
-        add (new ObjectType({ juce::ValueTree(type) }), index, undoManager);
+        add (new ObjectType({ juce::ValueTree(type) }), index);
     }
 
     /** Adds the passed in child to the valueTree.
      *  This will also trigger a call to the childAdded callbacks.
      *  @param newChild  The new child to add, the array will take ownership of the object so make sure to not delete it somewhere else
      *  @param index     The index to insert (-1 will add at the end of the list)
-     *  @param um        UndoManager
+     */
+    void add(std::unique_ptr<ObjectType> newChild, int index = -1)
+    {
+        add(newChild.release(), index);
+    }
+
+    /** Adds the passed in child to the valueTree.
+     *  This will also trigger a call to the childAdded callbacks.
+     *  @param newChild  The new child to add, the array will take ownership of the object so make sure to not delete it somewhere else
+     *  @param index     The index to insert (-1 will add at the end of the list)
      */
     void add (ObjectType* newChild, int index = -1)
     {
@@ -154,7 +162,6 @@ public:
 
     /** Removes a child from the valueTree at a given index.
      *  @param index             The index to remove.
-     *  @param um                UndoManager
      */
     void remove (int index)
     {
@@ -171,7 +178,6 @@ public:
      *  This is not a swap operation!
      *  @param currentIndex         The old index of the child
      *  @param newIndex             The new index of the child
-     *  @param um                   UndoManager
      */
     void moveChild (int currentIndex, int newIndex) { parent.moveChild (currentIndex, newIndex, undoManager); }
 
