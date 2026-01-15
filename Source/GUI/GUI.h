@@ -33,6 +33,7 @@ public:
     }
 
 private:
+
     State state;
     PoZePlot poZePlot;
     std::unique_ptr<PoZePlotAttachment> poZePlotAttachment;

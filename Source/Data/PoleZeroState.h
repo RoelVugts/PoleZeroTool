@@ -19,6 +19,7 @@ public:
         static const juce::Identifier type;
         static const juce::Identifier pointType;
         static const juce::Identifier value;
+        static const juce::Identifier conjugateIndex;
     };
 
     PointState(juce::ValueTree tree);
@@ -27,6 +28,7 @@ public:
 
     TreePropertyWrapper<PoZePlot::Point::Type> pointType;
     TreePropertyWrapper<std::complex<float>> value;
+    TreePropertyWrapper<int> conjugateIndex;
 };
 
 class PoleZeroState : public TreeWrapper

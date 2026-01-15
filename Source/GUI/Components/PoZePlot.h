@@ -23,7 +23,7 @@ public:
             virtual ~Listener() = default;
             virtual void pointValueChanged ([[maybe_unused]] Point* emitter) {}
             virtual void doubleClickedOnPoint ([[maybe_unused]] Point* emitter) {}
-            virtual void clickedOnPoint ([[maybe_unused]] Point* emitter, [[maybe_unused]] bool altClick) {}
+            virtual void clickedOnPoint ([[maybe_unused]] Point* emitter, [[maybe_unused]] const juce::MouseEvent& event) {}
             JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Listener)
         };
 
@@ -78,6 +78,11 @@ public:
         // Returns the type (Pole or Zero)
         Type getType() const { return type; }
 
+        void setConjugate(Point* conjugatePont, bool sendNotification);
+
+        bool isConjugate() const { return conjugate != nullptr; }
+        Point* getConjugate() const { return conjugate; }
+
         void updatePosition();
         //======================================================================
         void paintWithinCorners (juce::Graphics& g) override;
@@ -110,7 +115,7 @@ public:
         juce::ComponentBoundsConstrainer constrainer;
         juce::ListenerList<Listener> listeners;
         Type type { Type::pole };
-
+        Point* conjugate { nullptr };
         bool mouseIsOver { false };
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Point)
@@ -127,6 +132,7 @@ public:
         virtual ~Listener() = default;
         virtual void pointAdded ([[maybe_unused]] PoZePlot* emitter, [[maybe_unused]] int indexOfAddedPoint) {}
         virtual void pointRemoved ([[maybe_unused]] PoZePlot* emitter, [[maybe_unused]] int indexOfRemovedPoint) {}
+        virtual void createdConjugatePair ([[maybe_unused]] PoZePlot* emitter, [[maybe_unused]] int index, [[maybe_unused]] int conjugateIndex) {}
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Listener)
     };
 
@@ -161,6 +167,8 @@ public:
      */
     void removeAllPoints(bool sendNotification);
 
+    bool makeConjugatePair(int index, int conjugateIndex, bool sendNotification);
+
     //======================================================================
     /** Sets the x and y range of the Pole-Zero plot.
      *
@@ -176,6 +184,10 @@ public:
     //======================================================================
     Point* getPoint(int index);
     int getNumPoints() const { return points.size(); }
+    juce::OwnedArray<Point>& getPoints() { return points; };
+
+    juce::NormalisableRange<float> getXRange() const { return xRange; }
+    juce::NormalisableRange<float> getYRange() const { return yRange; }
 
 private:
 
@@ -187,12 +199,10 @@ private:
     {
     public:
         explicit PointListener (PoZePlot& p) : owner (p) {}
-        void clickedOnPoint (Point* p, bool altClick) override;
+        void pointValueChanged(Point* emitter) override;
     private:
         PoZePlot& owner;
     };
-
-    void clickedOnPoint (Point* point, bool altClick);
 
     PointListener pointListener { *this };
 

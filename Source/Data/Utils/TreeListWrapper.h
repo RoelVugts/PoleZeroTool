@@ -16,6 +16,8 @@ public:
     using ChildAddCallbackFn = std::function<void (juce::ValueTree&)>;
     using ChildRemovedCallbackFn = std::function<void (juce::ValueTree&, int)>;
     using ChildOrderChangedCallbackFn = std::function<void (int, int)>;
+    using PropertyChangedCallbackFn = std::function<void(juce::ValueTree&)>;
+    using OnStateChangeCallbackFn = std::function<void()>;
 
     /** Constructs the TreeListWrapper, creating an array of TreeWrappers of ObjectType.
      *
@@ -66,6 +68,9 @@ public:
         // Remove old elements
         for (int i = numElements - 1; i >= (numElements + diff); --i)
             parent.removeChild (i, undoManager);
+
+        for (auto& f : stateChangedLambdas)
+            juce::NullCheckedInvocation::invoke(f);
     }
 
     //==============================================================================
@@ -174,6 +179,12 @@ public:
         parent.removeChild (index, undoManager);
     }
 
+    void clear()
+    {
+        while (! elements.isEmpty())
+            remove(elements.size() - 1);
+    }
+
     /** Moves a child from one index to another.
      *  This is not a swap operation!
      *  @param currentIndex         The old index of the child
@@ -230,6 +241,25 @@ public:
         childOrderChangedLambdas.emplace_back (std::forward<Fn> (f));
     }
 
+    /** Add a callback whenever a property somewhere in the tree is changed.
+     * @param id            The property ID
+     * @param f             The callback function. (juce::ValueTree& childTreeWherePropertyIsChanged) -> void.
+     */
+    template <typename Fn>
+    void setOnPropertyChanged (const juce::Identifier& id, Fn f)
+    {
+        propertyChangedLambdas[id].emplace_back (std::forward<Fn> (f));
+    }
+
+    /** Add a callback whenever the state is changed by calling setState().
+     * @param f             The callback function. () -> void.
+     */
+    template <typename Fn>
+    void setOnStateChange (Fn f)
+    {
+        stateChangedLambdas.emplace_back (std::forward<Fn> (f));
+    }
+
 private:
     //==============================================================================
     void valueTreeChildAdded (juce::ValueTree& parentTree, juce::ValueTree& child) override
@@ -284,8 +314,14 @@ private:
 
     void valueTreePropertyChanged (juce::ValueTree& v, const juce::Identifier& id) override
     {
-        juce::ignoreUnused(v, id);
-        // Handle this in the TreeWrapper this list holds
+        if (v.isAChildOf (parent))
+        {
+            if (auto it = propertyChangedLambdas.find (id); it != propertyChangedLambdas.end())
+            {
+                for (PropertyChangedCallbackFn& f : it->second)
+                    juce::NullCheckedInvocation::invoke (f, v);
+            }
+        }
     }
 
     void valueTreeParentChanged (juce::ValueTree&) override {}
@@ -303,6 +339,8 @@ protected:
     std::vector<ChildAddCallbackFn> childAddedLambdas;
     std::vector<ChildRemovedCallbackFn> childRemovedLambdas;
     std::vector<ChildOrderChangedCallbackFn> childOrderChangedLambdas;
+    std::map<juce::Identifier, std::vector<PropertyChangedCallbackFn>> propertyChangedLambdas;
+    std::vector<OnStateChangeCallbackFn> stateChangedLambdas;
 
     juce::UndoManager* undoManager { nullptr };
 

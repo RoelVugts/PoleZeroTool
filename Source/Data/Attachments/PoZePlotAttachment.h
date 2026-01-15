@@ -54,32 +54,12 @@ public:
         : state(settings)
         , plot(poZePlot)
     {
-        state.points.setOnChildAdded ([this] (const juce::ValueTree& addedChild) {
-            PointState point(addedChild);
-            std::complex<float> value = point.value.getValue();
-            const int index = state.points.indexOf (addedChild);
-            juce::ScopedValueSetter<bool> svs (ignoreCallbacks, true);
-
-            if (! ignoreCallbacks)
-                plot.addPoint (point.pointType.getValue(), value.real(), value.imag(), true);
-
-            pointAttachments.add(std::make_unique<PointAttachment>(point.value, *plot.getPoint (index)));
+        state.points.setOnStateChange ([this]() {
+            syncPlotToState();
         });
 
-        state.points.setOnChildRemoved ([this] (const juce::ValueTree&, int index) {
-            juce::ScopedValueSetter<bool> svs (ignoreCallbacks, true);
-
-            if (! ignoreCallbacks)
-                plot.removePoint (index, true);
-
-            pointAttachments.remove (index);
-        });
-
-        state.points.setOnChildOrderChanged ([this](int, int) {
-            rebuild();
-        });
-
-        rebuild();
+        //=========================================================================
+        syncPlotToState();
         plot.addListener (this);
     }
 
@@ -90,11 +70,11 @@ public:
 
 private:
 
-    void rebuild()
+    void syncPlotToState()
     {
-        juce::ScopedValueSetter<bool> svs(ignoreCallbacks, true);
+        juce::ScopedValueSetter<bool> svs(ignoreGuiCallbacks, true);
+
         plot.removeAllPoints (false);
-        pointAttachments.clear ();
 
         const int numOldPoints = plot.getNumPoints();
         for (int i = 0; i < state.points.size(); i++)
@@ -103,35 +83,65 @@ private:
             std::complex<float> value = pointState.value.getValue();
 
             const bool sendNotification = i >= numOldPoints;
-            auto* newPoint = plot.addPoint (pointState.pointType.getValue(), value.real(), value.imag(), sendNotification);
-            pointAttachments.add(std::make_unique<PointAttachment>(pointState.value, *newPoint));
+            plot.addPoint (pointState.pointType.getValue(), value.real(), value.imag(), sendNotification);
         }
+
+        // Set conjugates after all points are added
+        for (int i = 0; i < state.points.size(); i++)
+        {
+            PointState& pointState = state.points.getReference (i);
+            auto* point = plot.getPoint (i);
+            if (const int idx = pointState.conjugateIndex.getValue(); idx >= 0)
+                point->setConjugate (plot.getPoint (idx), true);
+        }
+    }
+
+    void syncStateToPlot()
+    {
+        juce::ScopedValueSetter<bool> svs (ignoreStateCallbacks, true);
+
+        PoleZeroState newState { juce::ValueTree(PoleZeroState::IDs::type) };
+        pointAttachments.clear ();
+
+        for (int i = 0; i < plot.getNumPoints(); i++)
+        {
+            auto* point = plot.getPoint (i);
+            newState.points.add ();
+            auto& pointState = newState.points.getReference (i);
+            pointState.pointType.setValue (point->getType());
+            pointState.value.setValue ({ point->getXValue(), point->getYValue() });
+
+            const int conjugateIndex = point->isConjugate() ? plot.getPoints().indexOf (point->getConjugate()) : -1;
+            pointState.conjugateIndex.setValue (conjugateIndex);
+            pointAttachments.add(std::make_unique<PointAttachment>(pointState.value, *point));
+        }
+
+        state.points.setState (newState.points);
     }
 
     void pointAdded(PoZePlot* emitter, int indexOfAddedPoint) override
     {
-        if (! ignoreCallbacks)
-        {
-            auto* point = emitter->getPoint (indexOfAddedPoint);
+        if (! ignoreGuiCallbacks)
+            syncStateToPlot();
 
-            // Create new child
-            auto pointState = std::make_unique<PointState>(juce::ValueTree(PointState::IDs::type));
-            pointState->pointType.setValue (point->getType());
-            pointState->value.setValue ({ point->getXValue(), point->getYValue() });
-
-            state.points.add(std::move(pointState));
-        }
     }
 
-    void pointRemoved(PoZePlot* emitter, int indexOfRemovedPoint) override
+    void pointRemoved(PoZePlot*, int indexOfRemovedPoint) override
     {
-        if (! ignoreCallbacks)
-            state.points.remove (indexOfRemovedPoint);
+        if (! ignoreGuiCallbacks)
+            syncStateToPlot();
+    }
+
+    void createdConjugatePair(PoZePlot* emitter, int index, int conjugateIndex) override
+    {
+        if (! ignoreGuiCallbacks)
+            syncStateToPlot();
     }
 
     PoleZeroState state;
     PoZePlot& plot;
     juce::OwnedArray<PointAttachment> pointAttachments;
-    bool ignoreCallbacks { false };
+    bool ignoreStateCallbacks { false };
+    bool ignoreGuiCallbacks { false };
 
 };

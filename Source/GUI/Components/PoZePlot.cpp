@@ -1,6 +1,7 @@
 #include "PoZePlot.h"
 
 #include "../LookAndFeel.h"
+
 PoZePlot::Point::Point (Type type_) : type(type_)
 {
 }
@@ -13,12 +14,18 @@ void PoZePlot::Point::setValue (float x_, float y_, bool sendNotification)
     jassert(x_ >= xRange.start && x_ <= xRange.end);
     jassert(y_ >= yRange.start && y_ <= yRange.end);
 
+    if (x == x_ && y == y_)
+        return;
+
     x = x_;
     y = y_;
     updatePosition();
 
     if (sendNotification)
         listeners.call([this](Listener& l) { l.pointValueChanged (this); });
+
+    if (conjugate != nullptr)
+        conjugate->setValue (x, -y, true);
 }
 
 void PoZePlot::Point::setNormalizedValue(float x_, float y_, bool sendNotification)
@@ -36,7 +43,6 @@ void PoZePlot::Point::setRange (const juce::NormalisableRange<float>& xRange_, c
     yRange = yRange_;
     updatePosition();
 }
-
 
 juce::Point<float> PoZePlot::Point::getValue() const noexcept
 {
@@ -57,6 +63,11 @@ void PoZePlot::Point::setType (Type type_)
 {
     type = type_;
     repaint();
+}
+
+void PoZePlot::Point::setConjugate (Point* conjugatePont, bool sendNotification)
+{
+    conjugate = conjugatePont;
 }
 
 //======================================================================
@@ -95,7 +106,7 @@ void PoZePlot::Point::mouseDown(const juce::MouseEvent& event)
     setMouseCursor (juce::MouseCursor::NoCursor);
     dragger.startDraggingComponent(this, event);
 
-    listeners.call([&](PoZePlot::Point::Listener& l) { l.clickedOnPoint(this, event.mods.isAltDown()); });
+    listeners.call([&](PoZePlot::Point::Listener& l) { l.clickedOnPoint(this, event); });
 }
 
 void PoZePlot::Point::mouseDrag(const juce::MouseEvent& event)
@@ -105,11 +116,10 @@ void PoZePlot::Point::mouseDrag(const juce::MouseEvent& event)
     if (auto* parent = getParentComponent())
     {
         const auto parentBounds = parent->getBounds().toFloat();
-        x = xRange.convertFrom0to1 ((float)getBounds().getCentreX() / parentBounds.getWidth());
-        y = yRange.convertFrom0to1 (1.0f - (float)getBounds().getCentreY() / parentBounds.getHeight());
+        const float xNorm = (float)getBounds().getCentreX() / parentBounds.getWidth();
+        const float yNorm = 1.0f - (float)getBounds().getCentreY() / parentBounds.getHeight();
+        setNormalizedValue (xNorm, yNorm, true);
     }
-
-    listeners.call([&](PoZePlot::Point::Listener& l) { l.pointValueChanged(this); });
 }
 
 void PoZePlot::Point::mouseUp(const juce::MouseEvent& event)
@@ -156,6 +166,7 @@ PoZePlot::Point* PoZePlot::addPoint (PoZePlot::Point::Type type, float x, float 
     resized();
 
     point->addListener (&pointListener);
+    point->addMouseListener (this, true);
 
     if (sendNotification)
         listeners.call([this](Listener& l) { l.pointAdded (this, points.size() - 1); });
@@ -166,6 +177,9 @@ PoZePlot::Point* PoZePlot::addPoint (PoZePlot::Point::Type type, float x, float 
 void PoZePlot::removePoint (int index, bool sendNotification)
 {
     jassert(isPositiveAndBelow (index, points.size()));
+
+    if (auto* point = getPoint (index); point->isConjugate())
+        point->getConjugate()->setConjugate (nullptr, true);
 
     points.remove (index);
 
@@ -189,14 +203,30 @@ void PoZePlot::setRange (const juce::NormalisableRange<float>& xRange_, const ju
         point->setRange (xRange_, yRange_);
 }
 
+bool PoZePlot::makeConjugatePair (int index, int indexOfConjugate, bool sendNotification)
+{
+    auto* point = getPoint (index);
+    auto* conjugatePoint = getPoint (indexOfConjugate);
+
+    if (point->isConjugate() || conjugatePoint->isConjugate())
+        return false;
+
+    point->setConjugate (conjugatePoint, sendNotification);
+    conjugatePoint->setConjugate (point, sendNotification);
+
+    if (sendNotification)
+        listeners.call([this, index, indexOfConjugate](Listener& l) { l.createdConjugatePair (this, index, indexOfConjugate); });
+
+    return true;
+}
+
+
 PoZePlot::Point* PoZePlot::getPoint (int index)
 {
     jassert(isPositiveAndBelow (index, points.size()));
 
     return points.getUnchecked (index);
 }
-
-
 
 void PoZePlot::paintWithinCorners(juce::Graphics& g)
 {
@@ -219,7 +249,7 @@ void PoZePlot::resized()
     const float cornerSize = (float)std::min(getWidth(), getHeight()) * 0.08f;
     setRoundedCorners (cornerSize);
 
-    const int pointSize = (int)std::min(bounds.getWidth(), bounds.getHeight()) * 0.05f;
+    const int pointSize = (int)std::min(bounds.getWidth(), bounds.getHeight()) * 0.04f;
 
     for (auto* point : points)
     {
@@ -236,23 +266,38 @@ void PoZePlot::resized()
 //======================================================================
 void PoZePlot::mouseDown (const juce::MouseEvent& event)
 {
-    const float x = event.position.x / (float)getWidth();
-    const float y = 1.0f - event.position.y / (float)getHeight();
+    if (event.eventComponent == this)
+    // Clicked on PoZePlot
+    {
+        const float x = event.position.x / (float)getWidth();
+        const float y = 1.0f - event.position.y / (float)getHeight();
 
-    if (event.mods.isCommandDown())
-        addPoint (PoZePlot::Point::Type::pole, xRange.convertFrom0to1 (x), yRange.convertFrom0to1 (y), true);
-    else if (event.mods.isShiftDown())
-        addPoint (PoZePlot::Point::Type::zero, xRange.convertFrom0to1 (x), yRange.convertFrom0to1 (y), true);
+        if (event.mods.isCommandDown())
+            addPoint (PoZePlot::Point::Type::pole, xRange.convertFrom0to1 (x), yRange.convertFrom0to1 (y), true);
+        else if (event.mods.isShiftDown())
+            addPoint (PoZePlot::Point::Type::zero, xRange.convertFrom0to1 (x), yRange.convertFrom0to1 (y), true);
+    }
+
+    if (auto* point = dynamic_cast<PoZePlot::Point*>(event.eventComponent))
+    // Clicked on a Pole or Zero
+    {
+        const int index = points.indexOf (point);
+
+        if (event.mods.isCommandDown() && event.mods.isShiftDown())
+        {
+            if (! point->isConjugate())
+            {
+                addPoint (point->getType(), point->getXValue(), -point->getYValue(), true);
+                makeConjugatePair (index,  points.size() - 1, true);
+            }
+        }
+        else if (event.mods.isAltDown())
+            removePoint (index, true);
+    }
 }
 
-//======================================================================
-void PoZePlot::PointListener::clickedOnPoint(PoZePlot::Point* point, bool altClick)
-{
-    owner.clickedOnPoint(point, altClick);
-}
 
-void PoZePlot::clickedOnPoint(PoZePlot::Point* point, bool altClick)
+void PoZePlot::PointListener::pointValueChanged (Point* emitter)
 {
-    if (altClick)
-        points.removeObject (point);
+
 }
