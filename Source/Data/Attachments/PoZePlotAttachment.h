@@ -92,7 +92,7 @@ private:
             PointState& pointState = state.points.getReference (i);
             auto* point = plot.getPoint (i);
             if (const int idx = pointState.conjugateIndex.getValue(); idx >= 0)
-                point->setConjugate (plot.getPoint (idx), true);
+                point->setConjugate (plot.getPoint (idx));
         }
     }
 

@@ -52,8 +52,15 @@ target_compile_definitions(${PROJECT_NAME}
         WIN32_LEAN_AND_MEAN=1
 )
 
+file(GLOB_RECURSE RESOURCE_FILES "Resources/*.*")
+juce_add_binary_data(${PROJECT_NAME}_AudioPluginData SOURCES
+        ${RESOURCE_FILES}
+)
+
+
 target_link_libraries(${PROJECT_NAME}
         PRIVATE
+        ${PROJECT_NAME}_AudioPluginData
         juce_audio_utils
         PUBLIC
         juce::juce_recommended_config_flags

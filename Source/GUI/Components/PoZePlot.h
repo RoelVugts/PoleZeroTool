@@ -4,17 +4,20 @@
 
 #include <JuceHeader.h>
 
+class PoZeToolLaf;
+
 class PoZePlot : public RoundedCornerComponent
 {
 public:
 
     //======================================================================
     // Point in a Pole-Zero plot, representing either a Pole or a Zero
-    class Point : public RoundedCornerComponent
+    class Point : public RoundedCornerComponent, public juce::KeyListener
     {
     public:
 
         enum class Type { zero, pole };
+        enum class DragMode { normal, angle, magnitude };
 
         class Listener
         {
@@ -75,10 +78,12 @@ public:
         // Returns the points X value on the plot.
         float getYValue() const noexcept;
 
+        float getAngle() const noexcept;
+
         // Returns the type (Pole or Zero)
         Type getType() const { return type; }
 
-        void setConjugate(Point* conjugatePont, bool sendNotification);
+        void setConjugate(Point* conjugatePont);
 
         bool isConjugate() const { return conjugate != nullptr; }
         Point* getConjugate() const { return conjugate; }
@@ -105,6 +110,13 @@ public:
         void mouseEnter(const MouseEvent& event) override;
         void mouseExit(const MouseEvent& event) override;
 
+        //======================================================================
+        bool keyPressed(const KeyPress& key, Component* originatingComponent) override;
+        bool keyStateChanged(bool isKeyDown, Component* originatingComponent) override;
+        //======================================================================
+        PoZeToolLaf* getCustomLookAndFeel() const;
+        static juce::MouseCursor getRotatedMagnitudeCursor(float angle);
+
         juce::NormalisableRange<float> xRange;
         juce::NormalisableRange<float> yRange;
 
@@ -116,7 +128,14 @@ public:
         juce::ListenerList<Listener> listeners;
         Type type { Type::pole };
         Point* conjugate { nullptr };
+
         bool mouseIsOver { false };
+        DragMode dragMode { DragMode::normal };
+        juce::Point<float> valueOnMouseDown {};
+        juce::Point<float> posOnMouseDown {};
+
+        static const int angleKeyCode;
+        static const int magKeyCode;
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Point)
     };
@@ -192,7 +211,6 @@ public:
 private:
 
     void mouseDown(const juce::MouseEvent& event) override;
-
     //======================================================================
     // Forwarding listener
     class PointListener : public Point::Listener

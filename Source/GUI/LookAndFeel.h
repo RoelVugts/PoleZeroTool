@@ -9,9 +9,16 @@ namespace LAF
     {
         static const juce::Colour darkBackgroundColour { 25, 25, 25 };
     }
+
+    namespace Cursors
+    {
+        static const juce::MouseCursor rotateCursor { juce::ImageFileFormat::loadFrom(BinaryData::rotateCursor_png, BinaryData::rotateCursor_pngSize), 0, 0, 5.0f };
+    }
+
+
 }
 
-class PozeToolLaf : public juce::LookAndFeel_V4, public PoZePlot::Point::LookAndFeelMethods
+class PoZeToolLaf : public juce::LookAndFeel_V4, public PoZePlot::Point::LookAndFeelMethods
 {
 public:
 
