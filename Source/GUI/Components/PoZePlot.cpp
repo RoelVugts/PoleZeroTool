@@ -157,7 +157,9 @@ void PoZePlot::Point::mouseDrag(const juce::MouseEvent& event)
 
                 const float newAngle = -std::atan2(point.y, point.x);
                 const float mag = valueOnMouseDown.getDistanceFromOrigin();
-                setValue (mag * std::cos(newAngle), mag * std::sin(newAngle), true);
+                const float xValue = std::clamp(mag * std::cos(newAngle), xRange.start, xRange.end);
+                const float yValue = std::clamp(mag * std::sin(newAngle), yRange.start, yRange.end);
+                setValue (xValue, yValue, true);
                 break;
             }
 
@@ -175,10 +177,13 @@ void PoZePlot::Point::mouseDrag(const juce::MouseEvent& event)
                 float magnitude = mouseValue.x * dir.x + mouseValue.y * dir.y;
 
                 // Constrain magnitude
-                const float maxMag = std::min(xRange.end, yRange.end);
-                magnitude = std::clamp(magnitude, 0.0f, maxMag);
+                const float xValue = std::clamp(magnitude * dir.x, xRange.start, xRange.end);
+                const float yValue = std::clamp(magnitude * dir.y, yRange.start, yRange.end);
+                const float newAngle = std::atan2(yValue, xValue);
 
-                setValue(magnitude * dir.x,magnitude * dir.y, true);
+                if (approximatelyEqual (angleOnMouseDown, newAngle))
+                    setValue(xValue,yValue, true);
+
                 break;
             }
         }
