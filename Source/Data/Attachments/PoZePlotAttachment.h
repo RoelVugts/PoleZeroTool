@@ -13,11 +13,12 @@ class PointAttachment : private PoZePlot::Point::Listener
 {
 public:
 
-    PointAttachment(TreePropertyWrapper<std::complex<float>>& prop, PoZePlot::Point& pointComp)
+    PointAttachment(TreePropertyWrapper<std::complex<float>>& valueProp, TreePropertyWrapper<PoZePlot::Point::Type>& typeProp, PoZePlot::Point& pointComp)
         : point(pointComp)
-        , attachment (prop, [this](const std::complex<float>& v) { setPointValue (v); })
+        , valueAttachment (valueProp, [this](const std::complex<float>& v) { setPointValue (v); })
+        , typeAttachment (typeProp, [this](const PoZePlot::Point::Type& v) { setPointType (v); })
     {
-        attachment.sendInitialUpdate();
+        valueAttachment.sendInitialUpdate();
 
         point.addListener (this);
     }
@@ -35,14 +36,21 @@ private:
         point.setValue (value.real(), value.imag(), true);
     }
 
+    void setPointType(const PoZePlot::Point::Type& type)
+    {
+        juce::ScopedValueSetter<bool> svs (ignoreCallbacks, true);
+        point.setType (type);
+    }
+
     void pointValueChanged(PoZePlot::Point* emitter) override
     {
         if (! ignoreCallbacks)
-            attachment.setPropertyValue ({ emitter->getXValue(), emitter->getYValue() });
+            valueAttachment.setPropertyValue ({ emitter->getXValue(), emitter->getYValue() });
     }
 
     PoZePlot::Point& point;
-    PropertyAttachment<std::complex<float>> attachment;
+    PropertyAttachment<std::complex<float>> valueAttachment;
+    PropertyAttachment<PoZePlot::Point::Type> typeAttachment;
     bool ignoreCallbacks { false };
 };
 
@@ -89,7 +97,7 @@ private:
 
             const bool sendNotification = i >= numOldPoints;
             auto* newPoint = plot.addPoint (pointState.pointType.getValue(), value.real(), value.imag(), sendNotification);
-            pointAttachments.add(std::make_unique<PointAttachment>(pointState.value, *newPoint));
+            pointAttachments.add(std::make_unique<PointAttachment>(pointState.value, pointState.pointType, *newPoint));
         }
 
         // Set conjugates after all points are added
@@ -119,7 +127,7 @@ private:
 
             const int conjugateIndex = point->isConjugate() ? plot.getPoints().indexOf (point->getConjugate()) : -1;
             pointState.conjugateIndex.setValue (conjugateIndex);
-            pointAttachments.add(std::make_unique<PointAttachment>(pointState.value, *point));
+            pointAttachments.add(std::make_unique<PointAttachment>(pointState.value, pointState.pointType, *point));
         }
 
         state.points.setState (newState.points);
