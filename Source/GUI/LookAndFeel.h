@@ -12,7 +12,7 @@ namespace LAF
 
     namespace Cursors
     {
-        static const juce::MouseCursor rotateCursor { juce::ImageFileFormat::loadFrom(BinaryData::rotateCursor_png, BinaryData::rotateCursor_pngSize), 0, 0, 5.0f };
+        static const juce::MouseCursor rotateCursor { juce::ImageFileFormat::loadFrom(BinaryData::rotateCursor_png, BinaryData::rotateCursor_pngSize), 0, 0, 6.0f };
     }
 
 

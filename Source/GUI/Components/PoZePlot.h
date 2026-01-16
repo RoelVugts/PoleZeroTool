@@ -25,8 +25,6 @@ public:
             Listener() = default;
             virtual ~Listener() = default;
             virtual void pointValueChanged ([[maybe_unused]] Point* emitter) {}
-            virtual void doubleClickedOnPoint ([[maybe_unused]] Point* emitter) {}
-            virtual void clickedOnPoint ([[maybe_unused]] Point* emitter, [[maybe_unused]] const juce::MouseEvent& event) {}
             JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Listener)
         };
 
@@ -106,13 +104,13 @@ public:
         void mouseDown (const juce::MouseEvent& event) override;
         void mouseDrag (const juce::MouseEvent& event) override;
         void mouseUp (const juce::MouseEvent& event) override;
-        void mouseDoubleClick (const juce::MouseEvent& event) override;
         void mouseEnter(const MouseEvent& event) override;
         void mouseExit(const MouseEvent& event) override;
 
         //======================================================================
         bool keyPressed(const KeyPress& key, Component* originatingComponent) override;
         bool keyStateChanged(bool isKeyDown, Component* originatingComponent) override;
+        void updateDragMode();
         //======================================================================
         PoZeToolLaf* getCustomLookAndFeel() const;
         static juce::MouseCursor getRotatedMagnitudeCursor(float angle);
@@ -131,8 +129,7 @@ public:
 
         bool mouseIsOver { false };
         DragMode dragMode { DragMode::normal };
-        juce::Point<float> valueOnMouseDown {};
-        juce::Point<float> posOnMouseDown {};
+        juce::Point<float> valueBeforeDrag {};
 
         static const int angleKeyCode;
         static const int magKeyCode;

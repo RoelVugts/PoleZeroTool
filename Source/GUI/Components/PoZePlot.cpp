@@ -115,23 +115,17 @@ void PoZePlot::Point::updatePosition()
 
 void PoZePlot::Point::mouseDown(const juce::MouseEvent& event)
 {
-    setMouseCursor (juce::MouseCursor::NoCursor);
-
     if (dragMode == DragMode::normal)
+    {
         dragger.startDraggingComponent(this, event);
+        setMouseCursor (juce::MouseCursor::NoCursor);
+    }
 
-
-    valueOnMouseDown = getValue();
-    if (auto* parent = getParentComponent())
-        posOnMouseDown = parent->getLocalPoint (this, event.position);
-
-    listeners.call([&](PoZePlot::Point::Listener& l) { l.clickedOnPoint(this, event); });
+    valueBeforeDrag = getValue();
 }
 
 void PoZePlot::Point::mouseDrag(const juce::MouseEvent& event)
 {
-
-
     if (auto* parent = getParentComponent())
     {
         const auto parentBounds = parent->getLocalBounds().toFloat();
@@ -156,7 +150,7 @@ void PoZePlot::Point::mouseDrag(const juce::MouseEvent& event)
                 const auto point = parent->getMouseXYRelative().toFloat() - origin;
 
                 const float newAngle = -std::atan2(point.y, point.x);
-                const float mag = valueOnMouseDown.getDistanceFromOrigin();
+                const float mag = valueBeforeDrag.getDistanceFromOrigin();
                 const float xValue = std::clamp(mag * std::cos(newAngle), xRange.start, xRange.end);
                 const float yValue = std::clamp(mag * std::sin(newAngle), yRange.start, yRange.end);
                 setValue (xValue, yValue, true);
@@ -165,7 +159,7 @@ void PoZePlot::Point::mouseDrag(const juce::MouseEvent& event)
 
             case DragMode::magnitude:
             {
-                const float angleOnMouseDown = std::atan2(valueOnMouseDown.y, valueOnMouseDown.x);
+                const float angleOnMouseDown = std::atan2(valueBeforeDrag.y, valueBeforeDrag.x);
                 const juce::Point<float> dir (std::cos(angleOnMouseDown), std::sin(angleOnMouseDown));
 
                 // Mouse position in value space
@@ -193,17 +187,13 @@ void PoZePlot::Point::mouseDrag(const juce::MouseEvent& event)
 void PoZePlot::Point::mouseUp(const juce::MouseEvent& event)
 {
     juce::ignoreUnused (event);
-    setMouseCursor (juce::MouseCursor::NormalCursor);
-}
-
-void PoZePlot::Point::mouseDoubleClick(const juce::MouseEvent& event)
-{
-    juce::ignoreUnused (event);
-    listeners.call([&](PoZePlot::Point::Listener& l) { l.doubleClickedOnPoint(this); });
 }
 
 void PoZePlot::Point::mouseEnter (const juce::MouseEvent& event)
 {
+    updateDragMode();
+    grabKeyboardFocus();
+
     mouseIsOver = true;
     repaint();
 }
@@ -223,42 +213,49 @@ bool PoZePlot::Point::keyPressed (const juce::KeyPress& key, juce::Component* co
 
         if (auto* lf = getCustomLookAndFeel())
             setMouseCursor (LAF::Cursors::rotateCursor);
+
+        valueBeforeDrag = getValue();
     }
     else if (key.getKeyCode() == magKeyCode && dragMode != DragMode::magnitude)
     {
-        std::cout << "Cursor" << std::endl;
         dragMode = DragMode::magnitude;
 
         setMouseCursor (getRotatedMagnitudeCursor (getAngle()));
+
+        valueBeforeDrag = getValue();
     }
-    return true;
+
+    return false;
 }
 
 bool PoZePlot::Point::keyStateChanged (bool isKeyDown, Component* originatingComponent)
 {
     if (! isKeyDown)
+        updateDragMode();
+
+    return false;
+}
+
+void PoZePlot::Point::updateDragMode()
+{
+    if (juce::KeyPress::isKeyCurrentlyDown (angleKeyCode))
     {
-        if (juce::KeyPress::isKeyCurrentlyDown (angleKeyCode))
-        {
-            if (auto* lf = getCustomLookAndFeel())
-                setMouseCursor (LAF::Cursors::rotateCursor);
+        if (auto* lf = getCustomLookAndFeel())
+            setMouseCursor (LAF::Cursors::rotateCursor);
 
-            dragMode = DragMode::angle;
-        }
-        else if (juce::KeyPress::isKeyCurrentlyDown (magKeyCode))
-        {
-            setMouseCursor (getRotatedMagnitudeCursor (getAngle()));
-
-            dragMode = DragMode::magnitude;
-        }
-        else
-        {
-            setMouseCursor (juce::MouseCursor::NormalCursor);
-            dragMode = DragMode::normal;
-        }
+        dragMode = DragMode::angle;
     }
+    else if (juce::KeyPress::isKeyCurrentlyDown (magKeyCode))
+    {
+        setMouseCursor (getRotatedMagnitudeCursor (getAngle()));
 
-    return true;
+        dragMode = DragMode::magnitude;
+    }
+    else
+    {
+        setMouseCursor (juce::MouseCursor::NormalCursor);
+        dragMode = DragMode::normal;
+    }
 }
 
 
