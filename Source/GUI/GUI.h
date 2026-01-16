@@ -3,6 +3,7 @@
 #include <JuceHeader.h>
 
 #include "../Data/Attachments/PoZePlotAttachment.h"
+#include "Components/Plot.h"
 #include "Components/PoZePlot.h"
 #include "Components/PoZeTable.h"
 #include "LookAndFeel.h"
@@ -19,6 +20,8 @@ public:
         addAndMakeVisible (poZePlot);
 
         addAndMakeVisible (poZeTable);
+
+        addAndMakeVisible (magnitudePlot);
     }
 
     void resized() override
@@ -29,16 +32,24 @@ public:
 
         auto headerArea = bounds.removeFromTop (height * 0.05f);
         auto inputMeterArea = bounds.removeFromLeft (width * 0.1f);
+        auto outputMeterArea = bounds.removeFromRight (width * 0.1f);
 
-        const float xyPadSize = std::min(width, height) * 0.45f;
-        auto xyPadArea = bounds.removeFromTop (xyPadSize).removeFromLeft (xyPadSize);
+        const float xyPadSize = height * 0.45f;
+        auto upperArea = bounds.removeFromTop (xyPadSize);
+        auto xyPadArea = upperArea.removeFromLeft (xyPadSize);
         poZePlot.setBounds (xyPadArea.toNearestInt());
 
-        // Spacing
-        bounds.removeFromTop (height * 0.02f);
+        upperArea.removeFromLeft (width * 0.02f);        // Spacing
+        upperArea.removeFromRight (width * 0.02f);
+
+        magnitudePlot.setBounds (upperArea.toNearestInt());
+
+        bounds.removeFromTop (height * 0.02f);        // Spacing
 
         auto tableArea = bounds.removeFromTop (height * 0.4f).removeFromLeft (xyPadSize);
         poZeTable.setBounds (tableArea.toNearestInt());
+
+
     }
 
 private:
@@ -48,6 +59,7 @@ private:
     std::unique_ptr<PoZePlotAttachment> poZePlotAttachment;
 
     PoZeTable poZeTable;
+    ResponsePlot magnitudePlot;
 
 
 };

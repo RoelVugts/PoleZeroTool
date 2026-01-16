@@ -1,6 +1,8 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+#include "../DSP/MathFunctions.h"
+
 //==============================================================================
 AudioPluginAudioProcessor::AudioPluginAudioProcessor()
      : AudioProcessor (BusesProperties()
@@ -16,6 +18,7 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
 {
+    auto coefs = MathFunctions::expandPolynomialFromRoots<float> ({ 0.2f, 0.3f, 0.4f, 0.5f });
 }
 
 //==============================================================================
