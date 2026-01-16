@@ -50,6 +50,10 @@ public:
         const int otherNumElements = other.elements.size();
         const int diff = otherNumElements - numElements;
 
+        // Remove old elements
+        for (int i = numElements - 1; i >= (numElements + diff); --i)
+            parent.removeChild (i, undoManager);
+
         for (int i = 0; i < otherNumElements; i++)
         {
             if (i < elements.size())
@@ -64,10 +68,6 @@ public:
                 parent.addChild (newChild, i, undoManager);
             }
         }
-
-        // Remove old elements
-        for (int i = numElements - 1; i >= (numElements + diff); --i)
-            parent.removeChild (i, undoManager);
 
         for (auto& f : stateChangedLambdas)
             juce::NullCheckedInvocation::invoke(f);

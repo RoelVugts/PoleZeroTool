@@ -46,7 +46,7 @@ private:
     bool ignoreCallbacks { false };
 };
 
-class PoZePlotAttachment : private PoZePlot::Listener
+class PoZePlotAttachment : private PoZePlot::Listener, private juce::AsyncUpdater
 {
 public:
 
@@ -54,8 +54,12 @@ public:
         : state(settings)
         , plot(poZePlot)
     {
-        state.points.setOnStateChange ([this]() {
-            syncPlotToState();
+        state.points.setOnChildAdded ([this](juce::ValueTree&) {
+            triggerAsyncUpdate();
+        });
+
+        state.points.setOnChildRemoved ([this](juce::ValueTree&, int) {
+            triggerAsyncUpdate();
         });
 
         //=========================================================================
@@ -75,6 +79,7 @@ private:
         juce::ScopedValueSetter<bool> svs(ignoreGuiCallbacks, true);
 
         plot.removeAllPoints (false);
+        pointAttachments.clear ();
 
         const int numOldPoints = plot.getNumPoints();
         for (int i = 0; i < state.points.size(); i++)
@@ -83,7 +88,8 @@ private:
             std::complex<float> value = pointState.value.getValue();
 
             const bool sendNotification = i >= numOldPoints;
-            plot.addPoint (pointState.pointType.getValue(), value.real(), value.imag(), sendNotification);
+            auto* newPoint = plot.addPoint (pointState.pointType.getValue(), value.real(), value.imag(), sendNotification);
+            pointAttachments.add(std::make_unique<PointAttachment>(pointState.value, *newPoint));
         }
 
         // Set conjugates after all points are added
@@ -136,6 +142,11 @@ private:
     {
         if (! ignoreGuiCallbacks)
             syncStateToPlot();
+    }
+
+    void handleAsyncUpdate() override
+    {
+        syncPlotToState();
     }
 
     PoleZeroState state;
