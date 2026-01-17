@@ -2,7 +2,12 @@
 
 #include <JuceHeader.h>
 
+#include "../DSP/Filter.h"
+#include "../Data/Attachments/FilterAttachment.h"
 #include "../Data/State.h"
+#include <choc/containers/choc_SingleReaderMultipleWriterFIFO.h>
+
+#define MAX_CHANNELS 2
 
 //==============================================================================
 class AudioPluginAudioProcessor final : public juce::AudioProcessor
@@ -48,6 +53,12 @@ public:
     State state { juce::ValueTree(State::IDs::type) };
     juce::UndoManager undoManager;
 
+    //==============================================================================
+    std::array<ComplexFilter, MAX_CHANNELS> filter;
+    FilterAttachment filterAttachment;
+
+    //==============================================================================
+    choc::fifo::SingleReaderMultipleWriterFIFO<std::function<void()>> dspFifo;
 private:
 
     //==============================================================================

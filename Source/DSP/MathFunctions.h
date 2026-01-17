@@ -74,6 +74,7 @@ namespace MathFunctions
         // First coefficient is always 1.0
         coefficients.push_back (SampleType(1.0));
 
+        // Start from second coefficient
         for (int i = 1; i <= (int)roots.size(); i++)
         {
             SampleType newCoefficient = calculateSumOfCombinations (roots, i);

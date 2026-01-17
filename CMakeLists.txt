@@ -67,3 +67,5 @@ target_link_libraries(${PROJECT_NAME}
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
 )
+
+target_include_directories(${PROJECT_NAME} PRIVATE Libraries/choc)
