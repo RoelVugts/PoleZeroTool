@@ -208,18 +208,6 @@ public:
 private:
 
     void mouseDown(const juce::MouseEvent& event) override;
-    //======================================================================
-    // Forwarding listener
-    class PointListener : public Point::Listener
-    {
-    public:
-        explicit PointListener (PoZePlot& p) : owner (p) {}
-        void pointValueChanged(Point* emitter) override;
-    private:
-        PoZePlot& owner;
-    };
-
-    PointListener pointListener { *this };
 
     juce::OwnedArray<PoZePlot::Point> points;
     juce::NormalisableRange<float> xRange {}, yRange {};

@@ -51,7 +51,7 @@ public:
         assert(index < data.size());
 
         int idx = writeIndex - index;
-        if (idx < 0) idx += data.size();
+        if (idx < 0) idx += (int)data.size();
 
         return data[idx];
     }

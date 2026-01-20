@@ -35,7 +35,7 @@ public:
 
 private:
 
-    void filterCoefficientsChanged(FilterDesign* emitter) override
+    void filterCoefficientsChanged(FilterDesign*) override
     {
         plot.updatePath();
     }

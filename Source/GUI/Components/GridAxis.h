@@ -97,7 +97,7 @@ public:
         yLines.clear();
         yTicks = yTicks_;
         for (float tick : yTicks) {
-            if (tick > yRange.start & tick < yRange.end) {
+            if (tick > yRange.start && tick < yRange.end) {
                 const float y = (1.0f - yRange.convertTo0to1(tick)) * gridArea.getHeight() + gridArea.getY();
                 yLines.emplace_back(gridArea.getX(), y, gridArea.getRight(), y );
 

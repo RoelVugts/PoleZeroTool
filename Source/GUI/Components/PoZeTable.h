@@ -27,16 +27,22 @@ public:
 
     void paintRowBackground(juce::Graphics& g, int rowNumber, int width, int height, bool rowIsSelected) override
     {
+        juce::ignoreUnused(rowNumber, width, height, rowIsSelected);
+
         g.fillAll(juce::Colours::black);
     }
 
     void paintCell(juce::Graphics& g, int rowNumber, int columnId, int width, int height, bool rowIsSelected) override
     {
-
+        // This table does not do any painting of cells. Instead it uses custom components by implementing
+        // refreshComponentForCell().
+        juce::ignoreUnused(g, rowNumber, columnId, width, height, rowIsSelected);
     }
 
     juce::Component* refreshComponentForCell(int rowNumber, int columnId, bool isRowSelected, Component* existingComponentToUpdate) override
     {
+        juce::ignoreUnused(isRowSelected);
+
         const juce::Font::FontStyleFlags style = columnId == typeColumnId ? juce::Font::bold : juce::Font::plain;
         const juce::Font font(owner.withDefaultMetrics (FontOptions ((float) owner.getRowHeight() * 0.7f, style)));
 

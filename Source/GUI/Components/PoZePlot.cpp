@@ -189,7 +189,7 @@ void PoZePlot::Point::mouseUp(const juce::MouseEvent& event)
     juce::ignoreUnused (event);
 }
 
-void PoZePlot::Point::mouseEnter (const juce::MouseEvent& event)
+void PoZePlot::Point::mouseEnter (const juce::MouseEvent&)
 {
     updateDragMode();
     grabKeyboardFocus();
@@ -198,14 +198,14 @@ void PoZePlot::Point::mouseEnter (const juce::MouseEvent& event)
     repaint();
 }
 
-void PoZePlot::Point::mouseExit (const juce::MouseEvent& event)
+void PoZePlot::Point::mouseExit (const juce::MouseEvent&)
 {
     mouseIsOver = false;
     setMouseCursor (juce::MouseCursor::NormalCursor);
     repaint();
 }
 
-bool PoZePlot::Point::keyPressed (const juce::KeyPress& key, juce::Component* comp)
+bool PoZePlot::Point::keyPressed (const juce::KeyPress& key, juce::Component*)
 {
     if (key.getKeyCode() == angleKeyCode && dragMode != DragMode::angle)
     {
@@ -228,7 +228,7 @@ bool PoZePlot::Point::keyPressed (const juce::KeyPress& key, juce::Component* co
     return false;
 }
 
-bool PoZePlot::Point::keyStateChanged (bool isKeyDown, Component* originatingComponent)
+bool PoZePlot::Point::keyStateChanged (bool isKeyDown, Component*)
 {
     if (! isKeyDown)
         updateDragMode();
@@ -327,7 +327,6 @@ PoZePlot::Point* PoZePlot::addPoint (PoZePlot::Point::Type type, float x, float 
     addAndMakeVisible (point);
     resized();
 
-    point->addListener (&pointListener);
     point->addMouseListener (this, true);
     addKeyListener (point);
 
@@ -410,10 +409,10 @@ void PoZePlot::paintWithinCorners(juce::Graphics& g)
 void PoZePlot::resized()
 {
     const auto bounds = getLocalBounds().toFloat();
-    const float cornerSize = (float)std::min(getWidth(), getHeight()) * 0.08f;
+    const float cornerSize = std::min(bounds.getWidth(), bounds.getHeight()) * 0.08f;
     setRoundedCorners (cornerSize);
 
-    const int pointSize = (int)std::min(bounds.getWidth(), bounds.getHeight()) * 0.04f;
+    const int pointSize = (int)(std::min(bounds.getWidth(), bounds.getHeight()) * 0.04f);
 
     for (auto* point : points)
     {
@@ -458,10 +457,4 @@ void PoZePlot::mouseDown (const juce::MouseEvent& event)
         else if (event.mods.isAltDown())
             removePoint (index, true);
     }
-}
-
-
-void PoZePlot::PointListener::pointValueChanged (Point* emitter)
-{
-
 }

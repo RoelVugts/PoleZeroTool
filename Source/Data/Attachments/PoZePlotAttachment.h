@@ -58,7 +58,7 @@ class PoZePlotAttachment : private PoZePlot::Listener, private juce::AsyncUpdate
 {
 public:
 
-    PoZePlotAttachment (const PoleZeroState& settings, PoZePlot& poZePlot, juce::UndoManager* um)
+    PoZePlotAttachment (const PoleZeroState& settings, PoZePlot& poZePlot, juce::UndoManager*)
         : state(settings)
         , plot(poZePlot)
     {
@@ -133,20 +133,20 @@ private:
         state.points.setState (newState.points);
     }
 
-    void pointAdded(PoZePlot* emitter, int indexOfAddedPoint) override
+    void pointAdded(PoZePlot*, int) override
     {
         if (! ignoreGuiCallbacks)
             syncStateToPlot();
 
     }
 
-    void pointRemoved(PoZePlot*, int indexOfRemovedPoint) override
+    void pointRemoved(PoZePlot*, int) override
     {
         if (! ignoreGuiCallbacks)
             syncStateToPlot();
     }
 
-    void createdConjugatePair(PoZePlot* emitter, int index, int conjugateIndex) override
+    void createdConjugatePair(PoZePlot*, int, int) override
     {
         if (! ignoreGuiCallbacks)
             syncStateToPlot();

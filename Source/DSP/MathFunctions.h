@@ -39,7 +39,7 @@ namespace MathFunctions
         assert (r <= list.size()); // Impossible to make combinations with more elements than the list contains
 
         SampleType sum = 0.0;
-        const int n = list.size();
+        const int n = (int)list.size();
 
         // Calculate the total number of combinations
         const int totalCombinations = factorial (n) / (factorial (r) * factorial (n - r)); // nCr
