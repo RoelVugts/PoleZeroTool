@@ -84,4 +84,19 @@ namespace MathFunctions
 
         return coefficients;
     }
+
+    template<typename SampleType>
+    SampleType getAngleOfDifferenceVector(std::complex<SampleType> z1, std::complex<SampleType> z2)
+    {
+        SampleType deltaX = std::real(z2) - std::real(z1);
+        SampleType deltaY = std::imag(z2) - std::imag(z1);
+
+        // If the two points are at exactly the same position then there is no difference in angle.
+        // Calling atan2(0,0) would lead to undefined behaviour.
+        if (deltaX == 0.0 && deltaY == 0.0) return 0.0;
+
+        SampleType angle = atan2(deltaY, deltaX);
+
+        return angle;
+    }
 }

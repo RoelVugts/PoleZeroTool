@@ -7,6 +7,7 @@
 #include <queue>
 #include <vector>
 
+/** A Direct form I filter using complex filter coefficients and data.*/
 class ComplexFilter
 {
 public:
@@ -44,6 +45,7 @@ public:
 
     void setCoefficients(const std::vector<std::complex<float>>& iir, const std::vector<std::complex<float>>& fir)
     {
+        //TODO: Avoid mem allocations
         iirCoefs = iir;
         firCoefs = fir;
     }

@@ -12,7 +12,7 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       ), filterAttachment (state.poleZeroState)
+                       ), filterDesignAttachment (state.poleZeroState, filterDesign)
 {
     dspFifo.reset(128);
 }
@@ -141,14 +141,13 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     while (dspFifo.pop (updateFn))
         juce::NullCheckedInvocation::invoke(updateFn);
 
-    if (filterAttachment.shouldSwapCoefficients())
+    if (filterDesignAttachment.filterChanged())
     {
-        const auto& iir = filterAttachment.getIIRCoefs();
-        const auto& fir = filterAttachment.getFIRCoefs();
+        const auto& coefs = filterDesignAttachment.getCoefficients();
         for (auto& f : filter)
-            f.setCoefficients (iir, fir);
+            f.setCoefficients (coefs.iirCoefs, coefs.firCoefs);
 
-        filterAttachment.markFilterAsUpdated();
+        filterDesignAttachment.markCoefficientsAsConsumed();
     }
 
     for (int channel = 0; channel < totalNumInputChannels; ++channel)

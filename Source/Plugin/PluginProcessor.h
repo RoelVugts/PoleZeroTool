@@ -3,8 +3,10 @@
 #include <JuceHeader.h>
 
 #include "../DSP/Filter.h"
-#include "../Data/Attachments/FilterAttachment.h"
+#include "../DSP/FilterDesign.h"
+#include "../Data/Attachments/FilterDesignAttachment.h"
 #include "../Data/State.h"
+
 #include <choc/containers/choc_SingleReaderMultipleWriterFIFO.h>
 
 #define MAX_CHANNELS 2
@@ -55,7 +57,8 @@ public:
 
     //==============================================================================
     std::array<ComplexFilter, MAX_CHANNELS> filter;
-    FilterAttachment filterAttachment;
+    FilterDesign filterDesign;
+    FilterDesignAttachment filterDesignAttachment;
 
     //==============================================================================
     choc::fifo::SingleReaderMultipleWriterFIFO<std::function<void()>> dspFifo;

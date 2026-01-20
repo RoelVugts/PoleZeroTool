@@ -3,9 +3,7 @@
 #include <assert.h>
 #include <vector>
 
-/** A lightweight CircBuf which returns samples with a value of zero
- *  when there are not enough samples ready. Not thread safe !
- */
+/** A lightweight Circular Buffer.\n\n Not thread safe !*/
 template<typename SampleType>
 class CircBuf
 {
@@ -29,7 +27,7 @@ public:
         writeIndex = 0;
     }
 
-    /** Add a sample to the buffer.\n\n It's the callers responsibilty to
+    /** Add a sample to the buffer.\n\n It's the caller's responsibility to
      *  advance the write index by calling incrementWriteIndex().
      *
      * @param sample        The sample value to add.
