@@ -5,9 +5,9 @@
 #include "../DSP/MathFunctions.h"
 #include "../Data/Attachments/PoZePlotAttachment.h"
 #include "../Data/Attachments/ResponsePlotAttachment.h"
+#include "Components/Plot.h"
 #include "Components/PoZePlot.h"
 #include "Components/PoZeTable.h"
-#include "Components/ResponsePlot.h"
 #include "LookAndFeel.h"
 
 class GUI : public juce::Component
@@ -24,7 +24,7 @@ public:
 
         addAndMakeVisible (poZeTable);
 
-        for (auto* plot : juce::Array<ResponsePlot*>{&magnitudePlot, &phasePlot})
+        for (auto* plot : juce::Array<Plot*>{&magnitudePlot, &phasePlot})
         {
             plot->setDomain ({ 0.0f, juce::MathConstants<float>::pi });
             plot->setXTicks ({
@@ -94,8 +94,8 @@ private:
     std::unique_ptr<PoZePlotAttachment> poZePlotAttachment;
 
     PoZeTable poZeTable;
-    ResponsePlot magnitudePlot { "Magnitude" };
-    ResponsePlot phasePlot { "Phase" };
+    Plot magnitudePlot { "Magnitude" };
+    Plot phasePlot { "Phase" };
     std::unique_ptr<ResponsePlotAttachment> magAttachment, phaseAttachment;
 
 

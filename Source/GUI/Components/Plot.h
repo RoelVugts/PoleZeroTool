@@ -5,7 +5,7 @@
 #include "../../DSP/FilterDesign.h"
 #include "../../Utils/MappedRange.h"
 
-class ResponsePlot : public juce::Component, private FilterDesign::Listener
+class Plot : public juce::Component, private FilterDesign::Listener
 {
 public:
 
@@ -19,7 +19,7 @@ public:
         textColourId                = 0x210600
     };
 
-    ResponsePlot(const juce::String& plotName) : title(plotName)
+    Plot(const juce::String& plotName) : title(plotName)
     {
         setColour (plotBackgroundColourId,   juce::Colours::black);
         setColour (borderOutlineColourId,    juce::Colours::black);
@@ -31,6 +31,8 @@ public:
 
     void paint(juce::Graphics& g) override
     {
+        //=======================================================
+        // Draw frame and background
         g.setColour (findColour (titleBackgroundColourId));
         g.fillRect (titleArea);
 
@@ -40,11 +42,11 @@ public:
         g.setColour (findColour (plotBackgroundColourId));
         g.fillRect (plotArea);
 
-
-
+        //=======================================================
+        // Draw grid lines
         g.setColour (findColour (gridColourId));
 
-        for (float xTick : xTicks)
+        for (const float xTick : xTicks)
         {
             const float x = xRange.convertTo0to1 (xTick) * plotArea.getWidth() + plotArea.getX();
             const juce::Line<float> line(x, plotArea.getY(), x, xAxisArea.getY());
@@ -58,6 +60,16 @@ public:
             g.drawLine(line, lineThickness);
         }
 
+        // Apply opacity mask over grid lines to fade out to edges
+        auto gradColour = findColour (plotBackgroundColourId);
+        juce::ColourGradient gradient(gradColour, plotArea.getX(), plotArea.getY(), gradColour, plotArea.getX(), xAxisArea.getY(), false);
+        gradient.addColour (0.25f, gradColour.withAlpha (0.0f));
+        gradient.addColour (0.75f, gradColour.withAlpha (0.0f));
+        g.setGradientFill (gradient);
+        g.fillRect (plotArea);
+
+        //=======================================================
+        // Draw the path within the path bounds
         {
             juce::Graphics::ScopedSaveState clippedState(g);
             g.reduceClipRegion (plotArea.toNearestInt());
@@ -65,10 +77,14 @@ public:
             g.strokePath (path, pathStroke);
         }
 
+        //=======================================================
+        // Draw title
         g.setColour (findColour (textColourId));
         g.setFont (juce::FontOptions (13.0f, juce::Font::bold));
         g.drawFittedText (title, titleArea.toNearestInt(), juce::Justification::centred, 1, 0.9f);
 
+        //=======================================================
+        // Draw axis labels
         g.setFont (juce::FontOptions (10.0f));
         g.setColour (findColour (textColourId).withAlpha (0.7f));
 

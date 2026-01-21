@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../DSP/FilterDesign.h"
-#include "../../GUI/Components/ResponsePlot.h"
+#include "../../GUI/Components/Plot.h"
 
 #include <JuceHeader.h>
 
