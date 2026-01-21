@@ -9,12 +9,13 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     juce::LookAndFeel::setDefaultLookAndFeel (&laf);
 
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    setSize (660, 440);
+    static constexpr int defaultWidth = 825;
+    static constexpr int defaultHeight = 550;
+
+    setSize (defaultWidth, defaultHeight);
     setResizable (true, true);
-    constrainer.setMinimumSize (220, 330);
-    constrainer.setFixedAspectRatio (660.0 / 440.0);
+    constrainer.setMinimumSize (defaultWidth / 2, defaultHeight / 2);
+    constrainer.setFixedAspectRatio ((double)defaultWidth / (double)defaultHeight);
     setConstrainer (&constrainer);
 
     addAndMakeVisible (gui);

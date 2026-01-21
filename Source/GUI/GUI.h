@@ -2,15 +2,19 @@
 
 #include <JuceHeader.h>
 
+#include "../DSP/FilterDesign.h"
 #include "../DSP/MathFunctions.h"
 #include "../Data/Attachments/PoZePlotAttachment.h"
 #include "../Data/Attachments/ResponsePlotAttachment.h"
+#include "Components/BoxedLabel.h"
 #include "Components/Plot.h"
 #include "Components/PoZePlot.h"
 #include "Components/PoZeTable.h"
 #include "LookAndFeel.h"
 
-class GUI : public juce::Component
+#include "FilterTextFormatter.h"
+
+class GUI : public juce::Component, private FilterDesign::Listener
 {
 public:
 
@@ -52,42 +56,92 @@ public:
 
         magAttachment = std::make_unique<ResponsePlotAttachment> (magnitudePlot, p.filterDesign, true);
         phaseAttachment = std::make_unique<ResponsePlotAttachment> (phasePlot, p.filterDesign, false);
+
+        diffEquationLabel.setFont (juce::FontOptions(11.0f));
+        diffEquationLabel.setText (FilterTextFormatter::differenceEquation (p.filterDesign));
+        addAndMakeVisible (diffEquationLabel);
+
+        transerFunctionText.setFont (juce::FontOptions(11.0f));
+        transerFunctionText.setText (FilterTextFormatter::differenceEquation (p.filterDesign));
+        addAndMakeVisible (transerFunctionText);
+
+        p.filterDesign.addListener (this);
+    }
+
+    ~GUI() override
+    {
+        //TODO: Remove listener
     }
 
     void resized() override
     {
         auto bounds = getLocalBounds().toFloat();
-        float width = bounds.getWidth();
-        float height = bounds.getHeight();
 
-        auto headerArea = bounds.removeFromTop (height * 0.05f);
-        auto inputMeterArea = bounds.removeFromLeft (width * 0.1f);
-        auto outputMeterArea = bounds.removeFromRight (width * 0.1f);
-        bounds.removeFromBottom (height * 0.05f);
+        constexpr float spacing = 6.0f;
 
-        const float xyPadSize = bounds.getHeight() * 0.48f;
-        auto leftArea = bounds.removeFromLeft (xyPadSize);
-        auto xyPadArea = leftArea.removeFromTop (xyPadSize);
-        poZePlot.setBounds (xyPadArea.toNearestInt());
+        // ---- Side meters ----
+        bounds.removeFromLeft (bounds.getWidth() * 0.05f + spacing);
+        bounds.removeFromRight (bounds.getWidth() * 0.08f + spacing);
 
-        leftArea.removeFromTop (height * 0.02f);        // Spacing
+        // ---- Header ----
+        bounds.removeFromTop (bounds.getHeight() * 0.06f + spacing);
 
+        // ---- Footer / Formula ----
+        auto formulaArea = bounds.removeFromBottom (bounds.getHeight() * 0.1f);
+        bounds.removeFromBottom (spacing);
 
-        auto tableArea = leftArea;
-        poZeTable.setBounds (tableArea.toNearestInt());
+        // ---- Main content ----
+        auto content = bounds;
 
-        bounds.removeFromLeft (width * 0.02f);
+        // Columns
+        const float leftColumnWidth = content.getWidth() * 0.35f;
+        auto leftColumn  = content.removeFromLeft (leftColumnWidth);
+        content.removeFromLeft (spacing);
+        auto rightColumn = content;
 
-        auto magnitudePlotArea = bounds.removeFromTop (xyPadSize);
+        // ---- Right column (plots) ----
+        const float plotHeight =
+            (rightColumn.getHeight() - spacing) * 0.5f;
+
+        auto magnitudePlotArea = rightColumn.removeFromTop (plotHeight);
         magnitudePlot.setBounds (magnitudePlotArea.toNearestInt());
 
-        bounds.removeFromTop (height * 0.02f);        // Spacing
+        rightColumn.removeFromTop (spacing);
 
-        auto phasePlotArea = bounds.removeFromTop (tableArea.getHeight());
+        auto phasePlotArea = rightColumn;
         phasePlot.setBounds (phasePlotArea.toNearestInt());
+
+        // ---- Left column ----
+        // XY pad must be square
+        const float xyPadSize = magnitudePlot.getHeight();
+
+        auto xyPadArea = leftColumn.removeFromTop (xyPadSize);
+        xyPadArea.setWidth (xyPadSize);
+        poZePlot.setBounds (xyPadArea.toNearestInt());
+
+        leftColumn.removeFromTop (spacing);
+
+        // Table aligned with phase plot
+        auto tableArea = leftColumn;
+        tableArea.setWidth (xyPadSize);
+        tableArea.setY (phasePlotArea.getY());
+        tableArea.setHeight (phasePlotArea.getHeight());
+        poZeTable.setBounds (tableArea.toNearestInt());
+
+        auto diffEquationArea = formulaArea.removeFromRight ((float)phasePlot.getWidth());
+        diffEquationLabel.setBounds (diffEquationArea.toNearestInt());
+
+        auto transferFunctionArea = formulaArea.removeFromLeft ((float)poZeTable.getWidth());
+        transerFunctionText.setBounds (transferFunctionArea.toNearestInt());
     }
 
 private:
+
+    void filterCoefficientsChanged(FilterDesign* emitter) override
+    {
+        diffEquationLabel.setText (FilterTextFormatter::differenceEquation (*emitter));
+        transerFunctionText.setText (FilterTextFormatter::transferFunction (*emitter));
+    }
 
     State state;
     PoZePlot poZePlot;
@@ -98,6 +152,8 @@ private:
     Plot phasePlot { "Phase" };
     std::unique_ptr<ResponsePlotAttachment> magAttachment, phaseAttachment;
 
+    BoxedLabel transerFunctionText;
+    BoxedLabel diffEquationLabel;
 
     const juce::String piString         { juce::String (juce::CharPointer_UTF8 ("\xCF\x80")) };
     const juce::String quarterString    { juce::String (juce::CharPointer_UTF8 ("\xC2\xBC")) };

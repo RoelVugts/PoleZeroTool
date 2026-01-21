@@ -82,14 +82,9 @@ public:
      */
     Response getMaxPhaseResponse(int numAngles = 256) const;
 
-    //=======================================================================
-    // Returns the difference equation as a string (e.g. y[n] = 0.5x[n-1] - 0.3y[n-1])
-    juce::String getDifferenceEquationText() const;
+    float getNormalisationGain() const { return gain; }
 
 private:
-
-    //=======================================================================
-    static juce::String coefsToFormulaString(const std::vector<std::complex<float>>& coefs, bool isIIR, int degree);
 
     //=======================================================================
     std::vector<std::complex<float>> poles;

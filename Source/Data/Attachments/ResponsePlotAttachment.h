@@ -9,7 +9,7 @@ class ResponsePlotAttachment : private FilterDesign::Listener
 {
 public:
 
-    ResponsePlotAttachment(ResponsePlot& plotComp, FilterDesign& filterDesign, bool magIsTruePhaseIsFalse)
+    ResponsePlotAttachment(Plot& plotComp, FilterDesign& filterDesign, bool magIsTruePhaseIsFalse)
         : plot(plotComp), filterDesigner (filterDesign)
     {
         if (magIsTruePhaseIsFalse)
@@ -40,6 +40,6 @@ private:
         plot.updatePath();
     }
 
-    ResponsePlot& plot;
+    Plot& plot;
     FilterDesign& filterDesigner;
 };
