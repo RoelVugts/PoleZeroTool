@@ -7,30 +7,31 @@ class FilterTextFormatter
 {
 public:
 
-    // Returns the difference equation as a string (e.g. y[n] = 0.5x[n-1] - 0.3y[n-1])
-    static juce::String differenceEquation (const FilterDesign& filter)
+    enum class PolynomialDomain
     {
-        if (filter.getNormalisationGain() == 0.0f)
-            return "y[n] = 0";
+        DifferenceEquation,
+        ZDomain
+    };
 
-        const std::vector<std::complex<float>>& firCoefs = filter.getFIRCoefs();
-        const std::vector<std::complex<float>>& iirCoefs = filter.getIIRCoefs();
+    // Returns the difference equation as a string (e.g. y[n] = 0.5x[n-1] - 0.3y[n-1])
+    static juce::String differenceEquation (const FilterDesign& f)
+    {
+        const int degree = (int)f.getFIRCoefs().size() - (int)f.getIIRCoefs().size();
 
-        // Get degree of total polynomial
-        const int polynomialDegree = (int) firCoefs.size() - (int) iirCoefs.size();
-
-        juce::String differenceEquation = "y[n] = "; // Always start with this
-        differenceEquation += coefsToFormulaString (firCoefs, false, polynomialDegree);
-        differenceEquation += coefsToFormulaString (iirCoefs, true, polynomialDegree);
-
-        return differenceEquation;
+        return "y[n] = "
+            + formatCoefficients (f.getFIRCoefs(), PolynomialDomain::DifferenceEquation, false, degree)
+            + formatCoefficients (f.getIIRCoefs(), PolynomialDomain::DifferenceEquation, true,  degree);
     }
 
-    // Returns the difference equation as a string (e.g. y[n] = 0.5x[n-1] - 0.3y[n-1])
+    /** Returns the trasnfer fucnction as a string (e.g.\n
+     *            0.5z^2 + 0.3z
+     * \n H(z) = ---------------\n
+     *            0.2z^2 - 0.87z
+     */
     static juce::String transferFunction   (const FilterDesign& filter)
     {
-        const juce::String& numerator = polynomialEquation (filter, true);
-        const juce::String& denumerator = polynomialEquation (filter, false);
+        const juce::String& numerator = formatCoefficients (filter.getFIRCoefs(), PolynomialDomain::ZDomain,false,0);
+        const juce::String& denumerator = formatCoefficients (filter.getIIRCoefs(), PolynomialDomain::ZDomain, false,0);
 
         const juce::Font defaultFont(juce::FontOptions(11.0f));
         const int lineWidth = juce::GlyphArrangement::getStringWidthInt (defaultFont, "-");
@@ -48,114 +49,75 @@ public:
     }
 
 private:
-    static juce::String coefsToFormulaString (const std::vector<std::complex<float>>& coefs, bool isOutput, int delayOffset)
+    static juce::String formatCoefficients (const std::vector<std::complex<float>>& coefs, PolynomialDomain domain, bool isOutput, int delayOffset)
     {
-        juce::String text {};
-        for (int i = 0; i < coefs.size(); i++)
+        if (domain == PolynomialDomain::ZDomain)
+            if (coefs.size() == 1)
+                return "1";
+
+        juce::String result;
+
+        for (int i = 0; i < coefs.size(); ++i)
         {
-            // Don't show zero terms
             if (approximatelyEqual (coefs[i].real(), 0.0f)
-                && approximatelyEqual (coefs[i].imag(), 0.0f))
+             && approximatelyEqual (coefs[i].imag(), 0.0f))
                 continue;
 
-            // Skip first (a0) coefficient since that will be on left side of equation
-            if (isOutput && i == 0)
+            if (domain == PolynomialDomain::DifferenceEquation && isOutput && i == 0)
                 continue;
 
-            // IIR is sign flipped
-            const float real = isOutput ? -std::real(coefs[i]) : std::real(coefs[i]);
-            const float imag = isOutput ? -std::imag(coefs[i]) : std::imag(coefs[i]);
+            const float real = (isOutput ? -1.0f : 1.0f) * std::real(coefs[i]);
+            const float imag = (isOutput ? -1.0f : 1.0f) * std::imag(coefs[i]);
 
-            const juce::String io = isOutput ? "y" : "x";
-            juce::String realDelay, imagDelay;
-
-            const int delay = isOutput ? -i : delayOffset - i;
-            const juce::String numString = delay > 0 ? "+" + juce::String(delay) : juce::String(delay);
-            const juce::String index = delay == 0 ? "[n]" : "[n" + numString + "]";
-
-            if (real != 0.0f)
-                realDelay += io + index;
-
-            if (imag != 0.0f)
-                imagDelay += "i" + io + index;
-
-            auto formatNumber = [](const float num) -> juce::String {
-                if (approximatelyEqual (num, 0.0f))     return "";
-                if (approximatelyEqual (num, 1.0f))     return " + ";
-                if (approximatelyEqual (num, -1.0f))    return " - ";
-                if (num > 0.0)                                return " + " + juce::String(num);
-                if (num < 0.0)                                return " - " + juce::String(std::abs(num));
-
-                return juce::String(num);
-            };
-
-            juce::String realNum = formatNumber(real);
-            juce::String imagNum = formatNumber(imag);
-
-            // Remove first plus sign
-            if (i == 0 && real > 0.0) realNum = realNum.removeCharacters ("+").trim();
-
-            text += realNum + realDelay + imagNum + imagDelay;
+            result += formatComplexTerm (real, imag, domain, i, (int)coefs.size(), delayOffset, isOutput, result.isEmpty());
         }
 
-        return text;
+        return result;
     }
 
-        static juce::String polynomialEquation (const FilterDesign& filter, bool numerator)
+    static juce::String formatComplexTerm (float real, float imag, PolynomialDomain domain, int index, int size, int delayOffset, bool isOutput, bool isFirst)
     {
-        if (numerator && filter.getNormalisationGain() == 0.0f) return "0";
+        auto formatNumber = [] (float v, bool first) -> juce::String
+        {
+            if (approximatelyEqual (v, 0.0f)) return juce::String{};
+            if (approximatelyEqual (v, 1.0f)) return first ? "" : " + ";
+            if (approximatelyEqual (v, -1.0f)) return " - ";
+            if (v > 0.0f) return (first ? "" : " + ") + juce::String(v);
+            return " - " + juce::String(std::abs(v));
+        };
 
-        const auto& coefs = numerator ? filter.getFIRCoefs() : filter.getIIRCoefs();
+        juce::String term;
 
-        if (coefs.size() == 1) return juce::String(filter.getNormalisationGain());
+        const juce::String realNum = formatNumber (real, isFirst);
+        const juce::String imagNum = formatNumber (imag, false);
 
-        juce::String equation;
+        term += realNum;
+        if (! approximatelyEqual (real, 0.0f))
+            term += getUnitString (domain, index, size, delayOffset, isOutput, false);
 
-        for (int i = 0; i < coefs.size(); i++) {
-            float real = std::real(coefs[i]);
-            float imag = std::imag(coefs[i]);
+        term += imagNum;
+        if (! approximatelyEqual (imag, 0.0f))
+            term += getUnitString (domain, index, size, delayOffset, isOutput, true);
 
-            if (approximatelyEqual (real, 0.0f)) real = 0.0;
-            if (approximatelyEqual (imag, 0.0f)) imag = 0.0;
+        return term;
+    }
 
-            juce::String realNum(real);
-            juce::String imagNum(imag);
-
-            int power = (int)coefs.size() - (i+1);
-            juce::String realPower = juce::String("z^") + juce::String(power);
-            juce::String imagPower = juce::String("iz^") + juce::String(power);
-
-            if (power == 1)
-            {
-                realPower = "z";
-                imagPower = "iz";
-            } else if (power == 0)
-            {
-                realPower = "";
-                imagPower = "i";
-            }
-
-            if (realNum == "0" || realNum == "-0")  {
-                realNum = "";
-                realPower = "";
-            } else if (realNum == "1" && power != 0 && equation.length() < 1) realNum = "";
-            else if (realNum == "-1" && power != 0 && equation.length() < 1) realNum = " - ";
-            else if (realNum == "1" && power != 0 && equation.length() >= 1) realNum = " + ";
-            else if (realNum == "-1" && power != 0 && equation.length() >= 1) realNum = " - ";
-            else if (real > 0.0 && equation.length() > 0) realNum = " + " + juce::String(real);
-            else if (real > 0.0 && equation.length() < 1) realNum = juce::String(real);
-            else if (real < 0.0) realNum = " - " + juce::String(std::abs(real));
-
-            if (imagNum == "0" || imagNum == "-0") {
-                imagNum = "";
-                imagPower = "";
-            } else if (imagNum == "1") imagNum = "";
-            else if (imagNum == "-1") imagNum = " - ";
-            else if (imag > 0.0) imagNum = " + " + juce::String(imag);
-            else if (imag < 0.0) imagNum = " - " + juce::String(std::abs(imag));
-
-            equation += realNum + realPower + imagNum + imagPower;
+    static juce::String getUnitString (PolynomialDomain domain, int i, int size, int delayOffset, bool isOutput, bool imaginary)
+    {
+        if (domain == PolynomialDomain::DifferenceEquation)
+        {
+            const int delay = isOutput ? -i : delayOffset - i;
+            const juce::String idx = delay == 0 ? "[n]" : "[n" + juce::String(delay > 0 ? "+" : "") + juce::String(delay) + "]";
+            return imaginary ? juce::String("i") + (isOutput ? "y" : "x") + idx
+                             : juce::String((isOutput ? "y" : "x")) + idx;
         }
-        return equation;
+
+        // Z-domain
+        const int power = size - (i + 1);
+        if (power == 0) return imaginary ? "i" : "";
+        if (power == 1) return imaginary ? "iz" : "z";
+
+        return imaginary ? "iz^" + juce::String(power)
+                         : "z^" + juce::String(power);
     }
 };
