@@ -143,17 +143,16 @@ public:
 
         const int width = (int)plotArea.getWidth();
 
-        float val = getDataFn(xRange.start);
-        float y = 1.0f - yRange.convertTo0to1 (val);
-        y = y * plotArea.getHeight() + plotArea.getY();
-        path.startNewSubPath (plotArea.getX(), y);
-
-        for (int x = 1; x < width; x++)
+        for (int x = 0; x < width; x++)
         {
-            val = getDataFn(xRange.convertFrom0to1 ((float)x / (float)width));
-            y = 1.0f - yRange.convertTo0to1 (val);
+            const float val = getDataFn(xRange.convertFrom0to1 ((float)x / (float)width));
+            float y = 1.0f - yRange.convertTo0to1 (val);
             y = y * plotArea.getHeight() + plotArea.getY();
-            path.lineTo ((float)x + plotArea.getX(), y);
+
+            if (x == 0)
+                path.startNewSubPath (plotArea.getX(), y);
+            else
+                path.lineTo ((float)x + plotArea.getX(), y);
         }
 
         repaint();
@@ -185,7 +184,7 @@ public:
 
     // Returns the number of data points this plot will query.
     // This will be equal to the amount of (logical) width pixels
-    int getNumDataPoints() const { return plotArea.getWidth(); }
+    int getNumDataPoints() const { return (int)plotArea.getWidth(); }
 
     const MappedRange<float>& getXRange() const { return xRange; };
     const MappedRange<float>& getYRange() const { return yRange; };

@@ -10,6 +10,12 @@ namespace LAF
         static const juce::Colour darkBackgroundColour { 25, 25, 25 };
     }
 
+    namespace Layout
+    {
+        static constexpr float defaultSpacing { 6.0f };
+        static constexpr float poZeContentWidthRatio { 0.4f };
+    }
+
 }
 
 class PoZeToolLaf : public juce::LookAndFeel_V4, public PoZePlot::Point::LookAndFeelMethods

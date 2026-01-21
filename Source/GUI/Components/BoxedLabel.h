@@ -35,7 +35,6 @@ public:
         viewport.setBounds (bounds);
 
         bounds = bounds.reduced(padding);
-        const juce::String& text = label.getText ();
         int maxWidth = 0;
 
         for (const auto& line : juce::StringArray::fromLines (label.getText ()))
