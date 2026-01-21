@@ -7,7 +7,6 @@
 
 namespace MathFunctions
 {
-
     /** Helper function to calculate the factorial of a number (eg 3! = 3 * 2 * 1 = 6).\n\n
      *  This function can only calculate factorials of numbers up to and including 20.
      *
@@ -97,6 +96,26 @@ namespace MathFunctions
 
         SampleType angle = atan2(deltaY, deltaX);
 
+        // Prevent phase wrapping
+        // This makes sure the difference vector angle is between [-2pi, 2pi]
+        // instead of [-pi, pi]
+        if (std::arg(z2) > std::arg(z1) && std::abs(z1) <= 1.0)
+        {
+            if (std::imag(z1) > 0.0 && angle < 0.0)
+                angle = angle + juce::MathConstants<double>::twoPi;
+        } else if (std::arg(z2) > std::arg(z1) && std::abs(z1) > 1.0)
+        {
+            if (std::imag(z1) > 0.0 && angle > 0.0)
+                angle = angle - juce::MathConstants<double>::twoPi;
+        }
+
         return angle;
+    }
+
+    template<typename SampleType>
+    SampleType roundToDecimals(SampleType val, int numDecimals)
+    {
+        const SampleType multiplier = std::pow(SampleType(10.0), numDecimals);
+        return std::round(val * multiplier) / multiplier;
     }
 }

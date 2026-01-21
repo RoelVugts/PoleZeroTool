@@ -212,7 +212,7 @@ bool PoZePlot::Point::keyPressed (const juce::KeyPress& key, juce::Component*)
         dragMode = DragMode::angle;
 
         if (auto* lf = getCustomLookAndFeel())
-            setMouseCursor (LAF::Cursors::rotateCursor);
+            setMouseCursor (rotateCursor);
 
         valueBeforeDrag = getValue();
     }
@@ -241,7 +241,7 @@ void PoZePlot::Point::updateDragMode()
     if (juce::KeyPress::isKeyCurrentlyDown (angleKeyCode))
     {
         if (auto* lf = getCustomLookAndFeel())
-            setMouseCursor (LAF::Cursors::rotateCursor);
+            setMouseCursor (rotateCursor);
 
         dragMode = DragMode::angle;
     }
@@ -315,6 +315,7 @@ PoZePlot::PoZePlot()
     : xRange(-1.5f, 1.5f), yRange (-1.5f, 1.5f)
 {
     setColour (backgroundColourId, juce::Colours::black);
+    setColour (unitCircleColourId, juce::Colours::white);
     setWantsKeyboardFocus (true);
 }
 
@@ -396,14 +397,15 @@ void PoZePlot::paintWithinCorners(juce::Graphics& g)
     g.fillAll (juce::Colours::black);
 
     const auto bounds = getLocalBounds().toFloat();
+    static constexpr float lineThickness = 0.5f;
 
     // Draw unit circle
-    g.setColour(juce::Colours::white);
-    g.drawEllipse(unitCircleArea, 1.0f);
+    g.setColour(findColour (unitCircleColourId));
+    g.drawEllipse(unitCircleArea, lineThickness);
 
     // Draw axis lines
-    g.drawLine(bounds.getWidth() * 0.05f,bounds.getHeight() * 0.5f, bounds.getWidth() * 0.95f, bounds.getHeight() * 0.5f);
-    g.drawLine(bounds.getWidth() / 2.0f, bounds.getHeight() * 0.05f, bounds.getWidth() / 2.0f, bounds.getHeight() * 0.95f);
+    g.drawLine(bounds.getWidth() * 0.05f,bounds.getHeight() * 0.5f, bounds.getWidth() * 0.95f, bounds.getHeight() * 0.5f, lineThickness);
+    g.drawLine(bounds.getWidth() / 2.0f, bounds.getHeight() * 0.05f, bounds.getWidth() / 2.0f, bounds.getHeight() * 0.95f, lineThickness);
 }
 
 void PoZePlot::resized()

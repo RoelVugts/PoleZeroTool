@@ -13,6 +13,9 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     // editor's size to whatever you need it to be.
     setSize (660, 440);
     setResizable (true, true);
+    constrainer.setMinimumSize (220, 330);
+    constrainer.setFixedAspectRatio (660.0 / 440.0);
+    setConstrainer (&constrainer);
 
     addAndMakeVisible (gui);
 }

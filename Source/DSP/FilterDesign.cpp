@@ -124,6 +124,7 @@ FilterDesign::Response FilterDesign::getFreqResponse(const float angle) const
     for (auto pole : poles)
         phaseShift -= MathFunctions::getAngleOfDifferenceVector (pole, z);
 
+
     std::complex<float> totalResponse = numerator / denumerator;
     float responseGain = std::abs(totalResponse);
     FilterDesign::Response freqResponse(std::arg(z), responseGain, phaseShift);

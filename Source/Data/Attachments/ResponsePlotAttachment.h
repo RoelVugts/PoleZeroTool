@@ -15,7 +15,7 @@ public:
         if (magIsTruePhaseIsFalse)
         {
             plot.getDataFn = [this](float angle) -> float {
-                return filterDesigner.getFreqResponse (angle).magnitude;
+                return juce::Decibels::gainToDecibels (filterDesigner.getFreqResponse (angle).magnitude);
             };
         }
         else

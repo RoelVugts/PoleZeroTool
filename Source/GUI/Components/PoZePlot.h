@@ -134,6 +134,8 @@ public:
         static const int angleKeyCode;
         static const int magKeyCode;
 
+        const juce::MouseCursor rotateCursor { juce::ImageFileFormat::loadFrom(BinaryData::rotateCursor_png, BinaryData::rotateCursor_pngSize), 0, 0, 6.0f };
+
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Point)
     };
 
@@ -156,7 +158,11 @@ public:
     void removeListener (Listener* listener) { listeners.remove (listener); }
 
     //======================================================================
-    enum ColourIds { backgroundColourId = 0x200100 };
+    enum ColourIds
+    {
+        backgroundColourId      = 0x200100,
+        unitCircleColourId      = 0x200101
+    };
 
     //======================================================================
     PoZePlot();

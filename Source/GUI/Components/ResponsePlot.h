@@ -1,51 +1,119 @@
 #pragma once
 
-#include "GridAxis.h"
-
 #include <JuceHeader.h>
 
 #include "../../DSP/FilterDesign.h"
+#include "../../Utils/MappedRange.h"
 
 class ResponsePlot : public juce::Component, private FilterDesign::Listener
 {
 public:
 
-    struct AxisLabel : public juce::Label
-    {
-        float value { 0.0f };
-    };
-
     enum ColourIds
     {
-        backgroundColourId      = 0x210100,
-        gridColourId            = 0x210200,
-        pathColourId            = 0x210300
+        plotBackgroundColourId      = 0x210100,
+        borderOutlineColourId       = 0x210200,
+        borderBackgroundColourId    = 0x210300,
+        gridColourId                = 0x210400,
+        pathColourId                = 0x210500,
+        textColourId                = 0x210600
     };
 
-    ResponsePlot()
+    ResponsePlot(const juce::String& plotName) : title(plotName)
     {
-        setColour (backgroundColourId, juce::Colours::black);
-        setColour (gridColourId, juce::Colours::grey);
-        setColour (pathColourId, juce::Colours::white);
+        setColour (plotBackgroundColourId,   juce::Colours::black);
+        setColour (borderOutlineColourId,    juce::Colours::black);
+        setColour (borderBackgroundColourId, juce::Colour (32, 32, 32));
+        setColour (gridColourId,             juce::Colour (60, 60, 60));
+        setColour (pathColourId,             juce::Colours::white);
+        setColour (textColourId,             juce::Colour (210, 210, 210));
     }
 
     void paint(juce::Graphics& g) override
     {
-        g.fillAll(findColour (backgroundColourId));
+        g.setColour (findColour (borderBackgroundColourId));
+        g.fillRect (titleArea);
+        g.fillRect (yAxisArea);
+        g.fillRect (xAxisArea);
+        g.fillRect (getLocalBounds().removeFromRight ((int)yAxisArea.getWidth()));
 
+        g.setColour (findColour (plotBackgroundColourId));
+        g.fillRect (plotArea);
+
+        g.setColour (findColour (borderOutlineColourId));
+        g.drawRect (getLocalBounds(), borderThickness);
+
+        g.setColour (findColour (gridColourId));
+
+        for (float xTick : xTicks)
+        {
+            const float x = xRange.convertTo0to1 (xTick) * plotArea.getWidth() + plotArea.getX();
+            const juce::Line<float> line(x, plotArea.getY(), x, plotArea.getBottom());
+            g.drawLine(line, lineThickness);
+        }
+
+        for (const float yTick : yTicks)
+        {
+            const float y = (1.0f - yRange.convertTo0to1 (yTick)) * plotArea.getHeight() + plotArea.getY();
+            const juce::Line<float> line(plotArea.getX(), y, plotArea.getRight(), y);
+            g.drawLine(line, lineThickness);
+        }
+
+        g.setColour (findColour (textColourId));
+        g.setFont (juce::FontOptions (13.0f, juce::Font::bold));
+        g.drawFittedText (title, titleArea.toNearestInt(), juce::Justification::centred, 1, 0.9f);
+
+        g.setFont (juce::FontOptions (10.0f));
+        g.setColour (findColour (textColourId).withAlpha (0.7f));
+
+        for (int i = 0; i < (int)xTicks.size(); i++)
+        {
+            const juce::String& text = i < (int)xLabels.size() ? xLabels[i] : "";
+            int x = (int)(xRange.convertTo0to1 (xTicks[i]) * plotArea.getWidth() + plotArea.getX());
+            const int y = (int)xAxisArea.getY();
+            const int textWidth = juce::GlyphArrangement::getStringWidthInt (g.getCurrentFont(), text);
+            if ((x + textWidth) > getWidth()) x -= ((x + textWidth) - getWidth());
+            g.drawFittedText (text, x - textWidth / 2, y, textWidth, (int)xAxisArea.getHeight(), juce::Justification::centred, 1, 0.9f);
+        }
+
+        for (int i = 0; i < (int)yTicks.size(); i++)
+        {
+            const juce::String& text = i < (int)yLabels.size() ? yLabels[i] : "";
+            const int textHeight = (int)juce::GlyphArrangement::getStringBounds (g.getCurrentFont(), yLabels[i]).getHeight();
+            const int y = (int)((1.0f - yRange.convertTo0to1 (yTicks[i])) * plotArea.getHeight()) + (int)plotArea.getY() - textHeight / 2;
+            const int x = (int)yAxisArea.getX() + borderThickness;
+            g.drawFittedText (text, x, y, (int)yAxisArea.getWidth() - borderThickness, textHeight, juce::Justification::centred, 1, 0.9f);
+        }
+
+        g.reduceClipRegion (plotArea.toNearestInt());
         g.setColour (findColour (pathColourId));
         g.strokePath (path, pathStroke);
     }
 
     void resized() override
     {
-        cachedValues.resize(getWidth());
+        auto bounds = getLocalBounds().toFloat();
+        const float borderSize = std::min(bounds.getWidth() * 0.075f, 25.0f);
+
+        titleArea = bounds.removeFromTop (borderSize);
+        yAxisArea = bounds.removeFromLeft (borderSize);
+        xAxisArea = bounds.removeFromBottom (borderSize);
+        bounds.removeFromRight (borderSize);
+        plotArea = bounds;
+
         updatePath();
     }
 
-    void setRange(const juce::NormalisableRange<float>& range)
-    {
+    void setRange(const MappedRange<float>& range) {
         yRange = range;
+        setYTicks(yTicks);
+        repaint();
+    }
+
+    void setDomain(const MappedRange<float>& domain) {
+        xRange = domain;
+        setXTicks(xTicks);
+        repaint();
     }
 
     void updatePath()
@@ -55,67 +123,67 @@ public:
         if (getDataFn == nullptr)
             return;
 
-        const auto bounds = getLocalBounds();
-        const int width = bounds.getWidth();
+        const int width = (int)plotArea.getWidth();
 
-        for (int x = 0; x < width; x++)
-        {
-            const float angle = juce::MathConstants<float>::pi * ((float)x / (float)width);
-            const float val = getDataFn(angle);
-            cachedValues[x] = val;
-        }
-
-        float max = std::max(1.0f, *std::ranges::max_element(cachedValues));
-        float min = std::min(0.0f, *std::ranges::min_element(cachedValues));
-        yRange = { min, max };
-
-        float val = cachedValues[0];
+        float val = getDataFn(xRange.start);
         float y = 1.0f - yRange.convertTo0to1 (val);
-        path.startNewSubPath (0, y * (float)bounds.getHeight());
+        y = y * plotArea.getHeight() + plotArea.getY();
+        path.startNewSubPath (plotArea.getX(), y);
 
         for (int x = 1; x < width; x++)
         {
-            val = cachedValues[x];
+            const float angle = (float)x / (float)width;
+            val = getDataFn(xRange.convertFrom0to1 (angle));
             y = 1.0f - yRange.convertTo0to1 (val);
-
-            path.lineTo ((float)x, y * (float)bounds.getHeight());
+            y = y * plotArea.getHeight() + plotArea.getY();
+            path.lineTo ((float)x + plotArea.getX(), y);
         }
 
         repaint();
     }
 
+    void setXTicks(const std::vector<float>& ticks)
+    {
+        xTicks = ticks;
+        repaint();
+    }
+
+    void setYTicks(const std::vector<float>& ticks)
+    {
+        yTicks = ticks;
+        repaint();
+    }
+
+    void setXLabels(const std::vector<juce::String>& labels)
+    {
+        xLabels = labels;
+        repaint();
+    }
+
+    void setYLabels(const std::vector<juce::String>& labels)
+    {
+        yLabels = labels;
+        repaint();
+    }
+
+    const MappedRange<float>& getXRange() const { return xRange; };
+    const MappedRange<float>& getYRange() const { return yRange; };
+
     std::function<float(float)> getDataFn { nullptr };
 
 private:
-
-    juce::NormalisableRange<float> yRange;
+    const juce::String title;
 
     juce::Path path;
-    juce::PathStrokeType pathStroke { 1.0f };
+    juce::PathStrokeType pathStroke { 1.0f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded };
 
-    std::vector<float> cachedValues;
-};
+    MappedRange<float> xRange, yRange;
+    std::vector<float> xTicks, yTicks;
+    std::vector<juce::String> xLabels, yLabels;
 
-//==============================================================
-// Magnitude plot
+    juce::Rectangle<float> plotArea;
+    juce::Rectangle<float> xAxisArea, yAxisArea, titleArea;
 
-class LabeledPlot : public juce::Component
-{
-public:
-
-    LabeledPlot()
-    {
-        addAndMakeVisible (plot);
-        addAndMakeVisible (grid);
-    }
-
-    void resized() override
-    {
-        plot.setBounds (getLocalBounds());
-        grid.setBounds (getLocalBounds());
-    }
-
-private:
-    ResponsePlot plot;
-    GridAxis grid;
+    float lineThickness { 0.5f };
+    static constexpr int borderThickness { 2 };
 };
