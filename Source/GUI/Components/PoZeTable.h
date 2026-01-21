@@ -99,7 +99,7 @@ public:
         PointState pointState = state.points[rowNumber];
         juce::String text;
 
-        int digitWidth = juce::GlyphArrangement::getStringWidth (font, "8");
+        int digitWidth = juce::GlyphArrangement::getStringWidthInt (font, "8");
         int rowWidth = editor->getBounds().getWidth();
         const int numDecimals = std::max((int)((float) rowWidth / digitWidth) - 5, 2);
 

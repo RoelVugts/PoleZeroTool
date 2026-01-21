@@ -41,7 +41,7 @@ namespace MathFunctions
         const int n = (int)list.size();
 
         // Calculate the total number of combinations
-        const int totalCombinations = factorial (n) / (factorial (r) * factorial (n - r)); // nCr
+        const int totalCombinations = (int)(factorial (n) / (factorial (r) * factorial (n - r))); // nCr
 
         // Generate all combinations
         std::vector<bool> combination (n, false); // Combination mask (e.g. 0101 if r = 2)
@@ -102,11 +102,11 @@ namespace MathFunctions
         if (std::arg(z2) > std::arg(z1) && std::abs(z1) <= 1.0)
         {
             if (std::imag(z1) > 0.0 && angle < 0.0)
-                angle = angle + juce::MathConstants<double>::twoPi;
+                angle = angle + juce::MathConstants<SampleType>::twoPi;
         } else if (std::arg(z2) > std::arg(z1) && std::abs(z1) > 1.0)
         {
             if (std::imag(z1) > 0.0 && angle > 0.0)
-                angle = angle - juce::MathConstants<double>::twoPi;
+                angle = angle - juce::MathConstants<SampleType>::twoPi;
         }
 
         return angle;
@@ -115,7 +115,7 @@ namespace MathFunctions
     template<typename SampleType>
     SampleType roundToDecimals(SampleType val, int numDecimals)
     {
-        const SampleType multiplier = std::pow(SampleType(10.0), numDecimals);
+        const SampleType multiplier = std::pow(SampleType(10), SampleType(numDecimals));
         return std::round(val * multiplier) / multiplier;
     }
 }

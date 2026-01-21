@@ -27,25 +27,27 @@ public:
         for (auto* plot : juce::Array<ResponsePlot*>{&magnitudePlot, &phasePlot})
         {
             plot->setDomain ({ 0.0f, juce::MathConstants<float>::pi });
-            plot->setXTicks ({ 0.0f,
+            plot->setXTicks ({
                 MathFunctions::roundToDecimals(juce::MathConstants<float>::halfPi   * 0.5f,     2),
                 MathFunctions::roundToDecimals(juce::MathConstants<float>::halfPi,              2),
                 MathFunctions::roundToDecimals(juce::MathConstants<float>::pi       * 0.75f,    2),
                 MathFunctions::roundToDecimals(juce::MathConstants<float>::pi,                  2) }
             );
 
-            plot->setXLabels ({ "0", quarterString + piString, halfString + piString, threeQtrString + piString, piString});
+            plot->setXLabels ({ quarterString + piString, halfString + piString, threeQtrString + piString, piString});
         }
 
         magnitudePlot.setRange ({ -60.0f, 12.0f });
-        magnitudePlot.setYTicks ({ -60.0f, -40.0f, -24.0f, -12.0f, -6.0f, 0.0f, 6.0f });
-        magnitudePlot.setYLabels ({ "-60", "-40", "-24", "-12", "-6", "0", "+6" });
+        magnitudePlot.setYTicks ({ -40.0f, -24.0f, -12.0f, -6.0f, 0.0f, 6.0f });
+        magnitudePlot.setYLabels ({"-40", "-24", "-12", "-6", "0", "+6" });
         addAndMakeVisible (magnitudePlot);
 
         phasePlot.setRange ({ -juce::MathConstants<float>::twoPi, juce::MathConstants<float>::twoPi });
-        phasePlot.setYTicks ({ -juce::MathConstants<float>::twoPi, -juce::MathConstants<float>::pi, -juce::MathConstants<float>::halfPi, 0,
-            juce::MathConstants<float>::halfPi, juce::MathConstants<float>::pi, juce::MathConstants<float>::twoPi });
-        phasePlot.setYLabels ({ "-2" + piString, "-" + piString, "-" + halfString + piString, "0", halfString + piString, piString, "2" + piString });
+        phasePlot.setYTicks ({   -juce::MathConstants<float>::pi,
+                                    -juce::MathConstants<float>::halfPi, 0,
+                                     juce::MathConstants<float>::halfPi,
+                                     juce::MathConstants<float>::pi });
+        phasePlot.setYLabels ({ "-" + piString, "-" + halfString + piString, "0", halfString + piString, piString });
         addAndMakeVisible (phasePlot);
 
         magAttachment = std::make_unique<ResponsePlotAttachment> (magnitudePlot, p.filterDesign, true);

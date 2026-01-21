@@ -13,7 +13,7 @@ public:
     {
         plotBackgroundColourId      = 0x210100,
         borderOutlineColourId       = 0x210200,
-        borderBackgroundColourId    = 0x210300,
+        titleBackgroundColourId    = 0x210300,
         gridColourId                = 0x210400,
         pathColourId                = 0x210500,
         textColourId                = 0x210600
@@ -23,7 +23,7 @@ public:
     {
         setColour (plotBackgroundColourId,   juce::Colours::black);
         setColour (borderOutlineColourId,    juce::Colours::black);
-        setColour (borderBackgroundColourId, juce::Colour (32, 32, 32));
+        setColour (titleBackgroundColourId,  juce::Colour (12, 12, 12));
         setColour (gridColourId,             juce::Colour (60, 60, 60));
         setColour (pathColourId,             juce::Colours::white);
         setColour (textColourId,             juce::Colour (210, 210, 210));
@@ -31,32 +31,38 @@ public:
 
     void paint(juce::Graphics& g) override
     {
-        g.setColour (findColour (borderBackgroundColourId));
+        g.setColour (findColour (titleBackgroundColourId));
         g.fillRect (titleArea);
-        g.fillRect (yAxisArea);
-        g.fillRect (xAxisArea);
-        g.fillRect (getLocalBounds().removeFromRight ((int)yAxisArea.getWidth()));
+
+        g.setColour (findColour (borderOutlineColourId));
+        g.drawRect (titleArea, borderThickness);
 
         g.setColour (findColour (plotBackgroundColourId));
         g.fillRect (plotArea);
 
-        g.setColour (findColour (borderOutlineColourId));
-        g.drawRect (getLocalBounds(), borderThickness);
+
 
         g.setColour (findColour (gridColourId));
 
         for (float xTick : xTicks)
         {
             const float x = xRange.convertTo0to1 (xTick) * plotArea.getWidth() + plotArea.getX();
-            const juce::Line<float> line(x, plotArea.getY(), x, plotArea.getBottom());
+            const juce::Line<float> line(x, plotArea.getY(), x, xAxisArea.getY());
             g.drawLine(line, lineThickness);
         }
 
         for (const float yTick : yTicks)
         {
             const float y = (1.0f - yRange.convertTo0to1 (yTick)) * plotArea.getHeight() + plotArea.getY();
-            const juce::Line<float> line(plotArea.getX(), y, plotArea.getRight(), y);
+            const juce::Line<float> line(yAxisArea.getRight(), y, plotArea.getRight(), y);
             g.drawLine(line, lineThickness);
+        }
+
+        {
+            juce::Graphics::ScopedSaveState clippedState(g);
+            g.reduceClipRegion (plotArea.toNearestInt());
+            g.setColour (findColour (pathColourId));
+            g.strokePath (path, pathStroke);
         }
 
         g.setColour (findColour (textColourId));
@@ -84,10 +90,6 @@ public:
             const int x = (int)yAxisArea.getX() + borderThickness;
             g.drawFittedText (text, x, y, (int)yAxisArea.getWidth() - borderThickness, textHeight, juce::Justification::centred, 1, 0.9f);
         }
-
-        g.reduceClipRegion (plotArea.toNearestInt());
-        g.setColour (findColour (pathColourId));
-        g.strokePath (path, pathStroke);
     }
 
     void resized() override
@@ -96,10 +98,10 @@ public:
         const float borderSize = std::min(bounds.getWidth() * 0.075f, 25.0f);
 
         titleArea = bounds.removeFromTop (borderSize);
+        plotArea = bounds;
         yAxisArea = bounds.removeFromLeft (borderSize);
         xAxisArea = bounds.removeFromBottom (borderSize);
         bounds.removeFromRight (borderSize);
-        plotArea = bounds;
 
         updatePath();
     }
