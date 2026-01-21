@@ -27,7 +27,7 @@ public:
     void setState(const PointState& other);
 
     TreePropertyWrapper<PoZePlot::Point::Type> pointType;
-    TreePropertyWrapper<std::complex<float>> value;
+    TreePropertyWrapper<std::complex<double>> value;
     TreePropertyWrapper<int> conjugateIndex;
 };
 

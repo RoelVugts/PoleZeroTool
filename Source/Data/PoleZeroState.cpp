@@ -11,7 +11,7 @@ const juce::Identifier PointState::IDs::conjugateIndex { "ConjugateIndex" };
 PointState::PointState (juce::ValueTree tree_)
     : TreeWrapper (tree_)
     , pointType (tree_, IDs::pointType, PoZePlot::Point::Type::zero)
-    , value (tree_, IDs::value, { 0.0f, 0.0f })
+    , value (tree_, IDs::value, { 0.0, 0.0 })
     , conjugateIndex (tree_, IDs::conjugateIndex, -1)
 {
 

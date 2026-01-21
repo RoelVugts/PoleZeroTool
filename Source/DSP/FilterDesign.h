@@ -25,17 +25,17 @@ public:
     // Frequency response for a specific angle / frequency.
     struct Response
     {
-        float angle { 0.0f };        // The frequency / angle in radians
-        float magnitude { 0.0f };    // Magnitude response in amplitude (not dB)
-        float phase { 0.0f };        // The unwrapped phase response
+        double angle { 0.0f };        // The frequency / angle in radians
+        double magnitude { 0.0f };    // Magnitude response in amplitude (not dB)
+        double phase { 0.0f };        // The unwrapped phase response
     };
 
     //=======================================================================
     // Set of feedback and feedforward coefficients
     struct CoefficientSet
     {
-        std::vector<std::complex<float>> iirCoefs; // Feedback coefficients
-        std::vector<std::complex<float>> firCoefs; // Feedforward coefficients
+        std::vector<std::complex<double>> iirCoefs; // Feedback coefficients
+        std::vector<std::complex<double>> firCoefs; // Feedforward coefficients
     };
 
     //=======================================================================
@@ -45,20 +45,20 @@ public:
      * @param poles         Vector of poles
      * @param zeros         Vector of zeros
      */
-    void setPoleZeros(std::vector<std::complex<float>>& poles, std::vector<std::complex<float>>& zeros);
+    void setPoleZeros(std::vector<std::complex<double>>& poles, std::vector<std::complex<double>>& zeros);
 
     //=======================================================================
     // Returns the feedback coefficients
-    std::vector<std::complex<float>> getIIRCoefs() const;
+    std::vector<std::complex<double>> getIIRCoefs() const;
 
     // Returns the feedforward coefficients
-    std::vector<std::complex<float>> getFIRCoefs() const;
+    std::vector<std::complex<double>> getFIRCoefs() const;
 
     /** Get the frequency response for a specific frequency / angle.
      *
      * @param angle         The frequency in radians
      */
-    Response getFreqResponse(float angle) const;
+    Response getFreqResponse(double angle) const;
 
     /** Returns the frequency response with the highest
      *  magnitude. It finds the highest magnitude by testing multiple frequencies.
@@ -82,15 +82,15 @@ public:
      */
     Response getMaxPhaseResponse(int numAngles = 256) const;
 
-    float getNormalisationGain() const { return gain; }
+    double getNormalisationGain() const { return gain; }
 
 private:
 
     //=======================================================================
-    std::vector<std::complex<float>> poles;
-    std::vector<std::complex<float>> zeros;
+    std::vector<std::complex<double>> poles;
+    std::vector<std::complex<double>> zeros;
     CoefficientSet coefficients;
 
-    float gain { 1.0f };
+    double gain { 1.0f };
     juce::ListenerList<Listener> listeners;
 };
