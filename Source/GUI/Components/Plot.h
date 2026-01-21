@@ -5,7 +5,7 @@
 #include "../../DSP/FilterDesign.h"
 #include "../../Utils/MappedRange.h"
 
-class Plot : public juce::Component, private FilterDesign::Listener
+class Plot : public juce::Component
 {
 public:
 
@@ -101,7 +101,7 @@ public:
         for (int i = 0; i < (int)yTicks.size(); i++)
         {
             const juce::String& text = i < (int)yLabels.size() ? yLabels[i] : "";
-            const int textHeight = (int)juce::GlyphArrangement::getStringBounds (g.getCurrentFont(), yLabels[i]).getHeight();
+            const int textHeight = (int)juce::GlyphArrangement::getStringBounds (g.getCurrentFont(), text).getHeight();
             const int y = (int)((1.0f - yRange.convertTo0to1 (yTicks[i])) * plotArea.getHeight()) + (int)plotArea.getY() - textHeight / 2;
             const int x = (int)yAxisArea.getX() + borderThickness;
             g.drawFittedText (text, x, y, (int)yAxisArea.getWidth() - borderThickness, textHeight, juce::Justification::centred, 1, 0.9f);
@@ -150,8 +150,7 @@ public:
 
         for (int x = 1; x < width; x++)
         {
-            const float angle = (float)x / (float)width;
-            val = getDataFn(xRange.convertFrom0to1 (angle));
+            val = getDataFn(xRange.convertFrom0to1 ((float)x / (float)width));
             y = 1.0f - yRange.convertTo0to1 (val);
             y = y * plotArea.getHeight() + plotArea.getY();
             path.lineTo ((float)x + plotArea.getX(), y);
@@ -184,10 +183,21 @@ public:
         repaint();
     }
 
+    // Returns the number of data points this plot will query.
+    // This will be equal to the amount of (logical) width pixels
+    int getNumDataPoints() const { return plotArea.getWidth(); }
+
     const MappedRange<float>& getXRange() const { return xRange; };
     const MappedRange<float>& getYRange() const { return yRange; };
 
-    std::function<float(float)> getDataFn { nullptr };
+    /** The plot will call this to get the y value to be drawn.
+     *  It will pass in an x value and expects it to return the corresponding
+     *  y value.
+     *
+     *  @param x                The denormalized x value
+     *  @returns                The denormalized y value
+     */
+    std::function<float(float x)> getDataFn { nullptr };
 
 private:
     const juce::String title;

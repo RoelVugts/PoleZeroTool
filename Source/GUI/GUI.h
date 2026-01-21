@@ -28,7 +28,7 @@ public:
 
         addAndMakeVisible (poZeTable);
 
-        for (auto* plot : juce::Array<Plot*>{&magnitudePlot, &phasePlot})
+        for (auto* plot : juce::Array<Plot*>{&magnitudePlot, &phasePlot, &groupDelayPlot})
         {
             plot->setDomain ({ 0.0f, juce::MathConstants<float>::pi });
             plot->setXTicks ({
@@ -39,12 +39,12 @@ public:
             );
 
             plot->setXLabels ({ quarterString + piString, halfString + piString, threeQtrString + piString, piString});
+            addAndMakeVisible (plot);
         }
 
         magnitudePlot.setRange ({ -60.0f, 12.0f });
         magnitudePlot.setYTicks ({ -40.0f, -24.0f, -12.0f, -6.0f, 0.0f, 6.0f });
         magnitudePlot.setYLabels ({"-40", "-24", "-12", "-6", "0", "+6" });
-        addAndMakeVisible (magnitudePlot);
 
         phasePlot.setRange ({ -juce::MathConstants<float>::twoPi, juce::MathConstants<float>::twoPi });
         phasePlot.setYTicks ({   -juce::MathConstants<float>::pi,
@@ -52,10 +52,12 @@ public:
                                      juce::MathConstants<float>::halfPi,
                                      juce::MathConstants<float>::pi });
         phasePlot.setYLabels ({ "-" + piString, "-" + halfString + piString, "0", halfString + piString, piString });
-        addAndMakeVisible (phasePlot);
 
-        magAttachment = std::make_unique<ResponsePlotAttachment> (magnitudePlot, p.filterDesign, true);
-        phaseAttachment = std::make_unique<ResponsePlotAttachment> (phasePlot, p.filterDesign, false);
+        groupDelayPlot.setRange ({ -16, 16 });
+        groupDelayPlot.setYTicks ({ -15, -10, -5, 0, 5, 10, 15 });
+        groupDelayPlot.setYLabels ({ "", "-10", "-5", "0", "5", "10", "" });
+
+        plotAttachment = std::make_unique<ResponsePlotAttachment> (p.filterDesign, magnitudePlot, phasePlot, groupDelayPlot);
 
         diffEquationLabel.setFont (juce::FontOptions(11.0f));
         diffEquationLabel.setText (FilterTextFormatter::differenceEquation (p.filterDesign));
@@ -110,6 +112,7 @@ public:
 
         auto phasePlotArea = rightColumn;
         phasePlot.setBounds (phasePlotArea.toNearestInt());
+        groupDelayPlot.setBounds (phasePlotArea.toNearestInt());
 
         // ---- Left column ----
         // XY pad must be square
@@ -150,7 +153,8 @@ private:
     PoZeTable poZeTable;
     Plot magnitudePlot { "Magnitude" };
     Plot phasePlot { "Phase" };
-    std::unique_ptr<ResponsePlotAttachment> magAttachment, phaseAttachment;
+    Plot groupDelayPlot { "Group Delay" };
+    std::unique_ptr<ResponsePlotAttachment> plotAttachment;
 
     BoxedLabel transerFunctionText;
     BoxedLabel diffEquationLabel;

@@ -45,7 +45,16 @@ private:
     void pointValueChanged(PoZePlot::Point* emitter) override
     {
         if (! ignoreCallbacks)
-            valueAttachment.setPropertyValue ({ emitter->getXValue(), emitter->getYValue() });
+        {
+            const float real = emitter->getXValue();
+            float imag = emitter->getYValue();
+
+            // Snap to exp(i*pi)
+            if (imag < 0.00001f && imag > -0.00001f)
+                imag = 0.0f;
+
+            valueAttachment.setPropertyValue ({ real, imag });
+        }
     }
 
     PoZePlot::Point& point;
@@ -123,6 +132,7 @@ private:
             newState.points.add ();
             auto& pointState = newState.points.getReference (i);
             pointState.pointType.setValue (point->getType());
+
             pointState.value.setValue ({ point->getXValue(), point->getYValue() });
 
             const int conjugateIndex = point->isConjugate() ? plot.getPoints().indexOf (point->getConjugate()) : -1;

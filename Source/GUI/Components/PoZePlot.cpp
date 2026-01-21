@@ -136,7 +136,11 @@ void PoZePlot::Point::mouseDrag(const juce::MouseEvent& event)
             {
                 dragger.dragComponent(this, event, &constrainer);
                 const float xNorm = (float)getBounds().getCentreX() / parentBounds.getWidth();
-                const float yNorm = 1.0f - ((float)getBounds().getCentreY() / parentBounds.getHeight());
+                float yNorm = 1.0f - ((float)getBounds().getCentreY() / parentBounds.getHeight());
+
+                if (event.mods.isCommandDown())
+                    yNorm = 0.5f;
+
                 setNormalizedValue (xNorm, yNorm, true);
                 break;
             }

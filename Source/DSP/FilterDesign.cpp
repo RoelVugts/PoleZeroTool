@@ -24,13 +24,13 @@ void FilterDesign::setPoleZeros(std::vector<std::complex<float>>& poles_, std::v
 
 FilterDesign::Response FilterDesign::getFreqResponse(const float angle) const
 {
+    const std::complex<float>& z = std::polar(1.0f, angle);
+
     const std::vector<std::complex<float>>& firCoefs = coefficients.firCoefs;
     const std::vector<std::complex<float>>& iirCoefs = coefficients.iirCoefs;
 
     std::complex<float> numerator(0.0f, 0.0f);
     std::complex<float> denumerator (0.0f, 0.0f);
-
-    const std::complex<float> z = std::polar(1.0f, angle);
 
     for (int i = 0; i < firCoefs.size(); i++) {
         int power = (int)firCoefs.size() - (i + 1);
@@ -52,12 +52,10 @@ FilterDesign::Response FilterDesign::getFreqResponse(const float angle) const
     for (auto pole : poles)
         phaseShift -= MathFunctions::getAngleOfDifferenceVector (pole, z);
 
-
     std::complex<float> totalResponse = numerator / denumerator;
     float responseGain = std::abs(totalResponse);
-    FilterDesign::Response freqResponse(std::arg(z), responseGain, phaseShift);
+    return FilterDesign::Response(std::arg(z), responseGain, phaseShift);
 
-    return freqResponse;
 }
 
 FilterDesign::Response FilterDesign::getMaxMagnitudeResponse(const int numAngles) const
