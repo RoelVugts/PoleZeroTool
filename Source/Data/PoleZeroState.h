@@ -18,7 +18,8 @@ public:
     {
         static const juce::Identifier type;
         static const juce::Identifier pointType;
-        static const juce::Identifier value;
+        static const juce::Identifier real;
+        static const juce::Identifier imag;
         static const juce::Identifier conjugateIndex;
     };
 
@@ -27,7 +28,8 @@ public:
     void setState(const PointState& other);
 
     TreePropertyWrapper<PoZePlot::Point::Type> pointType;
-    TreePropertyWrapper<std::complex<double>> value;
+    TreePropertyWrapper<double> real;
+    TreePropertyWrapper<double> imag;
     TreePropertyWrapper<int> conjugateIndex;
 };
 

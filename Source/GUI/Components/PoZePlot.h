@@ -44,6 +44,20 @@ public:
          */
         void setValue(float x, float y, bool sendNotification);
 
+        /** Set point X value.
+         *
+         * @param x                         x value, should be in the current x range
+         * @param sendNotification          Send notification to listeners
+         */
+        void setXValue(float value, bool sendNotification);
+
+        /** Set point Y value.
+         *
+         * @param y                         y value, should be in the current y range
+         * @param sendNotification          Send notification to listeners
+         */
+        void setYValue(float value, bool sendNotification);
+
         /** Set point with normalized values.
          *
          * @param x                         Ranging from 0 (left) to 1 (right)

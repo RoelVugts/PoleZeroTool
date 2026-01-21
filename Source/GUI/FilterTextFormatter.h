@@ -49,7 +49,7 @@ public:
     }
 
 private:
-    static juce::String formatCoefficients (const std::vector<std::complex<float>>& coefs, PolynomialDomain domain, bool isOutput, int delayOffset)
+    static juce::String formatCoefficients (const std::vector<std::complex<double>>& coefs, PolynomialDomain domain, bool isOutput, int delayOffset)
     {
         if (domain == PolynomialDomain::ZDomain)
             if (coefs.size() == 1)
@@ -59,15 +59,15 @@ private:
 
         for (int i = 0; i < coefs.size(); ++i)
         {
-            if (approximatelyEqual (coefs[i].real(), 0.0f)
-             && approximatelyEqual (coefs[i].imag(), 0.0f))
+            if (approximatelyEqual (coefs[i].real(), 0.0)
+             && approximatelyEqual (coefs[i].imag(), 0.0))
                 continue;
 
             if (domain == PolynomialDomain::DifferenceEquation && isOutput && i == 0)
                 continue;
 
-            const float real = (isOutput ? -1.0f : 1.0f) * std::real(coefs[i]);
-            const float imag = (isOutput ? -1.0f : 1.0f) * std::imag(coefs[i]);
+            const double real = (isOutput ? -1.0f : 1.0f) * std::real(coefs[i]);
+            const double imag = (isOutput ? -1.0f : 1.0f) * std::imag(coefs[i]);
 
             result += formatComplexTerm (real, imag, domain, i, (int)coefs.size(), delayOffset, isOutput, result.isEmpty());
         }
@@ -75,13 +75,13 @@ private:
         return result;
     }
 
-    static juce::String formatComplexTerm (float real, float imag, PolynomialDomain domain, int index, int size, int delayOffset, bool isOutput, bool isFirst)
+    static juce::String formatComplexTerm (double real, double imag, PolynomialDomain domain, int index, int size, int delayOffset, bool isOutput, bool isFirst)
     {
-        auto formatNumber = [] (float v, bool first) -> juce::String
+        auto formatNumber = [] (double v, bool first) -> juce::String
         {
-            if (approximatelyEqual (v, 0.0f)) return juce::String{};
-            if (approximatelyEqual (v, 1.0f)) return first ? "" : " + ";
-            if (approximatelyEqual (v, -1.0f)) return " - ";
+            if (approximatelyEqual (v, 0.0)) return juce::String{};
+            if (approximatelyEqual (v, 1.0)) return first ? "" : " + ";
+            if (approximatelyEqual (v, -1.0)) return " - ";
             if (v > 0.0f) return (first ? "" : " + ") + juce::String(v);
             return " - " + juce::String(std::abs(v));
         };
@@ -92,11 +92,11 @@ private:
         const juce::String imagNum = formatNumber (imag, false);
 
         term += realNum;
-        if (! approximatelyEqual (real, 0.0f))
+        if (! approximatelyEqual (real, 0.0))
             term += getUnitString (domain, index, size, delayOffset, isOutput, false);
 
         term += imagNum;
-        if (! approximatelyEqual (imag, 0.0f))
+        if (! approximatelyEqual (imag, 0.0))
             term += getUnitString (domain, index, size, delayOffset, isOutput, true);
 
         return term;

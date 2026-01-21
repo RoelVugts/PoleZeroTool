@@ -5,13 +5,15 @@
 //==============================================================
 const juce::Identifier PointState::IDs::type { "Point" };
 const juce::Identifier PointState::IDs::pointType { "Type" };
-const juce::Identifier PointState::IDs::value { "Value" };
+const juce::Identifier PointState::IDs::real { "Real" };
+const juce::Identifier PointState::IDs::imag { "Imag" };
 const juce::Identifier PointState::IDs::conjugateIndex { "ConjugateIndex" };
 
 PointState::PointState (juce::ValueTree tree_)
     : TreeWrapper (tree_)
     , pointType (tree_, IDs::pointType, PoZePlot::Point::Type::zero)
-    , value (tree_, IDs::value, { 0.0, 0.0 })
+    , real (tree_, IDs::real,  0.0)
+    , imag( tree_, IDs::imag, 0.0)
     , conjugateIndex (tree_, IDs::conjugateIndex, -1)
 {
 
@@ -20,7 +22,8 @@ PointState::PointState (juce::ValueTree tree_)
 void PointState::setState (const PointState& other)
 {
     pointType.setValue (other.pointType.getValue());
-    value.setValue (other.value.getValue());
+    real.setValue (other.real.getValue());
+    imag.setValue (other.imag.getValue());
     conjugateIndex.setValue (other.conjugateIndex.getValue());
 }
 

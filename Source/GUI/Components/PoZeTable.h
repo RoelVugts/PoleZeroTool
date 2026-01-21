@@ -74,20 +74,22 @@ public:
                     }
                     case magColumnId:
                     {
-                        std::complex<float> complex = pointState.value.getValue();
-                        const float mag = text.getFloatValue();
-                        const float angle = std::arg(complex);
+                        std::complex<double> complex = { pointState.real.getValue(), pointState.imag.getValue() };
+                        const double mag = text.getFloatValue();
+                        const double angle = std::arg(complex);
                         complex = std::polar(mag, angle);
-                        pointState.value.setValue (complex);
+                        pointState.real.setValue (complex.real());
+                        pointState.imag.setValue (complex.imag());
                         break;
                     }
                     case angleColumnId:
                     {
-                        std::complex<float> complex = pointState.value.getValue();
-                        const float mag = std::abs(complex);
-                        const float angle = text.getFloatValue();
+                        std::complex<double> complex = { pointState.real.getValue(), pointState.imag.getValue() };
+                        const double mag = std::abs(complex);
+                        const double angle = text.getFloatValue();
                         complex = std::polar(mag, angle);
-                        pointState.value.setValue (complex);
+                        pointState.real.setValue (complex.real());
+                        pointState.imag.setValue (complex.imag());
                         break;
                     }
 
@@ -101,7 +103,7 @@ public:
 
         int digitWidth = juce::GlyphArrangement::getStringWidthInt (font, "8");
         int rowWidth = editor->getBounds().getWidth();
-        const int numDecimals = std::max((int)((float) rowWidth / digitWidth) - 5, 2);
+        const int numDecimals = std::max((int)((double) rowWidth / digitWidth) - 5, 2);
 
         switch (columnId)
         {
@@ -112,13 +114,13 @@ public:
             }
             case magColumnId:
             {
-                const float mag = std::abs(pointState.value.getValue());
+                const double mag = std::abs( std::complex<double>{ pointState.real.getValue(), pointState.imag.getValue() });
                 text = juce::String(mag, numDecimals);
                 break;
             }
             case angleColumnId:
             {
-                const float angle = std::arg (pointState.value.getValue());
+                const double angle = std::arg (std::complex<double>{ pointState.real.getValue(), pointState.imag.getValue() });
                 text = juce::String (angle, numDecimals);
                 break;
             }

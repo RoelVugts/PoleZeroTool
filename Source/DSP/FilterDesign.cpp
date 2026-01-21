@@ -24,7 +24,7 @@ void FilterDesign::setPoleZeros(std::vector<std::complex<double>>& poles_, std::
 
 FilterDesign::Response FilterDesign::getFreqResponse(const double angle) const
 {
-    const std::complex<double>& z = std::polar(1.0f, angle);
+    const std::complex<double>& z = std::polar(1.0, angle);
 
     const std::vector<std::complex<double>>& firCoefs = coefficients.firCoefs;
     const std::vector<std::complex<double>>& iirCoefs = coefficients.iirCoefs;

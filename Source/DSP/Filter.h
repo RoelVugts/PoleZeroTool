@@ -14,7 +14,7 @@ public:
 
     float processSample(const float& input)
     {
-        std::complex<float> output(0.0, 0.0);
+        std::complex<double> output(0.0, 0.0);
 
         // Write input into buffer
         firBuf.write (input);
@@ -34,7 +34,7 @@ public:
         firBuf.incrementWriteIndex();
         iirBuf.incrementWriteIndex();
 
-        return output.real(); //TODO: Only real output for now
+        return (float)output.real(); //TODO: Only real output for now
     }
 
     void process(const float* input, float* output, const int numSamples)
@@ -43,7 +43,7 @@ public:
             output[i] = processSample (input[i]);
     }
 
-    void setCoefficients(const std::vector<std::complex<float>>& iir, const std::vector<std::complex<float>>& fir)
+    void setCoefficients(const std::vector<std::complex<double>>& iir, const std::vector<std::complex<double>>& fir)
     {
         //TODO: Avoid mem allocations
         iirCoefs = iir;
@@ -51,10 +51,10 @@ public:
     }
 
 private:
-    std::vector<std::complex<float>> iirCoefs; // Feedback coefficients
-    std::vector<std::complex<float>> firCoefs; // Feedforward coefficients
+    std::vector<std::complex<double>> iirCoefs; // Feedback coefficients
+    std::vector<std::complex<double>> firCoefs; // Feedforward coefficients
 
-    CircBuf<std::complex<float>> iirBuf { 128 };
-    CircBuf<std::complex<float>> firBuf { 128 };
+    CircBuf<std::complex<double>> iirBuf { 128 };
+    CircBuf<std::complex<double>> firBuf { 128 };
 
 };

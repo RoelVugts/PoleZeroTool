@@ -13,12 +13,16 @@ class PointAttachment : private PoZePlot::Point::Listener
 {
 public:
 
-    PointAttachment(TreePropertyWrapper<std::complex<float>>& valueProp, TreePropertyWrapper<PoZePlot::Point::Type>& typeProp, PoZePlot::Point& pointComp)
-        : point(pointComp)
-        , valueAttachment (valueProp, [this](const std::complex<float>& v) { setPointValue (v); })
-        , typeAttachment (typeProp, [this](const PoZePlot::Point::Type& v) { setPointType (v); })
+    PointAttachment(PointState settings, PoZePlot::Point& pointComp)
+        : state(settings)
+        , point(pointComp)
+        , realAttachment (state.real, [this](const double& v) { setRealValue (v); })
+        , imagAttachment (state.imag, [this](const double& v) { setImagValue (v); })
+        , typeAttachment (state.pointType, [this](const PoZePlot::Point::Type& v) { setPointType (v); })
     {
-        valueAttachment.sendInitialUpdate();
+        realAttachment.sendInitialUpdate();
+        imagAttachment.sendInitialUpdate();
+        typeAttachment.sendInitialUpdate();
 
         point.addListener (this);
     }
@@ -30,10 +34,16 @@ public:
 
 private:
 
-    void setPointValue(const std::complex<float>& value)
+    void setRealValue(const double& value)
     {
         juce::ScopedValueSetter<bool> svs (ignoreCallbacks, true);
-        point.setValue (value.real(), value.imag(), true);
+        point.setXValue ((float)value, true);
+    }
+
+    void setImagValue(const double& value)
+    {
+        juce::ScopedValueSetter<bool> svs (ignoreCallbacks, true);
+        point.setYValue ((float)value, true);
     }
 
     void setPointType(const PoZePlot::Point::Type& type)
@@ -46,19 +56,22 @@ private:
     {
         if (! ignoreCallbacks)
         {
-            const float real = emitter->getXValue();
-            float imag = emitter->getYValue();
+            const double real = emitter->getXValue();
+            double imag = emitter->getYValue();
 
             // Snap to exp(i*pi)
-            if (imag < 0.00001f && imag > -0.00001f)
-                imag = 0.0f;
+            if (imag < 0.00001 && imag > -0.00001)
+                imag = 0.0;
 
-            valueAttachment.setPropertyValue ({ real, imag });
+            realAttachment.setPropertyValue (real);
+            imagAttachment.setPropertyValue (imag);
         }
     }
 
+    PointState state;
     PoZePlot::Point& point;
-    PropertyAttachment<std::complex<float>> valueAttachment;
+    PropertyAttachment<double> realAttachment;
+    PropertyAttachment<double> imagAttachment;
     PropertyAttachment<PoZePlot::Point::Type> typeAttachment;
     bool ignoreCallbacks { false };
 };
@@ -102,11 +115,11 @@ private:
         for (int i = 0; i < state.points.size(); i++)
         {
             PointState& pointState = state.points.getReference (i);
-            std::complex<float> value = pointState.value.getValue();
+            std::complex<double> value = { pointState.real.getValue(), pointState.imag.getValue() };
 
             const bool sendNotification = i >= numOldPoints;
-            auto* newPoint = plot.addPoint (pointState.pointType.getValue(), value.real(), value.imag(), sendNotification);
-            pointAttachments.add(std::make_unique<PointAttachment>(pointState.value, pointState.pointType, *newPoint));
+            auto* newPoint = plot.addPoint (pointState.pointType.getValue(), (float)value.real(), (float)value.imag(), sendNotification);
+            pointAttachments.add(std::make_unique<PointAttachment>(pointState, *newPoint));
         }
 
         // Set conjugates after all points are added
@@ -133,11 +146,12 @@ private:
             auto& pointState = newState.points.getReference (i);
             pointState.pointType.setValue (point->getType());
 
-            pointState.value.setValue ({ point->getXValue(), point->getYValue() });
+            pointState.real.setValue (point->getXValue());
+            pointState.imag.setValue (point->getYValue());
 
             const int conjugateIndex = point->isConjugate() ? plot.getPoints().indexOf (point->getConjugate()) : -1;
             pointState.conjugateIndex.setValue (conjugateIndex);
-            pointAttachments.add(std::make_unique<PointAttachment>(pointState.value, pointState.pointType, *point));
+            pointAttachments.add(std::make_unique<PointAttachment>(pointState, *point));
         }
 
         state.points.setState (newState.points);
@@ -147,7 +161,6 @@ private:
     {
         if (! ignoreGuiCallbacks)
             syncStateToPlot();
-
     }
 
     void pointRemoved(PoZePlot*, int) override

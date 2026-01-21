@@ -34,6 +34,16 @@ void PoZePlot::Point::setValue (float x_, float y_, bool sendNotification)
         conjugate->setValue (x, -y, true);
 }
 
+void PoZePlot::Point::setXValue (float value, bool sendNotification)
+{
+    setValue (value, y, sendNotification);
+}
+
+void PoZePlot::Point::setYValue (float value, bool sendNotification)
+{
+    setValue (x, value, sendNotification);
+}
+
 void PoZePlot::Point::setNormalizedValue(float x_, float y_, bool sendNotification)
 {
     // Expects normalized values !

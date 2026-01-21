@@ -56,8 +56,8 @@ private:
 
     void handleAsyncUpdate() override
     {
-        std::vector<std::complex<float>> poles;
-        std::vector<std::complex<float>> zeros;
+        std::vector<std::complex<double>> poles;
+        std::vector<std::complex<double>> zeros;
 
         for (int i = 0; i < state.points.size(); i++)
         {
@@ -66,11 +66,11 @@ private:
             switch (type)
             {
                 case PoZePlot::Point::Type::pole:
-                    poles.emplace_back (point.value.getValue());
+                    poles.emplace_back (point.real.getValue(), point.imag.getValue());
                     break;
 
                 case PoZePlot::Point::Type::zero:
-                    zeros.emplace_back (point.value.getValue());
+                    zeros.emplace_back (point.real.getValue(), point.imag.getValue());
                     break;
             }
         }

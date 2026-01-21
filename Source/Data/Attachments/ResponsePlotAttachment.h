@@ -18,7 +18,7 @@ public:
             if (index >= cachedResponse.size())
                 updateResponse();
 
-            return juce::Decibels::gainToDecibels (cachedResponse[index].magnitude);
+            return (float)juce::Decibels::gainToDecibels (cachedResponse[index].magnitude);
         };
 
         phasePlot.getDataFn = [this](float x) -> float {
@@ -26,7 +26,7 @@ public:
             if (index >= cachedResponse.size())
                 updateResponse();
 
-            return cachedResponse[index].phase;
+            return (float)cachedResponse[index].phase;
         };
 
         groupDelayPlot.getDataFn = [this](float x) -> float {
@@ -40,7 +40,7 @@ public:
             else if (index == (int)cachedResponse.size() - 1)
                 index -= 1;
 
-            return (cachedResponse[index + 1].phase - cachedResponse[index].phase) / deltaX;
+            return (float)((cachedResponse[index + 1].phase - cachedResponse[index].phase) / deltaX);
         };
 
 
@@ -71,7 +71,7 @@ private:
         for (int i = 0; i < numSamples; i++)
         {
             const float angle = (float)i / (float)numSamples;
-            cachedResponse[i] = filterDesigner.getFreqResponse (angle);
+            cachedResponse[i] = filterDesigner.getFreqResponse (angle * juce::MathConstants<float>::pi);
         }
     }
 
