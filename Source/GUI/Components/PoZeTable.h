@@ -86,7 +86,7 @@ public:
                     {
                         std::complex<double> complex = { pointState.real.getValue(), pointState.imag.getValue() };
                         const double mag = std::abs(complex);
-                        const double angle = text.getFloatValue();
+                        const double angle = text.getFloatValue() * juce::MathConstants<double>::pi;
                         complex = std::polar(mag, angle);
                         pointState.real.setValue (complex.real());
                         pointState.imag.setValue (complex.imag());
@@ -120,7 +120,7 @@ public:
             }
             case angleColumnId:
             {
-                const double angle = std::arg (std::complex<double>{ pointState.real.getValue(), pointState.imag.getValue() });
+                const double angle = std::arg (std::complex<double>{ pointState.real.getValue(), pointState.imag.getValue() }) / juce::MathConstants<double>::pi;
                 text = juce::String (angle, numDecimals);
                 break;
             }

@@ -57,15 +57,7 @@ private:
         if (! ignoreCallbacks)
         {
             const double real = emitter->getXValue();
-            double imag = emitter->getYValue();
-
-            // std::complex<double> z(real, imag);
-            // printf("Point { %f, %f }, %.14f, %.14f\n", real, imag, std::abs(z), std::arg(z));
-            // fflush(stdout);
-
-            // Snap to exp(i*pi)
-            // if (imag < 0.00001 && imag > -0.00001)
-            //     imag = 0.0;
+            double imag = emitter->getYValue();;
 
             realAttachment.setPropertyValue (real);
             imagAttachment.setPropertyValue (imag);
