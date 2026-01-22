@@ -41,6 +41,8 @@ public:
 
         g.setColour (findColour (plotBackgroundColourId));
         g.fillRect (plotArea);
+        g.fillRect (yAxisArea);
+        g.fillRect (xAxisArea);
 
         //=======================================================
         // Draw grid lines
@@ -114,9 +116,9 @@ public:
         const float borderSize = std::min(bounds.getWidth() * 0.075f, 25.0f);
 
         titleArea = bounds.removeFromTop (borderSize);
-        plotArea = bounds;
         yAxisArea = bounds.removeFromLeft (borderSize);
         xAxisArea = bounds.removeFromBottom (borderSize);
+                plotArea = bounds;
         bounds.removeFromRight (borderSize);
 
         updatePath();

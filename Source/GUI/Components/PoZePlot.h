@@ -42,21 +42,21 @@ public:
          * @param y                         y value, should be in the current y range
          * @param sendNotification          Send notification to listeners
          */
-        void setValue(float x, float y, bool sendNotification);
+        void setValue(double x, double y, bool sendNotification);
 
         /** Set point X value.
          *
-         * @param x                         x value, should be in the current x range
+         * @param value                      x value, should be in the current x range
          * @param sendNotification          Send notification to listeners
          */
-        void setXValue(float value, bool sendNotification);
+        void setXValue(double value, bool sendNotification);
 
         /** Set point Y value.
          *
-         * @param y                         y value, should be in the current y range
+         * @param value                     y value, should be in the current y range
          * @param sendNotification          Send notification to listeners
          */
-        void setYValue(float value, bool sendNotification);
+        void setYValue(double value, bool sendNotification);
 
         /** Set point with normalized values.
          *
@@ -64,14 +64,14 @@ public:
          * @param y                         Ranging from 0 (bottom) to 1 (top)
          * @param sendNotification          Send notification to listeners
          */
-        void setNormalizedValue (float x, float y, bool sendNotification);
+        void setNormalizedValue (double x, double y, bool sendNotification);
 
         /** Sets the x and y range of the points value.
          *
          * @param xRange                    The x (horizontal / real) range
          * @param yRange                    The y (vertical / imaginary) range
          */
-        void setRange(const juce::NormalisableRange<float>& xRange, const juce::NormalisableRange<float>& yRange);
+        void setRange(const juce::NormalisableRange<double>& xRange, const juce::NormalisableRange<double>& yRange);
 
         // Set this to be painted as a pole or a zero.
         void setType(Type type);
@@ -82,15 +82,15 @@ public:
          *  @returns                        Normalized position where 0.0 is left or bottom,
          *                                  1.0 is right or top
          */
-        juce::Point<float> getValue() const noexcept;
+        juce::Point<double> getValue() const noexcept;
 
         // Returns the points Y value on the plot.
-        float getXValue() const noexcept;
+        double getXValue() const noexcept;
 
         // Returns the points X value on the plot.
-        float getYValue() const noexcept;
+        double getYValue() const noexcept;
 
-        float getAngle() const noexcept;
+        double getAngle() const noexcept;
 
         // Returns the type (Pole or Zero)
         Type getType() const { return type; }
@@ -127,13 +127,13 @@ public:
         void updateDragMode();
         //======================================================================
         PoZeToolLaf* getCustomLookAndFeel() const;
-        static juce::MouseCursor getRotatedMagnitudeCursor(float angle);
+        static juce::MouseCursor getRotatedMagnitudeCursor(double angle);
 
-        juce::NormalisableRange<float> xRange;
-        juce::NormalisableRange<float> yRange;
+        juce::NormalisableRange<double> xRange;
+        juce::NormalisableRange<double> yRange;
 
-        float x { 0.0f };
-        float y { 0.5f };
+        double x { 0.0f };
+        double y { 0.5f };
 
         juce::ComponentDragger dragger;
         juce::ComponentBoundsConstrainer constrainer;
@@ -143,7 +143,7 @@ public:
 
         bool mouseIsOver { false };
         DragMode dragMode { DragMode::normal };
-        juce::Point<float> valueBeforeDrag {};
+        juce::Point<double> valueBeforeDrag {};
 
         static const int angleKeyCode;
         static const int magKeyCode;
@@ -189,7 +189,7 @@ public:
      * @param y                             The y (imag) value
      * @param sendNotification              Send notification to listeners
      */
-    Point* addPoint (Point::Type type, float x, float y, bool sendNotification);
+    Point* addPoint (Point::Type type, double x, double y, bool sendNotification);
 
     /** Removes a Pole or Zero from the plot.
      *
@@ -211,7 +211,7 @@ public:
      * @param xRange                    The x (horizontal / real) range
      * @param yRange                    The y (vertical / imaginary) range
      */
-    void setRange(const juce::NormalisableRange<float>& xRange, const juce::NormalisableRange<float>& yRange);
+    void setRange(const juce::NormalisableRange<double>& xRange, const juce::NormalisableRange<double>& yRange);
 
     //======================================================================
     void paintWithinCorners (juce::Graphics& g) override;
@@ -222,15 +222,15 @@ public:
     int getNumPoints() const { return points.size(); }
     juce::OwnedArray<Point>& getPoints() { return points; };
 
-    juce::NormalisableRange<float> getXRange() const { return xRange; }
-    juce::NormalisableRange<float> getYRange() const { return yRange; }
+    juce::NormalisableRange<double> getXRange() const { return xRange; }
+    juce::NormalisableRange<double> getYRange() const { return yRange; }
 
 private:
 
     void mouseDown(const juce::MouseEvent& event) override;
 
     juce::OwnedArray<PoZePlot::Point> points;
-    juce::NormalisableRange<float> xRange {}, yRange {};
+    juce::NormalisableRange<double> xRange {}, yRange {};
     juce::Rectangle<float> unitCircleArea;
 
     juce::ListenerList<Listener> listeners;

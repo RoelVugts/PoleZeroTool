@@ -37,13 +37,13 @@ private:
     void setRealValue(const double& value)
     {
         juce::ScopedValueSetter<bool> svs (ignoreCallbacks, true);
-        point.setXValue ((float)value, true);
+        point.setXValue (value, true);
     }
 
     void setImagValue(const double& value)
     {
         juce::ScopedValueSetter<bool> svs (ignoreCallbacks, true);
-        point.setYValue ((float)value, true);
+        point.setYValue (value, true);
     }
 
     void setPointType(const PoZePlot::Point::Type& type)
@@ -59,9 +59,13 @@ private:
             const double real = emitter->getXValue();
             double imag = emitter->getYValue();
 
+            // std::complex<double> z(real, imag);
+            // printf("Point { %f, %f }, %.14f, %.14f\n", real, imag, std::abs(z), std::arg(z));
+            // fflush(stdout);
+
             // Snap to exp(i*pi)
-            if (imag < 0.00001 && imag > -0.00001)
-                imag = 0.0;
+            // if (imag < 0.00001 && imag > -0.00001)
+            //     imag = 0.0;
 
             realAttachment.setPropertyValue (real);
             imagAttachment.setPropertyValue (imag);

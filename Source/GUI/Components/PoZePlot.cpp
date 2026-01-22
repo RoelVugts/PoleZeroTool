@@ -12,7 +12,7 @@ PoZePlot::Point::Point (Type type_) : type(type_)
 
 //======================================================================
 
-void PoZePlot::Point::setValue (float x_, float y_, bool sendNotification)
+void PoZePlot::Point::setValue (double x_, double y_, bool sendNotification)
 {
     // Out of range !
     jassert(x_ >= xRange.start && x_ <= xRange.end);
@@ -21,7 +21,6 @@ void PoZePlot::Point::setValue (float x_, float y_, bool sendNotification)
     // Prevent infinite loop when updating conjugate
     if (x == x_ && y == y_)
         return;
-
 
     x = x_;
     y = y_;
@@ -34,48 +33,48 @@ void PoZePlot::Point::setValue (float x_, float y_, bool sendNotification)
         conjugate->setValue (x, -y, true);
 }
 
-void PoZePlot::Point::setXValue (float value, bool sendNotification)
+void PoZePlot::Point::setXValue (double value, bool sendNotification)
 {
     setValue (value, y, sendNotification);
 }
 
-void PoZePlot::Point::setYValue (float value, bool sendNotification)
+void PoZePlot::Point::setYValue (double value, bool sendNotification)
 {
     setValue (x, value, sendNotification);
 }
 
-void PoZePlot::Point::setNormalizedValue(float x_, float y_, bool sendNotification)
+void PoZePlot::Point::setNormalizedValue(double x_, double y_, bool sendNotification)
 {
     // Expects normalized values !
-    jassert(x_ >= 0.0f && x_ <= 1.0f);
-    jassert(y_ >= 0.0f && y_ <= 1.0f);
+    jassert(x_ >= 0.0 && x_ <= 1.0);
+    jassert(y_ >= 0.0 && y_ <= 1.0);
 
     setValue (xRange.convertFrom0to1 (x_), yRange.convertFrom0to1 (y_), sendNotification);
 }
 
-void PoZePlot::Point::setRange (const juce::NormalisableRange<float>& xRange_, const juce::NormalisableRange<float>& yRange_)
+void PoZePlot::Point::setRange (const juce::NormalisableRange<double>& xRange_, const juce::NormalisableRange<double>& yRange_)
 {
     xRange = xRange_;
     yRange = yRange_;
     updatePosition();
 }
 
-juce::Point<float> PoZePlot::Point::getValue() const noexcept
+juce::Point<double> PoZePlot::Point::getValue() const noexcept
 {
     return { getXValue(), getYValue() };
 }
 
-float PoZePlot::Point::getXValue() const noexcept
+double PoZePlot::Point::getXValue() const noexcept
 {
     return x;
 }
 
-float PoZePlot::Point::getYValue() const noexcept
+double PoZePlot::Point::getYValue() const noexcept
 {
     return y;
 }
 
-float PoZePlot::Point::getAngle() const noexcept
+double PoZePlot::Point::getAngle() const noexcept
 {
     return std::atan2(getYValue(), getXValue());
 }
@@ -116,7 +115,7 @@ void PoZePlot::Point::updatePosition()
     {
         const auto parentBounds = parent->getBounds().toFloat();
         const int newX = (int)std::round(parentBounds.getWidth() * xRange.convertTo0to1 (x));
-        const int newY = (int)std::round(parentBounds.getHeight() * (1.0f - yRange.convertTo0to1 (y)));
+        const int newY = (int)std::round(parentBounds.getHeight() * (1.0 - yRange.convertTo0to1 (y)));
         setCentrePosition(newX, newY);
     }
 }
@@ -138,18 +137,18 @@ void PoZePlot::Point::mouseDrag(const juce::MouseEvent& event)
 {
     if (auto* parent = getParentComponent())
     {
-        const auto parentBounds = parent->getLocalBounds().toFloat();
+        const auto parentBounds = parent->getLocalBounds().toDouble();
 
         switch (dragMode)
         {
             case DragMode::normal:
             {
                 dragger.dragComponent(this, event, &constrainer);
-                const float xNorm = (float)getBounds().getCentreX() / parentBounds.getWidth();
-                float yNorm = 1.0f - ((float)getBounds().getCentreY() / parentBounds.getHeight());
+                const double xNorm = (double)getBounds().getCentreX() / parentBounds.getWidth();
+                double yNorm = 1.0 - ((double)getBounds().getCentreY() / parentBounds.getHeight());
 
                 if (event.mods.isCommandDown())
-                    yNorm = 0.5f;
+                    yNorm = 0.5;
 
                 setNormalizedValue (xNorm, yNorm, true);
                 break;
@@ -161,33 +160,33 @@ void PoZePlot::Point::mouseDrag(const juce::MouseEvent& event)
                 const auto origin = parentBounds.getCentre();
 
                 // Get angle from origin
-                const auto point = parent->getMouseXYRelative().toFloat() - origin;
+                const auto point = parent->getMouseXYRelative().toDouble() - origin;
 
-                const float newAngle = -std::atan2(point.y, point.x);
-                const float mag = valueBeforeDrag.getDistanceFromOrigin();
-                const float xValue = std::clamp(mag * std::cos(newAngle), xRange.start, xRange.end);
-                const float yValue = std::clamp(mag * std::sin(newAngle), yRange.start, yRange.end);
+                const double newAngle = -std::atan2(point.y, point.x);
+                const double mag = valueBeforeDrag.getDistanceFromOrigin();
+                const double xValue = std::clamp(mag * std::cos(newAngle), xRange.start, xRange.end);
+                const double yValue = std::clamp(mag * std::sin(newAngle), yRange.start, yRange.end);
                 setValue (xValue, yValue, true);
                 break;
             }
 
             case DragMode::magnitude:
             {
-                const float angleOnMouseDown = std::atan2(valueBeforeDrag.y, valueBeforeDrag.x);
-                const juce::Point<float> dir (std::cos(angleOnMouseDown), std::sin(angleOnMouseDown));
+                const double angleOnMouseDown = std::atan2(valueBeforeDrag.y, valueBeforeDrag.x);
+                const juce::Point<double> dir (std::cos(angleOnMouseDown), std::sin(angleOnMouseDown));
 
                 // Mouse position in value space
-                const auto point = parent->getMouseXYRelative().toFloat();
-                const float xNorm = std::clamp(point.x / parentBounds.getWidth(), 0.0f, 1.0f);
-                const float yNorm = std::clamp(1.0f - (point.y / parentBounds.getHeight()), 0.0f, 1.0f);
-                const juce::Point<float> mouseValue (xRange.convertFrom0to1(xNorm),yRange.convertFrom0to1(yNorm));
+                const auto point = parent->getMouseXYRelative().toDouble();
+                const double xNorm = std::clamp(point.x / parentBounds.getWidth(), 0.0, 1.0);
+                const double yNorm = std::clamp(1.0 - (point.y / parentBounds.getHeight()), 0.0, 1.0);
+                const juce::Point<double> mouseValue (xRange.convertFrom0to1(xNorm),yRange.convertFrom0to1(yNorm));
 
-                float magnitude = mouseValue.x * dir.x + mouseValue.y * dir.y;
+                double magnitude = mouseValue.x * dir.x + mouseValue.y * dir.y;
 
                 // Constrain magnitude
-                const float xValue = std::clamp(magnitude * dir.x, xRange.start, xRange.end);
-                const float yValue = std::clamp(magnitude * dir.y, yRange.start, yRange.end);
-                const float newAngle = std::atan2(yValue, xValue);
+                const double xValue = std::clamp(magnitude * dir.x, xRange.start, xRange.end);
+                const double yValue = std::clamp(magnitude * dir.y, yRange.start, yRange.end);
+                const double newAngle = std::atan2(yValue, xValue);
 
                 if (approximatelyEqual (angleOnMouseDown, newAngle))
                     setValue(xValue,yValue, true);
@@ -281,7 +280,7 @@ PoZeToolLaf* PoZePlot::Point::getCustomLookAndFeel() const
     return nullptr;
 }
 
-juce::MouseCursor PoZePlot::Point::getRotatedMagnitudeCursor (const float angle)
+juce::MouseCursor PoZePlot::Point::getRotatedMagnitudeCursor (const double angle)
 {
 
     auto svg = juce::Drawable::createFromImageData (
@@ -294,7 +293,7 @@ juce::MouseCursor PoZePlot::Point::getRotatedMagnitudeCursor (const float angle)
     auto bounds = svg->getDrawableBounds();
 
     // Make size big enough for rotation
-    const float maxDim = std::max (bounds.getWidth(), bounds.getHeight());
+    const double maxDim = std::max (bounds.getWidth(), bounds.getHeight());
 
     // Max size is at 45 degrees, with size = side * sqrt(2)
     const int imageSize = juce::roundToInt (std::sqrt (2.0f) * maxDim);
@@ -326,14 +325,14 @@ juce::MouseCursor PoZePlot::Point::getRotatedMagnitudeCursor (const float angle)
 //PoZePlot
 
 PoZePlot::PoZePlot()
-    : xRange(-1.5f, 1.5f), yRange (-1.5f, 1.5f)
+    : xRange(-1.5, 1.5), yRange (-1.5, 1.5)
 {
     setColour (backgroundColourId, juce::Colours::black);
     setColour (unitCircleColourId, juce::Colours::white);
     setWantsKeyboardFocus (true);
 }
 
-PoZePlot::Point* PoZePlot::addPoint (PoZePlot::Point::Type type, float x, float y, bool sendNotification)
+PoZePlot::Point* PoZePlot::addPoint (PoZePlot::Point::Type type, double x, double y, bool sendNotification)
 {
     auto* point = points.add(std::make_unique<PoZePlot::Point>(type));
 
@@ -372,7 +371,7 @@ void PoZePlot::removeAllPoints (bool sendNotification)
 }
 
 
-void PoZePlot::setRange (const juce::NormalisableRange<float>& xRange_, const juce::NormalisableRange<float>& yRange_)
+void PoZePlot::setRange (const juce::NormalisableRange<double>& xRange_, const juce::NormalisableRange<double>& yRange_)
 {
     xRange = xRange_;
     yRange = yRange_;
@@ -436,10 +435,10 @@ void PoZePlot::resized()
         point->updatePosition();
     }
 
-    unitCircleArea.setX (xRange.convertTo0to1 (-1.0f) * bounds.getWidth());
-    unitCircleArea.setRight (xRange.convertTo0to1 (1.0f) * bounds.getWidth());
-    unitCircleArea.setTop (yRange.convertTo0to1 (-1.0f) * bounds.getHeight());
-    unitCircleArea.setBottom (yRange.convertTo0to1 (1.0f) * bounds.getHeight());
+    unitCircleArea.setX ((float)xRange.convertTo0to1 (-1.0) * bounds.getWidth());
+    unitCircleArea.setRight ((float)xRange.convertTo0to1 (1.0) * bounds.getWidth());
+    unitCircleArea.setTop ((float)yRange.convertTo0to1 (-1.0) * bounds.getHeight());
+    unitCircleArea.setBottom ((float)yRange.convertTo0to1 (1.0) * bounds.getHeight());
 }
 
 //======================================================================
@@ -448,8 +447,8 @@ void PoZePlot::mouseDown (const juce::MouseEvent& event)
     if (event.eventComponent == this)
     // Clicked on PoZePlot
     {
-        const float x = event.position.x / (float)getWidth();
-        const float y = 1.0f - event.position.y / (float)getHeight();
+        const double x = event.position.x / (double)getWidth();
+        const double y = 1.0 - event.position.y / (double)getHeight();
 
         if (event.mods.isCommandDown())
             addPoint (PoZePlot::Point::Type::pole, xRange.convertFrom0to1 (x), yRange.convertFrom0to1 (y), true);

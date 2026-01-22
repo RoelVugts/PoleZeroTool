@@ -27,6 +27,14 @@ public:
         for (int k = 1; k < iirCoefs.size(); k++)
             output += -iirCoefs[k] * iirBuf.read (k);
 
+        if (std::isnan (output.real()) || std::isinf (output.real()))
+            output = { 0.0f, output.imag() };
+
+        if (std::isnan (output.imag()) || std::isinf (output.imag()))
+            output = { output.real(), 0.0f };
+
+        output = { std::clamp(output.real(), -1.0, 1.0), std::clamp(output.imag(), -1.0, 1.0) };
+
         // Write output back into output buf
         iirBuf.write (output);
 
@@ -34,6 +42,7 @@ public:
         firBuf.incrementWriteIndex();
         iirBuf.incrementWriteIndex();
 
+        // Make sure we don't blow up the speakers when a pole is placed outside the unit circle
         return (float)output.real(); //TODO: Only real output for now
     }
 
