@@ -5,12 +5,12 @@
 
 #include <JuceHeader.h>
 
-class FilterDesignAttachment : private juce::AsyncUpdater
+class FilterDesignAttachment : private juce::AsyncUpdater, private FilterDesign::Listener
 {
 public:
 
-    FilterDesignAttachment(PoleZeroState settings, FilterDesign& designer)
-        : state(settings), filterDesigner (designer)
+    FilterDesignAttachment(PoleZeroState settings, FilterDesign& designer, juce::RangedAudioParameter& gainParam)
+        : state(settings), filterDesigner (designer), gainAttachment (gainParam, [this](float v) { filterDesigner.setGain ((double)v); })
     {
         state.points.setOnChildAdded ([this](juce::ValueTree&) {
             triggerUpdate();
@@ -26,6 +26,13 @@ public:
 
         //=========================================================================
         FilterDesignAttachment::handleAsyncUpdate();
+
+        filterDesigner.addListener (this);
+    }
+
+    ~FilterDesignAttachment() override
+    {
+        filterDesigner.removeListener (this);
     }
 
     bool filterChanged() const
@@ -85,6 +92,11 @@ private:
         newCoefsReady.store (true, std::memory_order_release);
     }
 
+    void filterGainChanged(FilterDesign* emitter) override
+    {
+        gainAttachment.setValueAsCompleteGesture (emitter->getGain());
+    }
+
     PoleZeroState state;
     FilterDesign& filterDesigner;
 
@@ -93,4 +105,7 @@ private:
     FilterDesign::CoefficientSet coefficients[2];
     std::atomic<int> activeBuffer { 0 };
     std::atomic<bool> newCoefsReady { false };
+
+    //=========================================================================
+    juce::ParameterAttachment gainAttachment;
 };

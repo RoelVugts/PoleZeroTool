@@ -104,10 +104,10 @@ private:
     {
         juce::ScopedValueSetter<bool> svs(ignoreGuiCallbacks, true);
 
+        const int numOldPoints = plot.getNumPoints();
         plot.removeAllPoints (false);
         pointAttachments.clear ();
 
-        const int numOldPoints = plot.getNumPoints();
         for (int i = 0; i < state.points.size(); i++)
         {
             PointState& pointState = state.points.getReference (i);

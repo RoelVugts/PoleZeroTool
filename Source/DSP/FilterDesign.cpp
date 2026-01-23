@@ -1,6 +1,8 @@
 #include "FilterDesign.h"
 #include "MathFunctions.h"
 
+#include <ranges>
+
 std::vector<std::complex<double>> FilterDesign::getIIRCoefs() const
 {
     return coefficients.iirCoefs;
@@ -8,7 +10,8 @@ std::vector<std::complex<double>> FilterDesign::getIIRCoefs() const
 
 std::vector<std::complex<double>> FilterDesign::getFIRCoefs() const
 {
-    return coefficients.firCoefs;
+    auto view = std::views::transform (coefficients.firCoefs, [g = gain] (auto c) { return c * g; });
+    return { view.begin(), view.end() };
 }
 
 void FilterDesign::setPoleZeros(std::vector<std::complex<double>>& poles_, std::vector<std::complex<double>>& zeros_)
@@ -19,10 +22,13 @@ void FilterDesign::setPoleZeros(std::vector<std::complex<double>>& poles_, std::
     coefficients.iirCoefs = MathFunctions::expandPolynomialFromRoots (poles);
     coefficients.firCoefs = MathFunctions::expandPolynomialFromRoots (zeros);
 
+    if (autoNormalise)
+        updateNormalisationGain();
+
     listeners.call([this](Listener& l) { l.filterCoefficientsChanged (this); });
 }
 
-FilterDesign::Response FilterDesign::getFreqResponse(const double angle) const
+FilterDesign::Response FilterDesign::getFreqResponse(const double angle, bool applyGain) const
 {
     const std::complex<double>& z = std::polar(1.0, angle);
 
@@ -34,7 +40,7 @@ FilterDesign::Response FilterDesign::getFreqResponse(const double angle) const
 
     for (int i = 0; i < firCoefs.size(); i++) {
         int power = (int)firCoefs.size() - (i + 1);
-        numerator += (std::pow(z, (double)power) * firCoefs[i]);
+        numerator += (std::pow(z, (double)power) * firCoefs[i] * (applyGain ? gain : 1.0));
     }
 
     for (int i = 0; i < iirCoefs.size(); i++) {
@@ -66,8 +72,8 @@ FilterDesign::Response FilterDesign::getMaxMagnitudeResponse(const int numAngles
     for (int i = 0; i < numAngles; i++)
     {
         const double angle = (double) i * angleStep;
-        maxResponse = std::max (getFreqResponse (angle), maxResponse, [] (const Response& a, const Response& b) {
-            return a.magnitude > b.magnitude;
+        maxResponse = std::max (getFreqResponse (angle, false), maxResponse, [] (const Response& a, const Response& b) {
+            return a.magnitude < b.magnitude;
         });
     }
 
@@ -88,5 +94,28 @@ FilterDesign::Response FilterDesign::getMaxPhaseResponse(const int numAngles) co
     }
 
     return maxResponse;
+}
+
+void FilterDesign::setGain (double gain_)
+{
+    gain = gain_;
+
+    listeners.call([this](Listener& l) { l.filterGainChanged (this); });
+}
+
+void FilterDesign::setAutoNormalize (bool shouldAutoNormalize)
+{
+    autoNormalise = shouldAutoNormalize;
+    updateNormalisationGain();
+}
+
+void FilterDesign::updateNormalisationGain()
+{
+    const auto maxResponse = getMaxMagnitudeResponse ();
+    const double oldGain = gain;
+    gain = maxResponse.magnitude > 0.0 ? 1.0 / maxResponse.magnitude : 1.0;
+
+    if (! approximatelyEqual (gain, oldGain))
+        listeners.call([this](Listener& l) { l.filterGainChanged (this); });;
 }
 

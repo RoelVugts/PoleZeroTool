@@ -8,11 +8,14 @@ namespace LAF
     namespace Colours
     {
         static const juce::Colour darkBackgroundColour { 25, 25, 25 };
+        static const juce::Colour textColour { 200, 200, 200 };
+        static const juce::Colour buttonOffColour{ 20, 20, 20 };
+        static const juce::Colour buttonOnColour{ 60, 60, 60 };
     }
 
     namespace Layout
     {
-        static constexpr float defaultSpacing { 6.0f };
+        static constexpr float defaultSpacing { 10.0f };
         static constexpr float poZeContentWidthRatio { 0.4f };
     }
 

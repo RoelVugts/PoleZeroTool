@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+
 #include "PluginEditor.h"
 
 #include "../DSP/MathFunctions.h"
@@ -12,9 +13,19 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       ), filterDesignAttachment (state.poleZeroState, filterDesign)
+                       ), apvts(*this, nullptr, APVTS_ID, createParameters())
 {
-    dspFifo.reset(128);
+    paramFifo.reset(128);
+
+    // Create listeners for all parameters
+    for (int i = 0; i < apvts.state.getNumChildren(); i++)
+        if (const auto child = apvts.state.getChild (i); child.isValid())
+            apvts.addParameterListener(child.getProperty("id").toString(), this);
+
+    auto* param = apvts.getParameter (paramID[PoZeParamID::gain]);
+    jassert(param != nullptr);
+
+    filterDesignAttachment = std::make_unique<FilterDesignAttachment>(state.poleZeroState, filterDesign, *param);
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor()
@@ -137,17 +148,17 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    std::function<void()> updateFn;
-    while (dspFifo.pop (updateFn))
-        juce::NullCheckedInvocation::invoke(updateFn);
+    // std::function<void()> updateFn;
+    // while (paramFifo.pop (updateFn))
+    //     juce::NullCheckedInvocation::invoke(updateFn);
 
-    if (filterDesignAttachment.filterChanged())
+    if (filterDesignAttachment->filterChanged())
     {
-        const auto& coefs = filterDesignAttachment.getCoefficients();
+        const auto& coefs = filterDesignAttachment->getCoefficients();
         for (auto& f : filter)
             f.setCoefficients (coefs.iirCoefs, coefs.firCoefs);
 
-        filterDesignAttachment.markCoefficientsAsConsumed();
+        filterDesignAttachment->markCoefficientsAsConsumed();
     }
 
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
@@ -192,4 +203,57 @@ void AudioPluginAudioProcessor::setStateInformation (const void* data, int sizeI
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new AudioPluginAudioProcessor();
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::createParameters()
+{
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
+
+    for (int i = 0; i < PoZeParamID::parameterCount; i++)
+    {
+        const auto id = static_cast<PoZeParamID>(i);
+
+        switch (id)
+        {
+            case PoZeParamID::gain:
+                params.push_back (std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(paramID[i], 1), paramName[i], juce::NormalisableRange<float>{ 0.0f, 1.0f, 1e-7f }, 1.0f));
+                break;
+
+            case PoZeParamID::autoNormalise:
+                params.push_back (std::make_unique<juce::AudioParameterBool>(juce::ParameterID(paramID[i], 1), paramName[i], true));
+                break;
+
+            default: jassertfalse; break;
+        }
+    }
+
+    return { params.begin(), params.end() };
+}
+
+void AudioPluginAudioProcessor::parameterChanged (const juce::String& parameterID, float newValue)
+{
+    const int index = Utils::indexOf (paramID, parameterID);
+    jassert(index >= 0);
+
+    if (index >= 0)
+    {
+        const auto id = static_cast<PoZeParamID>(index);
+        switch (id)
+        {
+            case PoZeParamID::gain:
+                filterDesign.setGain ((double)newValue);
+                break;
+
+            case PoZeParamID::autoNormalise:
+                filterDesign.setAutoNormalize (static_cast<bool> (newValue));
+                break;
+
+            default: jassertfalse; break;
+        }
+    }
+}
+
+void AudioPluginAudioProcessor::handleParameterChange (const ParamMessage& msg)
+{
+    // Implement parameter updates on audio thread here
 }

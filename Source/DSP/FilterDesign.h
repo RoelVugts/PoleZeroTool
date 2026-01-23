@@ -15,6 +15,7 @@ public:
         Listener() = default;
         virtual ~Listener() = default;
         virtual void filterCoefficientsChanged ([[maybe_unused]] FilterDesign* emitter) {}
+        virtual void filterGainChanged([[maybe_unused]] FilterDesign* emitter) {}
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Listener)
     };
 
@@ -57,8 +58,10 @@ public:
     /** Get the frequency response for a specific frequency / angle.
      *
      * @param angle         The frequency in radians
+     * @param applyGain     If true, will apply the gained response.
+     *                      If false, will return the normal filter response.
      */
-    Response getFreqResponse(double angle) const;
+    Response getFreqResponse(double angle, bool applyGain = true) const;
 
     /** Returns the frequency response with the highest
      *  magnitude. It finds the highest magnitude by testing multiple frequencies.
@@ -82,9 +85,15 @@ public:
      */
     Response getMaxPhaseResponse(int numAngles = 256) const;
 
-    double getNormalisationGain() const { return gain; }
+    void setGain(double gain);
+    double getGain() const { return gain; }
+
+    void setAutoNormalize(bool shouldAutoNormalize);
+    bool isAutoNormalising() const { return autoNormalise; }
 
 private:
+
+    void updateNormalisationGain();
 
     //=======================================================================
     std::vector<std::complex<double>> poles;
@@ -92,5 +101,6 @@ private:
     CoefficientSet coefficients;
 
     double gain { 1.0f };
+    bool autoNormalise { true };
     juce::ListenerList<Listener> listeners;
 };

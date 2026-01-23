@@ -57,6 +57,16 @@ private:
 
     void filterCoefficientsChanged(FilterDesign*) override
     {
+        updatePlots();
+    }
+
+    void filterGainChanged(FilterDesign* emitter) override
+    {
+        updatePlots();
+    }
+
+    void updatePlots()
+    {
         updateResponse();
         magnitudePlot.updatePath();
         phasePlot.updatePath();

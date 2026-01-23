@@ -1,18 +1,20 @@
 #pragma once
 
+#include "Parameters.h"
+
 #include <JuceHeader.h>
 
 #include "../DSP/Filter.h"
 #include "../DSP/FilterDesign.h"
 #include "../Data/Attachments/FilterDesignAttachment.h"
 #include "../Data/State.h"
-
+#include "../Utils/Utils.h"
 #include <choc/containers/choc_SingleReaderMultipleWriterFIFO.h>
 
 #define MAX_CHANNELS 2
 
 //==============================================================================
-class AudioPluginAudioProcessor final : public juce::AudioProcessor
+class AudioPluginAudioProcessor final : public juce::AudioProcessor, private juce::AudioProcessorValueTreeState::Listener
 {
 public:
     //==============================================================================
@@ -52,17 +54,24 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     //==============================================================================
+    static juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
+
+    //==============================================================================
     State state { juce::ValueTree(State::IDs::type) };
     juce::UndoManager undoManager;
 
     //==============================================================================
     std::array<ComplexFilter, MAX_CHANNELS> filter;
     FilterDesign filterDesign;
-    FilterDesignAttachment filterDesignAttachment;
+    std::unique_ptr<FilterDesignAttachment> filterDesignAttachment;
 
     //==============================================================================
-    choc::fifo::SingleReaderMultipleWriterFIFO<std::function<void()>> dspFifo;
+    choc::fifo::SingleReaderMultipleWriterFIFO<ParamMessage> paramFifo;
+    juce::AudioProcessorValueTreeState apvts;
 private:
+
+    void parameterChanged(const String& parameterID, float newValue) override;
+    void handleParameterChange(const ParamMessage& msg);
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)

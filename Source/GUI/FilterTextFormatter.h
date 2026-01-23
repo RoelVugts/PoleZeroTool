@@ -16,6 +16,9 @@ public:
     // Returns the difference equation as a string (e.g. y[n] = 0.5x[n-1] - 0.3y[n-1])
     static juce::String differenceEquation (const FilterDesign& f)
     {
+        if (approximatelyEqual (f.getGain(), 0.0))
+            return "y[n] = 0";
+
         const int degree = (int)f.getFIRCoefs().size() - (int)f.getIIRCoefs().size();
 
         return "y[n] = "
@@ -30,6 +33,9 @@ public:
      */
     static juce::String transferFunction   (const FilterDesign& filter)
     {
+        if (approximatelyEqual (filter.getGain(), 0.0))
+            return "\nH(z) = 0";
+
         const juce::String& numerator = formatCoefficients (filter.getFIRCoefs(), PolynomialDomain::ZDomain,false,0);
         const juce::String& denumerator = formatCoefficients (filter.getIIRCoefs(), PolynomialDomain::ZDomain, false,0);
 

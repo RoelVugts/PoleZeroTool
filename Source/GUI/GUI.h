@@ -7,6 +7,7 @@
 #include "Sections/PoleZeroSection.h"
 #include "Sections/ResponsePlotSection.h"
 #include "Sections/FormulaSection.h"
+#include "Sections/SettingsSection.h"
 #include "LookAndFeel.h"
 
 class GUI : public juce::Component
@@ -17,10 +18,12 @@ public:
         : poZeSection (p)
         , plotSection (p)
         , formulaSection (p)
+        , settingsSection (p)
     {
         addAndMakeVisible (poZeSection);
         addAndMakeVisible (plotSection);
         addAndMakeVisible (formulaSection);
+        addAndMakeVisible (settingsSection);
     }
 
     void resized() override
@@ -31,9 +34,11 @@ public:
 
         // Border area
         auto headerArea = bounds.removeFromTop (height * 0.05f);
+        auto settingsArea = bounds.removeFromBottom (height * 0.05f);
+        settingsSection.setBounds (settingsArea.toNearestInt());
+
         auto inputMeterArea = bounds.removeFromLeft (width * 0.05f);
         auto outputMeterArea = bounds.removeFromRight (width * 0.1f);
-        auto settingsArea = bounds.removeFromBottom (height * 0.05f);
 
         // Margins
         bounds.removeFromBottom (LAF::Layout::defaultSpacing);
@@ -63,6 +68,7 @@ private:
     PoleZeroSection poZeSection;
     ResponsePlotSection plotSection;
     FormulaSection formulaSection;
+    SettingsSection settingsSection;
 
 
 };

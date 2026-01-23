@@ -49,6 +49,12 @@ private:
         transferFucntionLabel.setText (FilterTextFormatter::transferFunction (*emitter));
     }
 
+    void filterGainChanged(FilterDesign* emitter) override
+    {
+        diffEquationLabel.setText (FilterTextFormatter::differenceEquation (*emitter));
+        transferFucntionLabel.setText (FilterTextFormatter::transferFunction (*emitter));
+    }
+
     FilterDesign& filterDesigner;
     BoxedLabel transferFucntionLabel;
     BoxedLabel diffEquationLabel;
