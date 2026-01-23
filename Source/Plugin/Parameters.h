@@ -23,10 +23,12 @@ const std::array<juce::String, parameterCount> paramID =
 {
     "GAIN",
     "AUTO_NORMALISE"
+       "DECIBELS"
 };
 
 const std::array<juce::String, parameterCount> paramName
 {
     "Gain"
-    "Auto Normalise"
+       "Auto Normalise"
+       "Decibels"
 };

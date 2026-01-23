@@ -9,8 +9,8 @@ class ResponsePlotAttachment : private FilterDesign::Listener
 {
 public:
 
-    ResponsePlotAttachment(FilterDesign& filterDesign, Plot& magPlot, Plot& phasePlot_, Plot& groupDelayPlot_)
-        : filterDesigner (filterDesign), magnitudePlot (magPlot), phasePlot (phasePlot_), groupDelayPlot (groupDelayPlot_)
+    ResponsePlotAttachment(State& settings, FilterDesign& filterDesign, Plot& magPlot, Plot& phasePlot_, Plot& groupDelayPlot_)
+        : state(settings), filterDesigner (filterDesign), magnitudePlot (magPlot), phasePlot (phasePlot_), groupDelayPlot (groupDelayPlot_)
     {
 
         magnitudePlot.getDataFn = [this](float x) -> float {
@@ -18,7 +18,10 @@ public:
             if (index >= cachedResponse.size())
                 updateResponse();
 
-            return (float)juce::Decibels::gainToDecibels (cachedResponse[index].magnitude);
+            if (state.displayInDB.getValue())
+                return (float)juce::Decibels::gainToDecibels (cachedResponse[index].magnitude);
+
+            return cachedResponse[index].magnitude;
         };
 
         phasePlot.getDataFn = [this](float x) -> float {
@@ -85,6 +88,7 @@ private:
         }
     }
 
+    State state;
     Plot& magnitudePlot;
     Plot& phasePlot;
     Plot& groupDelayPlot;

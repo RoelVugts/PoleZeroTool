@@ -14,6 +14,7 @@ public:
     {
         static const juce::Identifier type;
         static const juce::Identifier poleZeroState;
+        static const juce::Identifier displayInDB;
 
     };
 
@@ -22,4 +23,5 @@ public:
     void setState(const State& other);
 
     PoleZeroState poleZeroState;
+    TreePropertyWrapper<bool> displayInDB;
 };

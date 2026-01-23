@@ -182,8 +182,13 @@ juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
 //==============================================================================
 void AudioPluginAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
+    juce::ValueTree tree { "StateInformation" };
     juce::ValueTree data = state.getTree().createCopy();
-    auto xml = data.createXml();
+    juce::ValueTree params = apvts.copyState();
+    tree.appendChild (data, nullptr);
+    tree.appendChild (params, nullptr);
+
+    auto xml = tree.createXml();
     copyXmlToBinary (*xml, destData);
 }
 
@@ -193,8 +198,15 @@ void AudioPluginAudioProcessor::setStateInformation (const void* data, int sizeI
     if (xml != nullptr)
     {
         auto tree = juce::ValueTree::fromXml (*xml);
-        if (tree.hasType (State::IDs::type))
-            state.setState (tree);
+
+        if (tree.hasType ("StateInformation"))
+        {
+            if (auto child = tree.getChildWithName (State::IDs::type); child.isValid())
+                state.setState(child);
+
+            if (auto child = tree.getChildWithName (APVTS_ID); child.isValid())
+                apvts.replaceState (child);
+        }
     }
 }
 

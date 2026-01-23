@@ -3,6 +3,7 @@
 #include <JuceHeader.h>
 
 #include "../../Data/Attachments/DragBoxAttachment.h"
+#include "../../Data/State.h"
 #include "../Components/DragBox.h"
 #include "../LookAndFeel.h"
 
@@ -13,6 +14,7 @@ public:
     using ButtonAttachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
 
     SettingsSection(AudioPluginAudioProcessor& p)
+        : state(p.state)
     {
         gainBox.setNumDecimalsToDisplay (5);
         gainBox.setColour (DragBox::ColourIds::backgroundColourId, juce::Colour(30, 30, 30));
@@ -26,6 +28,18 @@ public:
         autoNormalizeBtn.setClickingTogglesState (true);
         autoNormalizeAttachment = std::make_unique<ButtonAttachment>(p.apvts, paramID[PoZeParamID::autoNormalise], autoNormalizeBtn);
         addAndMakeVisible (autoNormalizeBtn);
+
+        decibelBtn.setColour (juce::TextButton::ColourIds::buttonColourId, LAF::Colours::buttonOnColour);
+        decibelBtn.setColour (juce::TextButton::ColourIds::buttonOnColourId, LAF::Colours::buttonOnColour);
+        decibelBtn.setColour (juce::TextButton::ColourIds::textColourOffId, juce::Colours::white);
+        decibelBtn.setColour (juce::TextButton::ColourIds::textColourOnId, juce::Colours::white);
+        decibelBtn.setClickingTogglesState (true);
+        decibelBtn.onStateChange = [this]() {
+            const bool isOn = decibelBtn.getToggleState();
+            decibelBtn.setButtonText (isOn ? "dB" : "Amp");
+        }; decibelBtn.onStateChange();
+        decibelAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayInDB, decibelBtn, nullptr);
+        addAndMakeVisible (decibelBtn);
     }
 
 
@@ -50,11 +64,18 @@ public:
         bounds.removeFromLeft (LAF::Layout::defaultSpacing);
         auto normalizeBtnArea = bounds.removeFromLeft (btnSize);
         autoNormalizeBtn.setBounds (normalizeBtnArea.toNearestInt());
+
+        bounds.removeFromLeft (LAF::Layout::defaultSpacing);
+        auto decibelBtnArea = bounds.removeFromLeft (btnSize);
+        decibelBtn.setBounds (decibelBtnArea.toNearestInt());
     }
 
 private:
+    State state;
     DragBox gainBox;
     juce::TextButton autoNormalizeBtn { "Normalize" };
+    juce::TextButton decibelBtn { "dB" };
     std::unique_ptr<DragBoxAttachment> gainAttachment;
     std::unique_ptr<ButtonAttachment> autoNormalizeAttachment;
+    std::unique_ptr<ButtonPropertyAttachment> decibelAttachment;
 };
