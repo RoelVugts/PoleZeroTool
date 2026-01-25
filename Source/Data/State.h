@@ -15,7 +15,8 @@ public:
         static const juce::Identifier type;
         static const juce::Identifier poleZeroState;
         static const juce::Identifier displayInDB;
-
+        static const juce::Identifier displayGroupDelay;
+        static const juce::Identifier displayLogarithmic;
     };
 
     State(juce::ValueTree tree);
@@ -24,4 +25,6 @@ public:
 
     PoleZeroState poleZeroState;
     TreePropertyWrapper<bool> displayInDB;
+    TreePropertyWrapper<bool> displayGroupDelay;
+    TreePropertyWrapper<bool> displayLogarithmic;
 };

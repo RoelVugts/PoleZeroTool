@@ -61,8 +61,15 @@ FilterDesign::Response FilterDesign::getFreqResponse(const double angle, bool ap
     std::complex<double> totalResponse = numerator / denumerator;
     double responseGain = std::abs(totalResponse);
     return FilterDesign::Response(std::arg(z), responseGain, phaseShift);
-
 }
+
+double FilterDesign::getGroupDelay (Response& a, Response& b) const
+{
+    const double angleDelta = a.angle - b.angle;
+    const double phaseDelta = a.phase - b.phase;
+    return phaseDelta / angleDelta;
+}
+
 
 FilterDesign::Response FilterDesign::getMaxMagnitudeResponse(const int numAngles) const
 {
@@ -100,7 +107,8 @@ void FilterDesign::setGain (double gain_)
 {
     gain = gain_;
 
-    listeners.call([this](Listener& l) { l.filterGainChanged (this); });
+    if (sendNotification)
+        listeners.call([this](Listener& l) { l.filterGainChanged (this); });
 }
 
 void FilterDesign::setAutoNormalize (bool shouldAutoNormalize)

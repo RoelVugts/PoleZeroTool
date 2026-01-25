@@ -27,6 +27,9 @@ public:
             addAndMakeVisible (plot);
         }
 
+        plotAttachment = std::make_unique<ResponsePlotAttachment> (p.state, p.filterDesign, magnitudePlot, phasePlot, groupDelayPlot);
+
+
         state.setOnPropertyChanged (State::IDs::displayInDB, [this]() {
             const bool shouldDisplayInDecibels = state.displayInDB.getValue();
             if (shouldDisplayInDecibels)
@@ -43,7 +46,38 @@ public:
             }
         }, true);
 
+        state.setOnPropertyChanged (State::IDs::displayGroupDelay, [this]() {
+            const bool shouldDisplayGroupDelay = state.displayGroupDelay.getValue();
+            if (shouldDisplayGroupDelay)
+            {
+                groupDelayPlot.setVisible (true);
+                phasePlot.setVisible (false);
+            }
+            else
+            {
+                groupDelayPlot.setVisible (false);
+                phasePlot.setVisible (true);
+            }
+        }, true);
 
+        state.setOnPropertyChanged (State::IDs::displayLogarithmic, [this]() {
+            const bool isLogarithmic = state.displayLogarithmic.getValue();
+            plotAttachment->updateResponse();
+
+            if (isLogarithmic)
+            {
+                MappedRange<float> logRange = MappedRange<float>::createExponentialRange (0.0f, juce::MathConstants<float>::pi);
+                magnitudePlot.setDomain (logRange);
+                phasePlot.setDomain (logRange);
+                groupDelayPlot.setDomain (logRange);
+            }
+            else
+            {
+                magnitudePlot.setDomain ({ 0.0f, juce::MathConstants<float>::pi});
+                phasePlot.setDomain ({ 0.0f, juce::MathConstants<float>::pi});
+                groupDelayPlot.setDomain ({ 0.0f, juce::MathConstants<float>::pi });
+            }
+        }, true);
 
         phasePlot.setRange ({ -juce::MathConstants<float>::twoPi, juce::MathConstants<float>::twoPi });
         phasePlot.setYTicks ({   -juce::MathConstants<float>::pi,
@@ -55,8 +89,6 @@ public:
         groupDelayPlot.setRange ({ -16, 16 });
         groupDelayPlot.setYTicks ({ -15, -10, -5, 0, 5, 10, 15 });
         groupDelayPlot.setYLabels ({ "", "-10", "-5", "0", "5", "10", "" });
-
-        plotAttachment = std::make_unique<ResponsePlotAttachment> (p.state, p.filterDesign, magnitudePlot, phasePlot, groupDelayPlot);
     }
 
     void resized() override
@@ -71,6 +103,7 @@ public:
         bounds.removeFromTop (LAF::Layout::defaultSpacing);
         auto phasePlotArea = bounds;
         phasePlot.setBounds (phasePlotArea.toNearestInt());
+        groupDelayPlot.setBounds (phasePlotArea.toNearestInt());
     }
 
     Plot magnitudePlot { "Magnitude" };

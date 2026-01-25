@@ -63,6 +63,8 @@ public:
      */
     Response getFreqResponse(double angle, bool applyGain = true) const;
 
+    double getGroupDelay(Response& a, Response& b) const;
+
     /** Returns the frequency response with the highest
      *  magnitude. It finds the highest magnitude by testing multiple frequencies.
      *  This is a bit of a brute force way but there is (afaik) no direct formula to get max(|H(z)|)

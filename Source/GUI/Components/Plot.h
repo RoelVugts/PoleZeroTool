@@ -121,18 +121,28 @@ public:
                 plotArea = bounds;
         bounds.removeFromRight (borderSize);
 
+        juce::NullCheckedInvocation::invoke(dataRefreshFn, getNumDataPoints());
+
         updatePath();
     }
 
     void setRange(const MappedRange<float>& range) {
         yRange = range;
         setYTicks(yTicks);
+        updatePath();
         repaint();
     }
 
     void setDomain(const MappedRange<float>& domain) {
         xRange = domain;
         setXTicks(xTicks);
+        updatePath();
+        repaint();
+    }
+
+    void clearData()
+    {
+        path.clear();
         repaint();
     }
 
@@ -184,6 +194,12 @@ public:
         repaint();
     }
 
+    void setPlotTitle(const juce::String& title_)
+    {
+        title = title_;
+        repaint();
+    }
+
     // Returns the number of data points this plot will query.
     // This will be equal to the amount of (logical) width pixels
     int getNumDataPoints() const { return (int)plotArea.getWidth(); }
@@ -200,8 +216,10 @@ public:
      */
     std::function<float(float x)> getDataFn { nullptr };
 
+    std::function<void(int numDataPoints)> dataRefreshFn { nullptr };
+
 private:
-    const juce::String title;
+    juce::String title;
 
     juce::Path path;
     juce::PathStrokeType pathStroke { 1.0f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded };

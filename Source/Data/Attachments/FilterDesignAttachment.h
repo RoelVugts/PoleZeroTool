@@ -20,7 +20,7 @@ public:
             triggerUpdate();
         });
 
-        state.setOnAnyPropertyChanged ([this](juce::ValueTree&) {
+        state.setOnAnyPropertyChanged ([this](juce::ValueTree& tree) {
             triggerUpdate();
         });
 

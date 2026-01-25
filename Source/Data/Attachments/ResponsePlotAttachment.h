@@ -5,7 +5,7 @@
 
 #include <JuceHeader.h>
 
-class ResponsePlotAttachment : private FilterDesign::Listener
+class ResponsePlotAttachment : private FilterDesign::Listener, private juce::ComponentListener, private juce::AsyncUpdater
 {
 public:
 
@@ -14,79 +14,100 @@ public:
     {
 
         magnitudePlot.getDataFn = [this](float x) -> float {
-            const int index = (int)(magnitudePlot.getXRange().convertTo0to1 (x) * magnitudePlot.getNumDataPoints());
-            if (index >= cachedResponse.size())
-                updateResponse();
+            const int index = (int)(magnitudePlot.getXRange().convertTo0to1 (x) * (float)magnitudePlot.getNumDataPoints());
+            jassert(index < cachedResponse.size());
 
             if (state.displayInDB.getValue())
                 return (float)juce::Decibels::gainToDecibels (cachedResponse[index].magnitude);
 
-            return cachedResponse[index].magnitude;
+            return (float)cachedResponse[index].magnitude;
         };
 
         phasePlot.getDataFn = [this](float x) -> float {
-            int index = (int)(phasePlot.getXRange().convertTo0to1 (x) * phasePlot.getNumDataPoints());
-            if (index >= cachedResponse.size())
-                updateResponse();
+            int index = (int)(phasePlot.getXRange().convertTo0to1 (x) * (float)phasePlot.getNumDataPoints());
+            jassert(index < cachedResponse.size());
+
+            // 0 Hz has no phase
+            if (index == 0)
+                return cachedResponse[1].phase;
 
             return (float)cachedResponse[index].phase;
         };
 
         groupDelayPlot.getDataFn = [this](float x) -> float {
-            int index = (int)(phasePlot.getXRange().convertTo0to1 (x) * phasePlot.getNumDataPoints());
-            if (index >= cachedResponse.size())
-                updateResponse();
+            int index = (int)(groupDelayPlot.getXRange().convertTo0to1 (x) * (float)groupDelayPlot.getNumDataPoints());
+            jassert(index < cachedResponse.size());
 
-            const float deltaX = phasePlot.getXRange().convertFrom0to1 (1.0f / (float)phasePlot.getNumDataPoints());
             if (index == 0)
                 index += 1;
             else if (index == (int)cachedResponse.size() - 1)
                 index -= 1;
 
-            return (float)((cachedResponse[index + 1].phase - cachedResponse[index].phase) / deltaX);
+            return (float)filterDesigner.getGroupDelay (cachedResponse[index], cachedResponse[index + 1]);
         };
 
+        for (auto* plot : juce::Array<Plot*>{&magnitudePlot, &phasePlot, &groupDelayPlot})
+            plot->dataRefreshFn = [this](int numDataPoints) {
+                if (numDataPoints != cachedResponse.size())
+                    updateResponse();
+            };
 
+        
         updateResponse();
         filterDesigner.addListener (this);
+        magnitudePlot.addComponentListener (this);
+        phasePlot.addComponentListener (this);
+        groupDelayPlot.addComponentListener (this);
     }
 
     ~ResponsePlotAttachment() override
     {
         filterDesigner.removeListener (this);
+        magnitudePlot.removeComponentListener (this);
+        phasePlot.removeComponentListener (this);
+        groupDelayPlot.removeComponentListener (this);
+    }
+
+    void updateResponse()
+    {
+        const int numSamples = std::max(magnitudePlot.getNumDataPoints(), phasePlot.getNumDataPoints());
+        const auto& range = state.displayLogarithmic.getValue() ? xRange = MappedRange<float>::createExponentialRange (0.0f, juce::MathConstants<float>::pi)
+                                                                : xRange = MappedRange<float> { 0.0f, juce::MathConstants<float>::pi };
+
+        cachedResponse.resize (numSamples);
+
+        for (int i = 0; i < numSamples; i++)
+        {
+            const float angle = range.convertFrom0to1 ((float)i / (float)numSamples);
+            cachedResponse[i] = filterDesigner.getFreqResponse (angle);
+        }
     }
 
 private:
 
     void filterCoefficientsChanged(FilterDesign*) override
     {
-        updatePlots();
+        triggerAsyncUpdate();
     }
 
     void filterGainChanged(FilterDesign* emitter) override
     {
-        updatePlots();
+        triggerAsyncUpdate();
     }
 
-    void updatePlots()
+    void updateAllPlots()
     {
-        updateResponse();
         magnitudePlot.updatePath();
         phasePlot.updatePath();
+        groupDelayPlot.updatePath();
     }
 
-    void updateResponse()
+    void handleAsyncUpdate() override
     {
-        const int numSamples = std::max(magnitudePlot.getNumDataPoints(), phasePlot.getNumDataPoints());
-
-        cachedResponse.resize (numSamples);
-
-        for (int i = 0; i < numSamples; i++)
-        {
-            const float angle = (float)i / (float)numSamples;
-            cachedResponse[i] = filterDesigner.getFreqResponse (angle * juce::MathConstants<float>::pi);
-        }
+        updateResponse();
+        updateAllPlots();
     }
+
 
     State state;
     Plot& magnitudePlot;
@@ -94,4 +115,5 @@ private:
     Plot& groupDelayPlot;
     FilterDesign& filterDesigner;
     std::vector<FilterDesign::Response> cachedResponse;
+    MappedRange<float> xRange;
 };

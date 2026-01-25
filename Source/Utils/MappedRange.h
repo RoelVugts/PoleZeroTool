@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../DSP/MathFunctions.h"
+
 #include <functional>
 
 /** Maps a normalized value to a specified range. This is similar to juce::NormalisableRange
@@ -35,6 +37,28 @@ public:
     SampleType convertFrom0to1(SampleType val) const
     {
         return convertFrom0To1Func(start, end, val);
+    }
+
+
+    static MappedRange<SampleType> createExponentialRange(SampleType start, SampleType end, SampleType curve = SampleType(10.0))
+    {
+        // Curve must be greater than 0
+        jassert(curve > 0.0);
+
+        MappedRange<SampleType> range;
+        range.start = start;
+        range.end = end;
+
+        curve = std::pow(curve, SampleType(3.0));
+        range.convertFrom0To1Func = [curve](SampleType start, SampleType end, SampleType v) {
+            return ((std::pow(curve + SampleType(1.0), v) - SampleType(1.0)) / curve) * (end - start) + start;
+        };
+
+        range.convertTo0To1Func = [curve](SampleType start, SampleType end, SampleType v) {
+            return MathFunctions::logBase (curve + 1, ((v - start) / (end - start)) * curve + 1);
+        };
+
+        return range;
     }
 
     SampleType start { SampleType(0.0) };

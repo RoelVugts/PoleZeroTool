@@ -118,4 +118,10 @@ namespace MathFunctions
         const SampleType multiplier = std::pow(SampleType(10), SampleType(numDecimals));
         return std::round(val * multiplier) / multiplier;
     }
+
+    template<typename SampleType>
+    SampleType logBase(SampleType base, SampleType val)
+    {
+        return std::log(val) / std::log(base);
+    }
 }
