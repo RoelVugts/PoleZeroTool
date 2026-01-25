@@ -67,7 +67,7 @@ double FilterDesign::getGroupDelay (Response& a, Response& b) const
 {
     const double angleDelta = a.angle - b.angle;
     const double phaseDelta = a.phase - b.phase;
-    return phaseDelta / angleDelta;
+    return -phaseDelta / angleDelta;
 }
 
 

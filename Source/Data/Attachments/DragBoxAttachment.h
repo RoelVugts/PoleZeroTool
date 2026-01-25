@@ -8,9 +8,9 @@ class DragBoxAttachment : private DragBox::Listener
 {
 public:
     static std::unique_ptr<DragBoxAttachment>
-        makeAttachment (juce::AudioProcessorValueTreeState& apvts, const juce::String& paramID, DragBox& comp, juce::UndoManager* um = nullptr)
+        makeAttachment (juce::AudioProcessorValueTreeState& apvts, const juce::String& paramIdentifier, DragBox& comp, juce::UndoManager* um = nullptr)
     {
-        juce::RangedAudioParameter* param = apvts.getParameter (paramID);
+        juce::RangedAudioParameter* param = apvts.getParameter (paramIdentifier);
         jassert (param != nullptr);
 
         return std::make_unique<DragBoxAttachment> (*param, comp, um);

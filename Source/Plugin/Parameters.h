@@ -8,6 +8,7 @@ enum PoZeParamID
 {
     gain,
     autoNormalise,
+    bypass,
 
     // Keep last to get total parameter count
     parameterCount
@@ -23,12 +24,12 @@ const std::array<juce::String, parameterCount> paramID =
 {
     "GAIN",
     "AUTO_NORMALISE"
-       "DECIBELS"
+       "BYPASS"
 };
 
 const std::array<juce::String, parameterCount> paramName
 {
     "Gain"
        "Auto Normalise"
-       "Decibels"
+       "Bypass"
 };

@@ -20,7 +20,7 @@ public:
             triggerUpdate();
         });
 
-        state.setOnAnyPropertyChanged ([this](juce::ValueTree& tree) {
+        state.setOnAnyPropertyChanged ([this](juce::ValueTree&) {
             triggerUpdate();
         });
 
@@ -94,7 +94,7 @@ private:
 
     void filterGainChanged(FilterDesign* emitter) override
     {
-        gainAttachment.setValueAsCompleteGesture (emitter->getGain());
+        gainAttachment.setValueAsCompleteGesture ((float)emitter->getGain());
     }
 
     PoleZeroState state;

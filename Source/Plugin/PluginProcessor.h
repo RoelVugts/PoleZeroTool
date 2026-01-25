@@ -55,6 +55,7 @@ public:
 
     //==============================================================================
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
+    juce::AudioProcessorParameter* getBypassParameter() const override;
 
     //==============================================================================
     State state { juce::ValueTree(State::IDs::type) };
@@ -68,10 +69,14 @@ public:
     //==============================================================================
     choc::fifo::SingleReaderMultipleWriterFIFO<ParamMessage> paramFifo;
     juce::AudioProcessorValueTreeState apvts;
+
+    std::function<void(double sr)> onSampleRateChange { nullptr };
+
 private:
 
     void parameterChanged(const String& parameterID, float newValue) override;
-    void handleParameterChange(const ParamMessage& msg);
+
+    bool bypass { false };
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)

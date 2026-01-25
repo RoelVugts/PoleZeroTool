@@ -17,6 +17,7 @@ public:
         static const juce::Identifier displayInDB;
         static const juce::Identifier displayGroupDelay;
         static const juce::Identifier displayLogarithmic;
+        static const juce::Identifier displayInHz;
     };
 
     State(juce::ValueTree tree);
@@ -27,4 +28,5 @@ public:
     TreePropertyWrapper<bool> displayInDB;
     TreePropertyWrapper<bool> displayGroupDelay;
     TreePropertyWrapper<bool> displayLogarithmic;
+    TreePropertyWrapper<bool> displayInHz;
 };

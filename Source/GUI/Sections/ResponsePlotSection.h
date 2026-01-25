@@ -11,25 +11,27 @@ class ResponsePlotSection : public juce::Component
 {
 public:
 
-    ResponsePlotSection(AudioPluginAudioProcessor& p) : state(p.state)
+    ResponsePlotSection(AudioPluginAudioProcessor& p) : processor(p), state(p.state)
     {
+        //==================================================================================================
+        phasePlot.setRange ({ -juce::MathConstants<float>::twoPi, juce::MathConstants<float>::twoPi });
+        phasePlot.setYTicks ({   -juce::MathConstants<float>::pi,
+                                    -juce::MathConstants<float>::halfPi, 0,
+                                     juce::MathConstants<float>::halfPi,
+                                     juce::MathConstants<float>::pi });
+        phasePlot.setYLabels ({ "-" + piString, "-" + halfString + piString, "0", halfString + piString, piString });
+
+        groupDelayPlot.setRange ({ -16, 16 });
+        groupDelayPlot.setYTicks ({ -15, -10, -5, 0, 5, 10, 15 });
+        groupDelayPlot.setYLabels ({ "", "-10", "-5", "0", "5", "10", "" });
+
         for (auto* plot : juce::Array<Plot*>{&magnitudePlot, &phasePlot, &groupDelayPlot})
-        {
-            plot->setDomain ({ 0.0f, juce::MathConstants<float>::pi });
-            plot->setXTicks ({
-                MathFunctions::roundToDecimals(juce::MathConstants<float>::halfPi   * 0.5f,     2),
-                MathFunctions::roundToDecimals(juce::MathConstants<float>::halfPi,              2),
-                MathFunctions::roundToDecimals(juce::MathConstants<float>::pi       * 0.75f,    2),
-                MathFunctions::roundToDecimals(juce::MathConstants<float>::pi,                  2) }
-            );
-
-            plot->setXLabels ({ quarterString + piString, halfString + piString, threeQtrString + piString, piString});
             addAndMakeVisible (plot);
-        }
 
+        //==================================================================================================
         plotAttachment = std::make_unique<ResponsePlotAttachment> (p.state, p.filterDesign, magnitudePlot, phasePlot, groupDelayPlot);
 
-
+        //==================================================================================================
         state.setOnPropertyChanged (State::IDs::displayInDB, [this]() {
             const bool shouldDisplayInDecibels = state.displayInDB.getValue();
             if (shouldDisplayInDecibels)
@@ -46,6 +48,7 @@ public:
             }
         }, true);
 
+        //==================================================================================================
         state.setOnPropertyChanged (State::IDs::displayGroupDelay, [this]() {
             const bool shouldDisplayGroupDelay = state.displayGroupDelay.getValue();
             if (shouldDisplayGroupDelay)
@@ -60,35 +63,18 @@ public:
             }
         }, true);
 
+        //==================================================================================================
         state.setOnPropertyChanged (State::IDs::displayLogarithmic, [this]() {
             const bool isLogarithmic = state.displayLogarithmic.getValue();
             plotAttachment->updateResponse();
-
-            if (isLogarithmic)
-            {
-                MappedRange<float> logRange = MappedRange<float>::createExponentialRange (0.0f, juce::MathConstants<float>::pi);
-                magnitudePlot.setDomain (logRange);
-                phasePlot.setDomain (logRange);
-                groupDelayPlot.setDomain (logRange);
-            }
-            else
-            {
-                magnitudePlot.setDomain ({ 0.0f, juce::MathConstants<float>::pi});
-                phasePlot.setDomain ({ 0.0f, juce::MathConstants<float>::pi});
-                groupDelayPlot.setDomain ({ 0.0f, juce::MathConstants<float>::pi });
-            }
+            setLogRange (isLogarithmic);
         }, true);
 
-        phasePlot.setRange ({ -juce::MathConstants<float>::twoPi, juce::MathConstants<float>::twoPi });
-        phasePlot.setYTicks ({   -juce::MathConstants<float>::pi,
-                                    -juce::MathConstants<float>::halfPi, 0,
-                                     juce::MathConstants<float>::halfPi,
-                                     juce::MathConstants<float>::pi });
-        phasePlot.setYLabels ({ "-" + piString, "-" + halfString + piString, "0", halfString + piString, piString });
+        state.setOnPropertyChanged (State::IDs::displayInHz, [this]() {
+            setDisplayedUnit (state.displayInHz.getValue());
+        }, true);
 
-        groupDelayPlot.setRange ({ -16, 16 });
-        groupDelayPlot.setYTicks ({ -15, -10, -5, 0, 5, 10, 15 });
-        groupDelayPlot.setYLabels ({ "", "-10", "-5", "0", "5", "10", "" });
+        processor.onSampleRateChange = [this](double) { setDisplayedUnit (state.displayInHz.getValue()); };
     }
 
     void resized() override
@@ -112,6 +98,86 @@ public:
     std::unique_ptr<ResponsePlotAttachment> plotAttachment;
 
 private:
+
+    void setLogRange(bool shouldDisplayLogarithmic)
+    {
+        if (shouldDisplayLogarithmic)
+        {
+            MappedRange<float> logRange = MappedRange<float>::createExponentialRange (0.0f, juce::MathConstants<float>::pi);
+
+            for (auto* plot : juce::Array<Plot*>{&magnitudePlot, &phasePlot, &groupDelayPlot})
+            {
+                plot->setDomain (logRange);
+                plot->setXTicks ({
+                    juce::MathConstants<float>::halfPi   * 0.00390625f,
+                    juce::MathConstants<float>::halfPi   * 0.0078125f,
+                    juce::MathConstants<float>::halfPi   * 0.015625f,
+                    juce::MathConstants<float>::halfPi   * 0.03125f,
+                    juce::MathConstants<float>::halfPi   * 0.0625f,
+                    juce::MathConstants<float>::halfPi   * 0.125f,
+                    juce::MathConstants<float>::halfPi   * 0.25f,
+                    juce::MathConstants<float>::halfPi   * 0.5f,
+                    juce::MathConstants<float>::halfPi,
+                    juce::MathConstants<float>::pi
+                }
+                );
+            }
+        }
+        else
+        {
+            for (auto* plot : juce::Array<Plot*>{&magnitudePlot, &phasePlot, &groupDelayPlot})
+            {
+                plot->setDomain ({ 0.0f, juce::MathConstants<float>::pi });
+                plot->setXTicks ({
+                    MathFunctions::roundToDecimals(juce::MathConstants<float>::halfPi   * 0.5f,     2),
+                    MathFunctions::roundToDecimals(juce::MathConstants<float>::halfPi,              2),
+                    MathFunctions::roundToDecimals(juce::MathConstants<float>::pi       * 0.75f,    2),
+                    MathFunctions::roundToDecimals(juce::MathConstants<float>::pi,                  2) }
+                );
+            }
+        }
+
+        setDisplayedUnit (state.displayInHz.getValue());
+    }
+
+    void setDisplayedUnit(bool hzIsTrueRadiansIsFalse)
+    {
+        const double sampleRate = processor.getSampleRate();
+        const bool isLogarithmic = state.displayLogarithmic.getValue();
+
+        std::vector<juce::String> labels;
+        if (hzIsTrueRadiansIsFalse)
+        {
+            const int numTicks = isLogarithmic ? 9 : 3;
+            for (int i = numTicks; i >= 0; i--)
+            {
+                juce::String label;
+
+                const double freq = (sampleRate * 0.5) / (double)std::pow(2.0, i);
+                if (freq >= 10000.0)
+                    label = juce::String(std::round(freq / 1000.0), 0, false) + "k";
+                else if (freq >= 1000.0)
+                    label = juce::String(std::round(freq / 100.0) / 10.0, 1, false) + "k";
+                else
+                    label = juce::String(std::round(freq), 0, false);
+
+                labels.emplace_back (label);
+            }
+        }
+        else
+        {
+            if (isLogarithmic)
+                labels = { "1/512", "1/256", "1/128", "1/64", "1/32", "1/16", "1/8", "1/4", "1/2", piString};
+            else
+                labels = { quarterString + piString, halfString + piString, threeQtrString + piString, piString};
+        }
+
+        for (auto* plot : juce::Array<Plot*>{&magnitudePlot, &phasePlot, &groupDelayPlot})
+            plot->setXLabels (labels);
+
+    }
+
+    AudioPluginAudioProcessor& processor;
     State state;
     const juce::String piString         { juce::String (juce::CharPointer_UTF8 ("\xCF\x80")) }; // pi
     const juce::String quarterString    { juce::String (juce::CharPointer_UTF8 ("\xC2\xBC")) }; // 1/4

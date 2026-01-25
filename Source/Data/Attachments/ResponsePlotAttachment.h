@@ -27,9 +27,9 @@ public:
             int index = (int)(phasePlot.getXRange().convertTo0to1 (x) * (float)phasePlot.getNumDataPoints());
             jassert(index < cachedResponse.size());
 
-            // 0 Hz has no phase
+            // 0 Hz has no phase so display phase of the next frequency
             if (index == 0)
-                return cachedResponse[1].phase;
+                return (float)cachedResponse[1].phase;
 
             return (float)cachedResponse[index].phase;
         };
@@ -55,17 +55,11 @@ public:
         
         updateResponse();
         filterDesigner.addListener (this);
-        magnitudePlot.addComponentListener (this);
-        phasePlot.addComponentListener (this);
-        groupDelayPlot.addComponentListener (this);
     }
 
     ~ResponsePlotAttachment() override
     {
         filterDesigner.removeListener (this);
-        magnitudePlot.removeComponentListener (this);
-        phasePlot.removeComponentListener (this);
-        groupDelayPlot.removeComponentListener (this);
     }
 
     void updateResponse()
@@ -90,7 +84,7 @@ private:
         triggerAsyncUpdate();
     }
 
-    void filterGainChanged(FilterDesign* emitter) override
+    void filterGainChanged(FilterDesign*) override
     {
         triggerAsyncUpdate();
     }

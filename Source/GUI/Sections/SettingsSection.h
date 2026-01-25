@@ -21,49 +21,53 @@ public:
         gainAttachment = DragBoxAttachment::makeAttachment (p.apvts, paramID[PoZeParamID::gain], gainBox);
         addAndMakeVisible (gainBox);
 
-        autoNormalizeBtn.setColour (juce::TextButton::ColourIds::buttonColourId, LAF::Colours::buttonOffColour);
-        autoNormalizeBtn.setColour (juce::TextButton::ColourIds::buttonOnColourId, LAF::Colours::buttonOnColour);
-        autoNormalizeBtn.setColour (juce::TextButton::ColourIds::textColourOffId, LAF::Colours::textColour);
-        autoNormalizeBtn.setColour (juce::TextButton::ColourIds::textColourOnId, juce::Colours::white);
-        autoNormalizeBtn.setClickingTogglesState (true);
-        autoNormalizeAttachment = std::make_unique<ButtonAttachment>(p.apvts, paramID[PoZeParamID::autoNormalise], autoNormalizeBtn);
-        addAndMakeVisible (autoNormalizeBtn);
+        for (auto* button : juce::Array<juce::TextButton*>{&decibelBtn, &groupDelayBtn, &logarithmicBtn, &unitBtn})
+        {
+            button->setColour (juce::TextButton::ColourIds::buttonColourId, LAF::Colours::buttonOnColour);
+            button->setColour (juce::TextButton::ColourIds::buttonOnColourId, LAF::Colours::buttonOnColour);
+            button->setColour (juce::TextButton::ColourIds::textColourOffId, juce::Colours::white);
+            button->setColour (juce::TextButton::ColourIds::textColourOnId, juce::Colours::white);
+            button->setClickingTogglesState (true);
+            addAndMakeVisible (button);
+        }
 
-        decibelBtn.setColour (juce::TextButton::ColourIds::buttonColourId, LAF::Colours::buttonOnColour);
-        decibelBtn.setColour (juce::TextButton::ColourIds::buttonOnColourId, LAF::Colours::buttonOnColour);
-        decibelBtn.setColour (juce::TextButton::ColourIds::textColourOffId, juce::Colours::white);
-        decibelBtn.setColour (juce::TextButton::ColourIds::textColourOnId, juce::Colours::white);
-        decibelBtn.setClickingTogglesState (true);
+        for (auto* button : juce::Array<juce::TextButton*>{&autoNormalizeBtn, &bypassBtn})
+        {
+            button->setColour (juce::TextButton::ColourIds::buttonColourId, LAF::Colours::buttonOffColour);
+            button->setColour (juce::TextButton::ColourIds::buttonOnColourId, LAF::Colours::buttonOnColour);
+            button->setColour (juce::TextButton::ColourIds::textColourOffId, LAF::Colours::textColour);
+            button->setColour (juce::TextButton::ColourIds::textColourOnId, juce::Colours::white);
+            button->setClickingTogglesState (true);
+            addAndMakeVisible (button);
+        }
+
+        autoNormalizeAttachment = std::make_unique<ButtonAttachment>(p.apvts, paramID[PoZeParamID::autoNormalise], autoNormalizeBtn);
+
         decibelBtn.onStateChange = [this]() {
             const bool isOn = decibelBtn.getToggleState();
-            decibelBtn.setButtonText (isOn ? "dB" : "Amp");
+            decibelBtn.setButtonText (isOn ? "Amp" : "dB");
         };
         decibelAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayInDB, decibelBtn, nullptr);
-        addAndMakeVisible (decibelBtn);
 
-        groupDelayBtn.setColour (juce::TextButton::ColourIds::buttonColourId, LAF::Colours::buttonOnColour);
-        groupDelayBtn.setColour (juce::TextButton::ColourIds::buttonOnColourId, LAF::Colours::buttonOnColour);
-        groupDelayBtn.setColour (juce::TextButton::ColourIds::textColourOffId, juce::Colours::white);
-        groupDelayBtn.setColour (juce::TextButton::ColourIds::textColourOnId, juce::Colours::white);
-        groupDelayBtn.setClickingTogglesState (true);
         groupDelayBtn.onStateChange = [this]() {
             const bool isOn = groupDelayBtn.getToggleState();
-            groupDelayBtn.setButtonText (isOn ? "Delay" : "Phase");
+            groupDelayBtn.setButtonText (isOn ? "Phase" : "Delay");
         };
         groupDelayAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayGroupDelay, groupDelayBtn, nullptr);
-        addAndMakeVisible (groupDelayBtn);
 
-        logarithmicBtn.setColour (juce::TextButton::ColourIds::buttonColourId, LAF::Colours::buttonOnColour);
-        logarithmicBtn.setColour (juce::TextButton::ColourIds::buttonOnColourId, LAF::Colours::buttonOnColour);
-        logarithmicBtn.setColour (juce::TextButton::ColourIds::textColourOffId, juce::Colours::white);
-        logarithmicBtn.setColour (juce::TextButton::ColourIds::textColourOnId, juce::Colours::white);
-        logarithmicBtn.setClickingTogglesState (true);
         logarithmicBtn.onStateChange = [this]() {
             const bool isOn = logarithmicBtn.getToggleState();
-            logarithmicBtn.setButtonText (isOn ? "Log" : "Linear");
+            logarithmicBtn.setButtonText (isOn ? "Linear" : "Log");
         };
         logarithmicAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayLogarithmic, logarithmicBtn, nullptr);
-        addAndMakeVisible (logarithmicBtn);
+
+        unitBtn.onStateChange = [this]() {
+            const bool isOn = unitBtn.getToggleState();
+            unitBtn.setButtonText (isOn ? "Radians" : "Hz");
+        };
+        unitAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayInHz, unitBtn, nullptr);
+
+        bypassAttachment = std::make_unique<ButtonAttachment>(p.apvts, paramID[PoZeParamID::bypass], bypassBtn);
     }
 
 
@@ -100,6 +104,14 @@ public:
         bounds.removeFromLeft (LAF::Layout::defaultSpacing);
         auto logBtnArea = bounds.removeFromLeft (btnSize);
         logarithmicBtn.setBounds (logBtnArea.toNearestInt());
+
+        bounds.removeFromLeft (LAF::Layout::defaultSpacing);
+        auto unitBtnArea = bounds.removeFromLeft (btnSize);
+        unitBtn.setBounds (unitBtnArea.toNearestInt());
+
+        bounds.removeFromLeft (LAF::Layout::defaultSpacing);
+        auto bypassBtnArea = bounds.removeFromLeft (btnSize);
+        bypassBtn.setBounds (bypassBtnArea.toNearestInt());
     }
 
 private:
@@ -109,9 +121,13 @@ private:
     juce::TextButton decibelBtn { "Amp" };
     juce::TextButton groupDelayBtn { "Delay" };
     juce::TextButton logarithmicBtn { "Linear" };
+    juce::TextButton unitBtn { "Radians" };
+    juce::TextButton bypassBtn { "Bypass" };
     std::unique_ptr<DragBoxAttachment> gainAttachment;
     std::unique_ptr<ButtonAttachment> autoNormalizeAttachment;
     std::unique_ptr<ButtonPropertyAttachment> decibelAttachment;
     std::unique_ptr<ButtonPropertyAttachment> groupDelayAttachment;
     std::unique_ptr<ButtonPropertyAttachment> logarithmicAttachment;
+    std::unique_ptr<ButtonPropertyAttachment> unitAttachment;
+    std::unique_ptr<ButtonAttachment> bypassAttachment;
 };

@@ -104,6 +104,8 @@ void AudioPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
     juce::ignoreUnused (sampleRate, samplesPerBlock);
+
+    juce::NullCheckedInvocation::invoke(onSampleRateChange, sampleRate);
 }
 
 void AudioPluginAudioProcessor::releaseResources()
@@ -148,10 +150,6 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // std::function<void()> updateFn;
-    // while (paramFifo.pop (updateFn))
-    //     juce::NullCheckedInvocation::invoke(updateFn);
-
     if (filterDesignAttachment->filterChanged())
     {
         const auto& coefs = filterDesignAttachment->getCoefficients();
@@ -164,7 +162,8 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer (channel);
-        filter[channel].process (channelData, channelData, buffer.getNumSamples());
+        if (! bypass)
+            filter[channel].process (channelData, channelData, buffer.getNumSamples());
     }
 }
 
@@ -235,11 +234,20 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                 params.push_back (std::make_unique<juce::AudioParameterBool>(juce::ParameterID(paramID[i], 1), paramName[i], true));
                 break;
 
+            case PoZeParamID::bypass:
+                params.push_back (std::make_unique<juce::AudioParameterBool>(juce::ParameterID(paramID[i], 1), paramName[i], false));
+                break;
+
             default: jassertfalse; break;
         }
     }
 
     return { params.begin(), params.end() };
+}
+
+juce::AudioProcessorParameter* AudioPluginAudioProcessor::getBypassParameter() const
+{
+    return apvts.getParameter (paramID[PoZeParamID::bypass]);
 }
 
 void AudioPluginAudioProcessor::parameterChanged (const juce::String& parameterID, float newValue)
@@ -260,12 +268,11 @@ void AudioPluginAudioProcessor::parameterChanged (const juce::String& parameterI
                 filterDesign.setAutoNormalize (static_cast<bool> (newValue));
                 break;
 
+            case PoZeParamID::bypass:
+                bypass = static_cast<bool> (newValue);
+                break;
+
             default: jassertfalse; break;
         }
     }
-}
-
-void AudioPluginAudioProcessor::handleParameterChange (const ParamMessage& msg)
-{
-    // Implement parameter updates on audio thread here
 }
