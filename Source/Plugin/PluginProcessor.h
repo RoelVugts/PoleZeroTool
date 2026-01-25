@@ -72,6 +72,9 @@ public:
 
     std::function<void(double sr)> onSampleRateChange { nullptr };
 
+    std::atomic<float> inputLevel[MAX_CHANNELS];
+    std::atomic<float> outputLevel[MAX_CHANNELS];
+
 private:
 
     void parameterChanged(const String& parameterID, float newValue) override;

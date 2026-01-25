@@ -162,8 +162,14 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer (channel);
+
+        inputLevel[channel] = buffer.getRMSLevel (channel, 0, buffer.getNumSamples());
+
         if (! bypass)
             filter[channel].process (channelData, channelData, buffer.getNumSamples());
+
+        outputLevel[channel] = buffer.getRMSLevel (channel, 0, buffer.getNumSamples());
+
     }
 }
 

@@ -4,18 +4,20 @@
 
 #include "../Plugin/PluginProcessor.h"
 
+#include "Components/VolumeMeter.h"
+#include "LookAndFeel.h"
+#include "Sections/FormulaSection.h"
 #include "Sections/PoleZeroSection.h"
 #include "Sections/ResponsePlotSection.h"
-#include "Sections/FormulaSection.h"
 #include "Sections/SettingsSection.h"
-#include "LookAndFeel.h"
 
-class GUI : public juce::Component
+class GUI : public juce::Component, private juce::Timer
 {
 public:
 
     GUI(AudioPluginAudioProcessor& p)
-        : poZeSection (p)
+        : processor(p)
+        , poZeSection (p)
         , plotSection (p)
         , formulaSection (p)
         , settingsSection (p)
@@ -24,6 +26,12 @@ public:
         addAndMakeVisible (plotSection);
         addAndMakeVisible (formulaSection);
         addAndMakeVisible (settingsSection);
+        addAndMakeVisible (inputMeter[0]);
+        addAndMakeVisible (inputMeter[1]);
+        addAndMakeVisible (outputMeter[0]);
+        addAndMakeVisible (outputMeter[1]);
+
+        startTimerHz (30);
     }
 
     void resized() override
@@ -38,7 +46,16 @@ public:
         settingsSection.setBounds (settingsArea.toNearestInt());
 
         auto inputMeterArea = bounds.removeFromLeft (width * 0.05f);
+        inputMeterArea = inputMeterArea.reduced(LAF::Layout::defaultSpacing);
+        auto leftMeterArea = inputMeterArea.removeFromLeft (inputMeterArea.getWidth() * 0.5f);
+        inputMeter[0].setBounds (leftMeterArea.toNearestInt());
+        inputMeter[1].setBounds (inputMeterArea.toNearestInt());
+
         auto outputMeterArea = bounds.removeFromRight (width * 0.1f);
+        outputMeterArea = outputMeterArea.reduced(LAF::Layout::defaultSpacing);
+        leftMeterArea = outputMeterArea.removeFromLeft (outputMeterArea.getWidth() * 0.5f);
+        outputMeter[0].setBounds (leftMeterArea.toNearestInt());
+        outputMeter[1].setBounds (outputMeterArea.toNearestInt());
 
         // Margins
         bounds.removeFromBottom (LAF::Layout::defaultSpacing);
@@ -65,10 +82,22 @@ public:
     }
 
 private:
+
+    void timerCallback() override
+    {
+        for (int ch = 0; ch < 2; ch++)
+        {
+            inputMeter[ch].setLevel (processor.inputLevel[ch]);
+            outputMeter[ch].setLevel (processor.outputLevel[ch]);
+        }
+
+    }
+
+    AudioPluginAudioProcessor& processor;
     PoleZeroSection poZeSection;
     ResponsePlotSection plotSection;
     FormulaSection formulaSection;
     SettingsSection settingsSection;
-
-
+    VolumeMeter inputMeter[2];
+    VolumeMeter outputMeter[2];
 };
