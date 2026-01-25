@@ -81,11 +81,13 @@ public:
         , plot(poZePlot)
     {
         state.points.setOnChildAdded ([this](juce::ValueTree&) {
-            triggerAsyncUpdate();
+            if (! ignoreStateCallbacks)
+                triggerAsyncUpdate();
         });
 
         state.points.setOnChildRemoved ([this](juce::ValueTree&, int) {
-            triggerAsyncUpdate();
+            if (! ignoreStateCallbacks)
+                triggerAsyncUpdate();
         });
 
         //=========================================================================

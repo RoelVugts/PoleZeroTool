@@ -82,7 +82,7 @@ private:
             }
         }
 
-        int writeBuffer = 1 - activeBuffer.load(std::memory_order_acquire);
+        const int writeBuffer = 1 - activeBuffer.load(std::memory_order_acquire);
 
         filterDesigner.setPoleZeros (poles, zeros);
         coefficients[writeBuffer].iirCoefs = filterDesigner.getIIRCoefs();
@@ -90,6 +90,7 @@ private:
 
         activeBuffer.store(writeBuffer, std::memory_order_release);
         newCoefsReady.store (true, std::memory_order_release);
+
     }
 
     void filterGainChanged(FilterDesign* emitter) override
@@ -108,4 +109,5 @@ private:
 
     //=========================================================================
     juce::ParameterAttachment gainAttachment;
+
 };

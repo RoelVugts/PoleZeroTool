@@ -139,7 +139,7 @@ private:
     juce::TableListBox& owner;
 };
 
-class PoZeTable : public juce::TableListBox
+class PoZeTable : public juce::TableListBox, private juce::AsyncUpdater
 {
 public:
     PoZeTable(PoleZeroState settings) : state(settings)
@@ -156,24 +156,29 @@ public:
         setModel (model.get());
 
         state.setOnAnyPropertyChanged ([this](juce::ValueTree&) {
-            updateContent();
-            repaint();
+            triggerAsyncUpdate();
         });
 
         state.points.setOnChildAdded ([this](juce::ValueTree&) {
-            updateContent();
-            repaint();
+            triggerAsyncUpdate();
         });
 
         state.points.setOnChildRemoved ([this](juce::ValueTree&, int) {
-            updateContent();
-            repaint();
+            triggerAsyncUpdate();
         });
     }
 
     ~PoZeTable() override
     {
         setModel (nullptr);
+    }
+
+private:
+
+    void handleAsyncUpdate() override
+    {
+        updateContent();
+        repaint();
     }
 
     PoleZeroState state;
