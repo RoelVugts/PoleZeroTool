@@ -90,12 +90,18 @@ private:
 
         activeBuffer.store(writeBuffer, std::memory_order_release);
         newCoefsReady.store (true, std::memory_order_release);
-
     }
 
     void filterGainChanged(FilterDesign* emitter) override
     {
         gainAttachment.setValueAsCompleteGesture ((float)emitter->getGain());
+        
+        const int writeBuffer = 1 - activeBuffer.load(std::memory_order_acquire);
+        coefficients[writeBuffer].iirCoefs = filterDesigner.getIIRCoefs();
+        coefficients[writeBuffer].firCoefs  = filterDesigner.getFIRCoefs();
+
+        activeBuffer.store(writeBuffer, std::memory_order_release);
+        newCoefsReady.store (true, std::memory_order_release);
     }
 
     PoleZeroState state;
