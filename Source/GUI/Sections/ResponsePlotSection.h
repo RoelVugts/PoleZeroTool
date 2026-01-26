@@ -2,31 +2,36 @@
 
 #include <JuceHeader.h>
 
-#include "../Components/Plot.h"
 #include "../../Data/Attachments/ResponsePlotAttachment.h"
-#include "../LookAndFeel.h"
+#include "../Components/Plot.h"
 #include "../DSP/MathFunctions.h"
+#include "../LookAndFeel.h"
 
-class ResponsePlotSection : public juce::Component
+class ResponsePlotSection : public juce::Component, private Plot::Listener
 {
 public:
 
-    ResponsePlotSection(AudioPluginAudioProcessor& p) : processor(p), state(p.state)
+    ResponsePlotSection(AudioPluginAudioProcessor& p)
+        : processor(p), state(p.state)
     {
         //==================================================================================================
-        phasePlot.setRange ({ -juce::MathConstants<float>::twoPi, juce::MathConstants<float>::twoPi });
+        phasePlot.setRange ({ -juce::MathConstants<float>::twoPi, juce::MathConstants<float>::twoPi }, true);
         phasePlot.setYTicks ({   -juce::MathConstants<float>::pi,
                                     -juce::MathConstants<float>::halfPi, 0,
                                      juce::MathConstants<float>::halfPi,
                                      juce::MathConstants<float>::pi });
         phasePlot.setYLabels ({ "-" + piString, "-" + halfString + piString, "0", halfString + piString, piString });
 
-        groupDelayPlot.setRange ({ -16, 16 });
+        groupDelayPlot.setRange ({ -16, 16 }, true);
         groupDelayPlot.setYTicks ({ -15, -10, -5, 0, 5, 10, 15 });
         groupDelayPlot.setYLabels ({ "", "-10", "-5", "0", "5", "10", "" });
 
         for (auto* plot : juce::Array<Plot*>{&magnitudePlot, &phasePlot, &groupDelayPlot})
+        {
+            plot->addListener (this);
             addAndMakeVisible (plot);
+        }
+
 
         //==================================================================================================
         plotAttachment = std::make_unique<ResponsePlotAttachment> (p.state, p.filterDesign, magnitudePlot, phasePlot, groupDelayPlot);
@@ -34,18 +39,7 @@ public:
         //==================================================================================================
         state.setOnPropertyChanged (State::IDs::displayInDB, [this]() {
             const bool shouldDisplayInDecibels = state.displayInDB.getValue();
-            if (shouldDisplayInDecibels)
-            {
-                magnitudePlot.setRange ({ -60.0f, 12.0f });
-                magnitudePlot.setYTicks ({ -40.0f, -24.0f, -12.0f, -6.0f, 0.0f, 6.0f });
-                magnitudePlot.setYLabels ({"-40", "-24", "-12", "-6", "0", "+6" });
-            }
-            else
-            {
-                magnitudePlot.setRange ({ 0.0f, 2.0f });
-                magnitudePlot.setYTicks ({ 0.25f, 0.5f, 0.75f, 1.0, 1.25f, 1.5f });
-                magnitudePlot.setYLabels ({ "0.25","0.5", "0.75","1.0", "1.25", "1.5" });
-            }
+            setLogRange (shouldDisplayInDecibels);
         }, true);
 
         //==================================================================================================
@@ -67,7 +61,7 @@ public:
         state.setOnPropertyChanged (State::IDs::displayLogarithmic, [this]() {
             const bool isLogarithmic = state.displayLogarithmic.getValue();
             plotAttachment->updateResponse();
-            setLogRange (isLogarithmic);
+            setLogDomain (isLogarithmic);
         }, true);
 
         state.setOnPropertyChanged (State::IDs::displayInHz, [this]() {
@@ -92,14 +86,30 @@ public:
         groupDelayPlot.setBounds (phasePlotArea.toNearestInt());
     }
 
-    Plot magnitudePlot { "Magnitude" };
-    Plot phasePlot { "Phase" };
-    Plot groupDelayPlot { "Group Delay" };
+    Plot magnitudePlot { "Magnitude", -100.0f, 100.0f };
+    Plot phasePlot { "Phase", -1000.0f, 1000.0f };
+    Plot groupDelayPlot { "Group Delay", -1000.0f, 1000.0f };
     std::unique_ptr<ResponsePlotAttachment> plotAttachment;
 
 private:
 
-    void setLogRange(bool shouldDisplayLogarithmic)
+    void setLogRange(bool shouldDisplayInDecibels)
+    {
+        if (shouldDisplayInDecibels)
+        {
+            magnitudePlot.setRange ({ -60.0f, 12.0f }, true);
+            magnitudePlot.setYTicks ({ -40.0f, -24.0f, -12.0f, -6.0f, 0.0f, 6.0f });
+            magnitudePlot.setYLabels ({"-40", "-24", "-12", "-6", "0", "+6" });
+        }
+        else
+        {
+            magnitudePlot.setRange ({ 0.0f, 2.0f }, true);
+            magnitudePlot.setYTicks ({ 0.25f, 0.5f, 0.75f, 1.0, 1.25f, 1.5f });
+            magnitudePlot.setYLabels ({ "0.25","0.5", "0.75","1.0", "1.25", "1.5" });
+        }
+    }
+
+    void setLogDomain(bool shouldDisplayLogarithmic)
     {
         if (shouldDisplayLogarithmic)
         {
@@ -175,6 +185,52 @@ private:
         for (auto* plot : juce::Array<Plot*>{&magnitudePlot, &phasePlot, &groupDelayPlot})
             plot->setXLabels (labels);
 
+    }
+
+    void rangeChanged(Plot* plot) override
+    {
+        const auto& range = plot->getYRange();
+
+        if (plot == &magnitudePlot)
+        {
+            auto ticks = getGridYTicks (range, 8, 5.0f);
+            std::vector<juce::String> labels;
+            for (const auto& tick : ticks)
+                labels.emplace_back (tick, 0, false);
+
+            plot->setYTicks (ticks);
+            plot->setYLabels (labels);
+        }
+    }
+
+    std::vector<float> getGridYTicks(const MappedRange<float>& range, int numTicks, float maxStep)
+    {
+        const float span = range.end - range.start;
+
+        if (span <= 0.0f)
+            return {};
+
+        numTicks = span > 0.0f ? numTicks : 0;
+        float step = span / (float)numTicks;
+        step = std::min(MathFunctions::roundToHighestDecimal (step), maxStep);
+
+        const float start = std::ceil((range.start / step)) * step;
+        const float end = std::floor((range.end / step)) * step;
+        const float truncatedSpan = end - start;
+
+        float interval = truncatedSpan / (float)(numTicks + 1);
+        interval = std::ceil(interval / step) * step;
+
+        std::vector<float> ticks;
+
+        float value = start;
+        while (value <= end)
+        {
+            ticks.emplace_back  (value);
+            value += interval;
+        }
+
+        return ticks;
     }
 
     AudioPluginAudioProcessor& processor;

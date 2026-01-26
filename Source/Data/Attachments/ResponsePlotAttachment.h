@@ -75,6 +75,8 @@ public:
             const float angle = range.convertFrom0to1 ((float)i / (float)numSamples);
             cachedResponse[i] = filterDesigner.getFreqResponse (angle);
         }
+
+
     }
 
 private:

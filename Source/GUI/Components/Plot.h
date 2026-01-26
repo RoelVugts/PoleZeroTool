@@ -1,13 +1,27 @@
 #pragma once
 
+#include "DragBox.h"
+
 #include <JuceHeader.h>
 
 #include "../../DSP/FilterDesign.h"
 #include "../../Utils/MappedRange.h"
 
-class Plot : public juce::Component
+class Plot : public juce::Component, private DragBox::Listener
 {
 public:
+
+    class Listener
+    {
+    public:
+        Listener() = default;
+        virtual ~Listener() = default;
+        virtual void rangeChanged(Plot*) {}
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Listener)
+    };
+
+    void addListener (Listener* listener) { listeners.add (listener); }
+    void removeListener (Listener* listener) { listeners.remove (listener); }
 
     enum ColourIds
     {
@@ -19,7 +33,8 @@ public:
         textColourId                = 0x210600
     };
 
-    Plot(const juce::String& plotName) : title(plotName)
+    Plot(const juce::String& plotName, float minRange, float maxRange)
+        : title(plotName)
     {
         setColour (plotBackgroundColourId,   juce::Colours::black);
         setColour (borderOutlineColourId,    juce::Colours::black);
@@ -27,18 +42,18 @@ public:
         setColour (gridColourId,             juce::Colour (60, 60, 60));
         setColour (pathColourId,             juce::Colours::white);
         setColour (textColourId,             juce::Colour (210, 210, 210));
+
+        minRangeBox.setRange ({ minRange, maxRange });
+        maxRangeBox.setRange ({ minRange, maxRange });
+
+        minRangeBox.addListener (this);
+        maxRangeBox.addListener (this);
     }
 
     void paint(juce::Graphics& g) override
     {
         //=======================================================
-        // Draw frame and background
-        g.setColour (findColour (titleBackgroundColourId));
-        g.fillRect (titleArea);
-
-        g.setColour (findColour (borderOutlineColourId));
-        g.drawRect (titleArea, borderThickness);
-
+        // Draw background
         g.setColour (findColour (plotBackgroundColourId));
         g.fillRect (plotArea);
         g.fillRect (yAxisArea);
@@ -46,6 +61,8 @@ public:
 
         //=======================================================
         // Draw grid lines
+        g.setColour (findColour (gridColourId));
+
         g.setColour (findColour (gridColourId));
 
         for (const float xTick : xTicks)
@@ -59,16 +76,33 @@ public:
         {
             const float y = (1.0f - yRange.convertTo0to1 (yTick)) * plotArea.getHeight() + plotArea.getY();
             const juce::Line<float> line(yAxisArea.getRight(), y, plotArea.getRight(), y);
-            g.drawLine(line, lineThickness);
+            if (y > 0.0f && y < (float)getHeight())
+                g.drawLine(line, lineThickness);
         }
 
-        // Apply opacity mask over grid lines to fade out to edges
-        auto gradColour = findColour (plotBackgroundColourId);
-        juce::ColourGradient gradient(gradColour, plotArea.getX(), plotArea.getY(), gradColour, plotArea.getX(), xAxisArea.getY(), false);
-        gradient.addColour (0.25f, gradColour.withAlpha (0.0f));
-        gradient.addColour (0.75f, gradColour.withAlpha (0.0f));
-        g.setGradientFill (gradient);
-        g.fillRect (plotArea);
+        // Draw axis labels
+        g.setFont (juce::FontOptions (10.0f));
+        g.setColour (findColour (textColourId).withAlpha (0.7f));
+
+        for (int i = 0; i < (int)xTicks.size(); i++)
+        {
+            const juce::String& text = i < (int)xLabels.size() ? xLabels[i] : "";
+            int x = (int)(xRange.convertTo0to1 (xTicks[i]) * plotArea.getWidth() + plotArea.getX());
+            const int y = (int)xAxisArea.getY();
+            const int textWidth = juce::GlyphArrangement::getStringWidthInt (g.getCurrentFont(), text);
+            if ((x + textWidth) > getWidth()) x -= ((x + textWidth) - getWidth());
+                g.drawFittedText (text, x - textWidth / 2, y, textWidth, (int)xAxisArea.getHeight(), juce::Justification::centred, 1, 0.9f);
+        }
+
+        for (int i = 0; i < (int)yTicks.size(); i++)
+        {
+            const juce::String& text = i < (int)yLabels.size() ? yLabels[i] : "";
+            const int textHeight = (int)juce::GlyphArrangement::getStringBounds (g.getCurrentFont(), text).getHeight();
+            const int y = (int)((1.0f - yRange.convertTo0to1 (yTicks[i])) * plotArea.getHeight()) + (int)plotArea.getY() - textHeight / 2;
+            const int x = (int)yAxisArea.getX() + borderThickness;
+            if (y > 0 && y < getHeight())
+                g.drawFittedText (text, x, y, (int)yAxisArea.getWidth() - borderThickness, textHeight, juce::Justification::centred, 1, 0.9f);
+        }
 
         //=======================================================
         // Draw the path within the path bounds
@@ -80,13 +114,16 @@ public:
         }
 
         //=======================================================
-        // Draw title
-        g.setColour (findColour (textColourId));
-        g.setFont (juce::FontOptions (13.0f, juce::Font::bold));
-        g.drawFittedText (title, titleArea.toNearestInt(), juce::Justification::centred, 1, 0.9f);
+        // Apply opacity mask to fade edges
+        auto gradColour = findColour (plotBackgroundColourId);
+        juce::ColourGradient gradient(gradColour, plotArea.getX(), plotArea.getY(), gradColour, plotArea.getX(), xAxisArea.getY(), false);
+        gradient.addColour (0.15f, gradColour.withAlpha (0.0f));
+        gradient.addColour (0.85f, gradColour.withAlpha (0.0f));
+        g.setGradientFill (gradient);
+        g.fillRect (getLocalBounds());
 
         //=======================================================
-        // Draw axis labels
+        // Draw x axis labels
         g.setFont (juce::FontOptions (10.0f));
         g.setColour (findColour (textColourId).withAlpha (0.7f));
 
@@ -100,14 +137,25 @@ public:
             g.drawFittedText (text, x - textWidth / 2, y, textWidth, (int)xAxisArea.getHeight(), juce::Justification::centred, 1, 0.9f);
         }
 
-        for (int i = 0; i < (int)yTicks.size(); i++)
-        {
-            const juce::String& text = i < (int)yLabels.size() ? yLabels[i] : "";
-            const int textHeight = (int)juce::GlyphArrangement::getStringBounds (g.getCurrentFont(), text).getHeight();
-            const int y = (int)((1.0f - yRange.convertTo0to1 (yTicks[i])) * plotArea.getHeight()) + (int)plotArea.getY() - textHeight / 2;
-            const int x = (int)yAxisArea.getX() + borderThickness;
-            g.drawFittedText (text, x, y, (int)yAxisArea.getWidth() - borderThickness, textHeight, juce::Justification::centred, 1, 0.9f);
-        }
+        //=======================================================
+        // Draw frame and title area
+        g.setColour (findColour (titleBackgroundColourId));
+        g.fillRect (titleArea);
+
+        g.setColour (findColour (borderOutlineColourId));
+        g.drawRect (titleArea, borderThickness);
+
+
+        //=======================================================
+        // Draw title
+        g.setColour (findColour (textColourId));
+        g.setFont (juce::FontOptions (13.0f, juce::Font::bold));
+        g.drawFittedText (title, titleArea.toNearestInt(), juce::Justification::centred, 1, 0.9f);
+
+        //=======================================================
+
+        addAndMakeVisible (maxRangeBox);
+        addAndMakeVisible (minRangeBox);
     }
 
     void resized() override
@@ -118,31 +166,44 @@ public:
         titleArea = bounds.removeFromTop (borderSize);
         yAxisArea = bounds.removeFromLeft (borderSize);
         xAxisArea = bounds.removeFromBottom (borderSize);
-                plotArea = bounds;
+        plotArea = bounds;
         bounds.removeFromRight (borderSize);
+
+        auto rangeArea = titleArea;
+        const float titleRight = titleArea.getCentreX() + juce::GlyphArrangement::getStringWidth (juce::FontOptions(10.0f), title) * 0.5f;
+        rangeArea.removeFromLeft (titleRight);
+        rangeArea.reduce(10.0f, titleArea.getHeight() * 0.2f);
+
+        const float rangeBoxWidth = rangeArea.getWidth() * 0.3f;
+        const float spacing = rangeArea.getWidth() * 0.05f;
+
+        auto maxRangeArea = rangeArea.removeFromRight (rangeBoxWidth);
+        maxRangeBox.setBounds (maxRangeArea.toNearestInt());
+        rangeArea.removeFromRight (spacing);
+        auto minRangeArea = rangeArea.removeFromRight (rangeBoxWidth);
+        minRangeBox.setBounds (minRangeArea.toNearestInt());
 
         juce::NullCheckedInvocation::invoke(dataRefreshFn, getNumDataPoints());
 
         updatePath();
     }
 
-    void setRange(const MappedRange<float>& range) {
+    void setRange(const MappedRange<float>& range, bool sendNotification) {
         yRange = range;
+        maxRangeBox.setValue (yRange.end, true);
+        minRangeBox.setValue (yRange.start, true);
         setYTicks(yTicks);
         updatePath();
         repaint();
+
+        if (sendNotification)
+            listeners.call([this](Listener& l) { l.rangeChanged (this); });
     }
 
     void setDomain(const MappedRange<float>& domain) {
         xRange = domain;
         setXTicks(xTicks);
         updatePath();
-        repaint();
-    }
-
-    void clearData()
-    {
-        path.clear();
         repaint();
     }
 
@@ -219,6 +280,21 @@ public:
     std::function<void(int numDataPoints)> dataRefreshFn { nullptr };
 
 private:
+
+    void valueChanged(DragBox* box) override
+    {
+        if (box == &minRangeBox)
+        {
+            setRange (MappedRange<float>(box->getValue(), yRange.end), true);
+            maxRangeBox.setRange ({ minRangeBox.getValue() + 1e-3f, maxRangeBox.getRange().end });
+        }
+        else if (box == &maxRangeBox)
+        {
+            setRange (MappedRange<float>(yRange.start, box->getValue()), true);
+            minRangeBox.setRange ({ minRangeBox.getRange().start, maxRangeBox.getValue() - 1e-3f });
+        }
+    }
+
     juce::String title;
 
     juce::Path path;
@@ -230,6 +306,11 @@ private:
 
     juce::Rectangle<float> plotArea;
     juce::Rectangle<float> xAxisArea, yAxisArea, titleArea;
+
+    DragBox maxRangeBox;
+    DragBox minRangeBox;
+
+    juce::ListenerList<Listener> listeners;
 
     float lineThickness { 0.5f };
     static constexpr int borderThickness { 2 };

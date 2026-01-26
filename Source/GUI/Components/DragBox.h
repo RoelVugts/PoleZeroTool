@@ -37,7 +37,7 @@ public:
         setColour (textColourId, juce::Colour(200, 200, 200));
 
         text.setColour(juce::Label::ColourIds::outlineWhenEditingColourId, juce::Colours::transparentBlack);
-        text.setColour (juce::Label::ColourIds::textColourId, juce::Colours::white);
+        text.setColour (juce::Label::ColourIds::textColourId, findColour (textColourId));
         text.setJustificationType(juce::Justification::centred);
         text.setEditable (false, true, false);
         text.setInterceptsMouseClicks (false, false);
@@ -77,6 +77,9 @@ public:
     void setValue(float newValue, bool sendNotification)
     {
         jassert(newValue >= range.start && value <= range.end);
+
+        if (approximatelyEqual (newValue, value))
+            return;
 
         value = newValue;
         juce::String t;
@@ -120,6 +123,8 @@ public:
     {
         dragSensitivity = 1.0f / juce::jlimit<float>(0.01f, 10.0f, amount);
     }
+
+    juce::NormalisableRange<float> getRange() { return range; }
 
     TextToValFn textToValFn { nullptr };
     ValToTextFn valToTextFn { nullptr };
