@@ -42,7 +42,7 @@ public:
         //==================================================================================================
         magnitudePlot.setRange ({ -12.0f, 12.0f }, true);
         phasePlot.setRange ({ -juce::MathConstants<float>::twoPi, juce::MathConstants<float>::twoPi }, true);
-        groupDelayPlot.setRange ({ -5, 5 }, true);
+        groupDelayPlot.setRange ({ -4, 4 }, true);
 
         //==================================================================================================
         plotAttachment = std::make_unique<ResponsePlotAttachment> (p.state, p.filterDesign, magnitudePlot, phasePlot, groupDelayPlot);

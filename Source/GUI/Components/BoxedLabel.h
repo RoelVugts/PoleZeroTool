@@ -9,13 +9,14 @@ public:
     enum ColourIds
     {
         backgroundColourId      = 0x200301,
-        outlineColourId         = 0x200302
+        outlineColourId         = 0x200302,
     };
 
     BoxedLabel()
     {
         setColour (backgroundColourId, juce::Colours::black);
         setColour (outlineColourId, juce::Colours::grey);
+        viewport.getHorizontalScrollBar().setColour (juce::ScrollBar::ColourIds::thumbColourId, juce::Colours::grey);
 
         label.setJustificationType (juce::Justification::centredLeft);
         viewport.setViewedComponent (&label, false);
@@ -24,15 +25,23 @@ public:
 
     void paint(Graphics& g) override
     {
-        g.fillAll(findColour (backgroundColourId));
+        auto bounds = getLocalBounds();
+        const int scrollBarHeight = viewport.getScrollBarThickness();
+        bounds.removeFromBottom (scrollBarHeight);
+
+        g.setColour (findColour (backgroundColourId));
+        g.fillRect(bounds);
         g.setColour (findColour (outlineColourId));
-        g.drawRect (getLocalBounds());
+        g.drawRect (bounds);
     }
 
     void resized() override
     {
         auto bounds = getLocalBounds();
         viewport.setBounds (bounds);
+
+        const float fontHeight = (float)getHeight() * 0.2f;
+        label.setFont (juce::FontOptions(fontHeight));
 
         bounds = bounds.reduced(padding);
         int maxWidth = 0;
@@ -58,6 +67,7 @@ public:
     }
 
 private:
+
     juce::Label label;
     juce::Viewport viewport;
 
