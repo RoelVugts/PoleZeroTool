@@ -43,25 +43,25 @@ public:
 
         autoNormalizeAttachment = std::make_unique<ButtonAttachment>(p.apvts, paramID[PoZeParamID::autoNormalise], autoNormalizeBtn);
 
-        decibelBtn.onStateChange = [this]() {
+        decibelBtn.onClick = [this]() {
             const bool isOn = decibelBtn.getToggleState();
-            decibelBtn.setButtonText (isOn ? "Amp" : "dB");
+            decibelBtn.setButtonText (isOn ? "dB" : "Amp");
         };
         decibelAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayInDB, decibelBtn, nullptr);
 
-        groupDelayBtn.onStateChange = [this]() {
+        groupDelayBtn.onClick = [this]() {
             const bool isOn = groupDelayBtn.getToggleState();
             groupDelayBtn.setButtonText (isOn ? "Phase" : "Delay");
         };
         groupDelayAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayGroupDelay, groupDelayBtn, nullptr);
 
-        logarithmicBtn.onStateChange = [this]() {
+        logarithmicBtn.onClick = [this]() {
             const bool isOn = logarithmicBtn.getToggleState();
             logarithmicBtn.setButtonText (isOn ? "Linear" : "Log");
         };
         logarithmicAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayLogarithmic, logarithmicBtn, nullptr);
 
-        unitBtn.onStateChange = [this]() {
+        unitBtn.onClick = [this]() {
             const bool isOn = unitBtn.getToggleState();
             unitBtn.setButtonText (isOn ? "Radians" : "Hz");
         };

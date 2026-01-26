@@ -120,7 +120,7 @@ namespace MathFunctions
     }
 
     template<typename SampleType>
-    SampleType roundToHighestDecimal(SampleType val)
+    SampleType roundToHighestMagnitude(SampleType val)
     {
         const SampleType mag = std::pow(SampleType(10.0), std::ceil(std::log10(val)));
         const SampleType scalar = SampleType(10.0) / mag;

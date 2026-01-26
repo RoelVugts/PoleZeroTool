@@ -100,8 +100,8 @@ public:
     void setRange(const juce::NormalisableRange<float>& newRange)
     {
         range = newRange;
-        value = juce::jlimit<float>(range.start, range.end, value);
-        setValue(value, true);
+        const float newValue = juce::jlimit<float>(range.start, range.end, value);
+        setValue(newValue, true);
     }
 
     void setDefaultValue(float defaultVal)

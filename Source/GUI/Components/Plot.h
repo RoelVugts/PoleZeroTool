@@ -43,8 +43,8 @@ public:
         setColour (pathColourId,             juce::Colours::white);
         setColour (textColourId,             juce::Colour (210, 210, 210));
 
-        minRangeBox.setRange ({ minRange, maxRange });
-        maxRangeBox.setRange ({ minRange, maxRange });
+        setMinMaxRange (minRange, maxRange);
+        setRange({ minRange, maxRange }, false);
 
         minRangeBox.addListener (this);
         maxRangeBox.addListener (this);
@@ -198,6 +198,12 @@ public:
 
         if (sendNotification)
             listeners.call([this](Listener& l) { l.rangeChanged (this); });
+    }
+
+    void setMinMaxRange(float minValue, float maxValue)
+    {
+        minRangeBox.setRange ({ minValue, maxValue - 1e-3f });
+        maxRangeBox.setRange({ minValue + 1e-3f, maxValue });
     }
 
     void setDomain(const MappedRange<float>& domain) {

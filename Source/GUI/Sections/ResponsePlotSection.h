@@ -14,17 +14,6 @@ public:
     ResponsePlotSection(AudioPluginAudioProcessor& p)
         : processor(p), state(p.state)
     {
-        //==================================================================================================
-        phasePlot.setRange ({ -juce::MathConstants<float>::twoPi, juce::MathConstants<float>::twoPi }, true);
-        phasePlot.setYTicks ({   -juce::MathConstants<float>::pi,
-                                    -juce::MathConstants<float>::halfPi, 0,
-                                     juce::MathConstants<float>::halfPi,
-                                     juce::MathConstants<float>::pi });
-        phasePlot.setYLabels ({ "-" + piString, "-" + halfString + piString, "0", halfString + piString, piString });
-
-        groupDelayPlot.setRange ({ -16, 16 }, true);
-        groupDelayPlot.setYTicks ({ -15, -10, -5, 0, 5, 10, 15 });
-        groupDelayPlot.setYLabels ({ "", "-10", "-5", "0", "5", "10", "" });
 
         for (auto* plot : juce::Array<Plot*>{&magnitudePlot, &phasePlot, &groupDelayPlot})
         {
@@ -32,15 +21,31 @@ public:
             addAndMakeVisible (plot);
         }
 
-
-        //==================================================================================================
-        plotAttachment = std::make_unique<ResponsePlotAttachment> (p.state, p.filterDesign, magnitudePlot, phasePlot, groupDelayPlot);
-
         //==================================================================================================
         state.setOnPropertyChanged (State::IDs::displayInDB, [this]() {
             const bool shouldDisplayInDecibels = state.displayInDB.getValue();
-            setLogRange (shouldDisplayInDecibels);
+            const auto currentRange = magnitudePlot.getYRange();
+
+            if (shouldDisplayInDecibels)
+            {
+                magnitudePlot.setMinMaxRange (-100.0f, 100.0f);
+                magnitudePlot.setRange ({ juce::Decibels::gainToDecibels (currentRange.start), juce::Decibels::gainToDecibels (currentRange.end)}, true );
+            }
+            else
+            {
+                magnitudePlot.setMinMaxRange (0.0f, 100.0f);
+                magnitudePlot.setRange ({ juce::Decibels::decibelsToGain (currentRange.start), juce::Decibels::decibelsToGain (currentRange.end)}, true );
+            }
         }, true);
+
+
+        //==================================================================================================
+        magnitudePlot.setRange ({ -12.0f, 12.0f }, true);
+        phasePlot.setRange ({ -juce::MathConstants<float>::twoPi, juce::MathConstants<float>::twoPi }, true);
+        groupDelayPlot.setRange ({ -5, 5 }, true);
+
+        //==================================================================================================
+        plotAttachment = std::make_unique<ResponsePlotAttachment> (p.state, p.filterDesign, magnitudePlot, phasePlot, groupDelayPlot);
 
         //==================================================================================================
         state.setOnPropertyChanged (State::IDs::displayGroupDelay, [this]() {
@@ -93,22 +98,6 @@ public:
 
 private:
 
-    void setLogRange(bool shouldDisplayInDecibels)
-    {
-        if (shouldDisplayInDecibels)
-        {
-            magnitudePlot.setRange ({ -60.0f, 12.0f }, true);
-            magnitudePlot.setYTicks ({ -40.0f, -24.0f, -12.0f, -6.0f, 0.0f, 6.0f });
-            magnitudePlot.setYLabels ({"-40", "-24", "-12", "-6", "0", "+6" });
-        }
-        else
-        {
-            magnitudePlot.setRange ({ 0.0f, 2.0f }, true);
-            magnitudePlot.setYTicks ({ 0.25f, 0.5f, 0.75f, 1.0, 1.25f, 1.5f });
-            magnitudePlot.setYLabels ({ "0.25","0.5", "0.75","1.0", "1.25", "1.5" });
-        }
-    }
-
     void setLogDomain(bool shouldDisplayLogarithmic)
     {
         if (shouldDisplayLogarithmic)
@@ -129,8 +118,7 @@ private:
                     juce::MathConstants<float>::halfPi   * 0.5f,
                     juce::MathConstants<float>::halfPi,
                     juce::MathConstants<float>::pi
-                }
-                );
+                });
             }
         }
         else
@@ -190,29 +178,31 @@ private:
     void rangeChanged(Plot* plot) override
     {
         const auto& range = plot->getYRange();
+        std::vector<float> ticks;
+        std::vector<juce::String> labels;
 
-        if (plot == &magnitudePlot)
-        {
-            auto ticks = getGridYTicks (range, 8, 5.0f);
-            std::vector<juce::String> labels;
-            for (const auto& tick : ticks)
-                labels.emplace_back (tick, 0, false);
+        if (plot == &magnitudePlot || &groupDelayPlot)
+            ticks = getGridYTicks (range, 8, 5.0f);
+        else if (plot == &phasePlot)
+            ticks = getGridYTicks (range, 8, juce::MathConstants<float>::pi);
 
-            plot->setYTicks (ticks);
-            plot->setYLabels (labels);
-        }
+
+        for (const auto& tick : ticks)
+            labels.emplace_back (tick, 0, false);
+
+        plot->setYTicks (ticks);
+        plot->setYLabels (labels);
     }
 
-    std::vector<float> getGridYTicks(const MappedRange<float>& range, int numTicks, float maxStep)
+    static std::vector<float> getGridYTicks(const MappedRange<float>& range, int numTicks, float maxStep)
     {
         const float span = range.end - range.start;
 
         if (span <= 0.0f)
             return {};
 
-        numTicks = span > 0.0f ? numTicks : 0;
         float step = span / (float)numTicks;
-        step = std::min(MathFunctions::roundToHighestDecimal (step), maxStep);
+        step = std::min(MathFunctions::roundToHighestMagnitude (step), maxStep);
 
         const float start = std::ceil((range.start / step)) * step;
         const float end = std::floor((range.end / step)) * step;
