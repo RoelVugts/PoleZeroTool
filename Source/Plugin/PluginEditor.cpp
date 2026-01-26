@@ -14,7 +14,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     setSize (defaultWidth, defaultHeight);
     setResizable (true, true);
-    constrainer.setMinimumSize (defaultWidth / 2, defaultHeight / 2);
+    constrainer.setMinimumSize (defaultWidth, defaultHeight);
     constrainer.setFixedAspectRatio ((double)defaultWidth / (double)defaultHeight);
     setConstrainer (&constrainer);
 

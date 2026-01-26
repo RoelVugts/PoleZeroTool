@@ -58,9 +58,11 @@ FilterDesign::Response FilterDesign::getFreqResponse(const double angle, bool ap
     for (auto pole : poles)
         phaseShift -= MathFunctions::getAngleOfDifferenceVector (pole, z);
 
+    double phaseDelay = phaseShift / angle;
+
     std::complex<double> totalResponse = numerator / denumerator;
     double responseGain = std::abs(totalResponse);
-    return FilterDesign::Response(std::arg(z), responseGain, phaseShift);
+    return FilterDesign::Response(std::arg(z), responseGain, phaseShift, phaseDelay);
 }
 
 double FilterDesign::getGroupDelay (Response& a, Response& b) const
@@ -107,8 +109,7 @@ void FilterDesign::setGain (double gain_)
 {
     gain = gain_;
 
-    if (sendNotification)
-        listeners.call([this](Listener& l) { l.filterGainChanged (this); });
+    listeners.call([this](Listener& l) { l.filterGainChanged (this); });
 }
 
 void FilterDesign::setAutoNormalize (bool shouldAutoNormalize)

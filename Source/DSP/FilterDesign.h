@@ -26,9 +26,10 @@ public:
     // Frequency response for a specific angle / frequency.
     struct Response
     {
-        double angle { 0.0f };        // The frequency / angle in radians
-        double magnitude { 0.0f };    // Magnitude response in amplitude (not dB)
-        double phase { 0.0f };        // The unwrapped phase response
+        double angle { 0.0 };        // The frequency / angle in radians
+        double magnitude { 0.0 };    // Magnitude response in amplitude (not dB)
+        double phase { 0.0 };        // The unwrapped phase response
+        double phaseDelay { 0.0 };
     };
 
     //=======================================================================

@@ -149,10 +149,12 @@ private:
 
             const int conjugateIndex = point->isConjugate() ? plot.getPoints().indexOf (point->getConjugate()) : -1;
             pointState.conjugateIndex.setValue (conjugateIndex);
-            pointAttachments.add(std::make_unique<PointAttachment>(pointState, *point));
         }
 
         state.points.setState (newState.points);
+
+        for (int i = 0; i < state.points.size(); i++)
+            pointAttachments.add(std::make_unique<PointAttachment>(state.points[i], *plot.getPoint (i)));
     }
 
     void pointAdded(PoZePlot*, int) override
