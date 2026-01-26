@@ -12,8 +12,11 @@ class ComplexFilter
 {
 public:
 
-    float processSample(const float& input)
+    std::complex<float> processSample(const float& input)
     {
+        if (bypassed)
+            return { input, 0.0f };
+
         std::complex<double> output(0.0, 0.0);
 
         // Write input into buffer
@@ -33,7 +36,8 @@ public:
         if (std::isnan (output.imag()) || std::isinf (output.imag()))
             output = { output.real(), 0.0f };
 
-        output = { std::clamp(output.real(), -1.0, 1.0), std::clamp(output.imag(), -1.0, 1.0) };
+        output = { std::clamp(output.real(), -1.0, 1.0),
+                      std::clamp(output.imag(), -1.0, 1.0) };
 
         // Write output back into output buf
         iirBuf.write (output);
@@ -43,13 +47,7 @@ public:
         iirBuf.incrementWriteIndex();
 
         // Make sure we don't blow up the speakers when a pole is placed outside the unit circle
-        return (float)output.real(); //TODO: Only real output for now
-    }
-
-    void process(const float* input, float* output, const int numSamples)
-    {
-        for (int i = 0; i < numSamples; i++)
-            output[i] = processSample (input[i]);
+        return static_cast<std::complex<float>> (output);
     }
 
     void setCoefficients(const std::vector<std::complex<double>>& iir, const std::vector<std::complex<double>>& fir)
@@ -59,11 +57,16 @@ public:
         firCoefs = fir;
     }
 
+    void setBypass(bool shouldBeBypassed)
+    {
+        bypassed = shouldBeBypassed;
+    }
+
 private:
     std::vector<std::complex<double>> iirCoefs; // Feedback coefficients
     std::vector<std::complex<double>> firCoefs; // Feedforward coefficients
 
     CircBuf<std::complex<double>> iirBuf { 128 };
     CircBuf<std::complex<double>> firBuf { 128 };
-
+    bool bypassed { false };
 };

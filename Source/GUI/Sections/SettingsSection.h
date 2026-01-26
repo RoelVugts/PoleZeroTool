@@ -117,12 +117,14 @@ public:
 private:
     State state;
     DragBox gainBox;
-    juce::TextButton autoNormalizeBtn { "Normalize" };
-    juce::TextButton decibelBtn { "Amp" };
-    juce::TextButton groupDelayBtn { "Delay" };
-    juce::TextButton logarithmicBtn { "Linear" };
-    juce::TextButton unitBtn { "Radians" };
-    juce::TextButton bypassBtn { "Bypass" };
+
+    juce::TextButton autoNormalizeBtn       { "Normalize" };
+    juce::TextButton decibelBtn             { "Amp" };
+    juce::TextButton groupDelayBtn          { "Delay" };
+    juce::TextButton logarithmicBtn         { "Linear" };
+    juce::TextButton unitBtn                { "Hz" };
+    juce::TextButton bypassBtn              { "Bypass" };
+
     std::unique_ptr<DragBoxAttachment> gainAttachment;
     std::unique_ptr<ButtonAttachment> autoNormalizeAttachment;
     std::unique_ptr<ButtonPropertyAttachment> decibelAttachment;

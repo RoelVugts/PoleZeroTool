@@ -30,6 +30,8 @@ public:
         addAndMakeVisible (inputMeter[1]);
         addAndMakeVisible (outputMeter[0]);
         addAndMakeVisible (outputMeter[1]);
+        addAndMakeVisible (outputMeterImag[0]);
+        addAndMakeVisible (outputMeterImag[1]);
 
         startTimerHz (30);
     }
@@ -53,9 +55,19 @@ public:
 
         auto outputMeterArea = bounds.removeFromRight (width * 0.1f);
         outputMeterArea = outputMeterArea.reduced(LAF::Layout::defaultSpacing);
-        leftMeterArea = outputMeterArea.removeFromLeft (outputMeterArea.getWidth() * 0.5f);
+        const float meterWidth = (outputMeterArea.getWidth() - LAF::Layout::defaultSpacing) * 0.5f;
+
+        auto realMeterArea = outputMeterArea.removeFromRight (meterWidth);
+        leftMeterArea = realMeterArea.removeFromLeft (realMeterArea.getWidth() * 0.5f);
         outputMeter[0].setBounds (leftMeterArea.toNearestInt());
-        outputMeter[1].setBounds (outputMeterArea.toNearestInt());
+        outputMeter[1].setBounds (realMeterArea.toNearestInt());
+
+        outputMeterArea.removeFromRight (LAF::Layout::defaultSpacing);
+
+        auto imagMeterArea = outputMeterArea.removeFromLeft (meterWidth);
+        leftMeterArea = imagMeterArea.removeFromLeft (imagMeterArea.getWidth() * 0.5f);
+        outputMeterImag[0].setBounds (leftMeterArea.toNearestInt());
+        outputMeterImag[1].setBounds (imagMeterArea.toNearestInt());
 
         // Margins
         bounds.removeFromBottom (LAF::Layout::defaultSpacing);
@@ -89,6 +101,7 @@ private:
         {
             inputMeter[ch].setLevel (processor.inputLevel[ch]);
             outputMeter[ch].setLevel (processor.outputLevel[ch]);
+            outputMeterImag[ch].setLevel (processor.outputLevelImag[ch]);
         }
 
     }
@@ -100,4 +113,5 @@ private:
     SettingsSection settingsSection;
     VolumeMeter inputMeter[2];
     VolumeMeter outputMeter[2];
+    VolumeMeter outputMeterImag[2];
 };

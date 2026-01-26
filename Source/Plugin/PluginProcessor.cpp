@@ -165,10 +165,19 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
         inputLevel[channel] = buffer.getRMSLevel (channel, 0, buffer.getNumSamples());
 
-        if (! bypass)
-            filter[channel].process (channelData, channelData, buffer.getNumSamples());
+        double realSum = 0.0;
+        double imagSum = 0.0;
 
-        outputLevel[channel] = buffer.getRMSLevel (channel, 0, buffer.getNumSamples());
+        for (int sample = 0; sample < buffer.getNumSamples(); sample++)
+        {
+            auto processed = filter[channel].processSample (channelData[sample]);
+            channelData[sample] = processed.real() + processed.imag();
+            realSum += (double)(processed.real() * processed.real());
+            imagSum += (double)(processed.imag() * processed.imag());
+        }
+
+        outputLevel[channel] = (float)std::sqrt(realSum / (double)buffer.getNumSamples());
+        outputLevelImag[channel] = (float)std::sqrt(imagSum / (double)buffer.getNumSamples());
 
     }
 }
@@ -275,7 +284,8 @@ void AudioPluginAudioProcessor::parameterChanged (const juce::String& parameterI
                 break;
 
             case PoZeParamID::bypass:
-                bypass = static_cast<bool> (newValue);
+                for (auto& f : filter)
+                    f.setBypass (static_cast<bool> (newValue)); //TODO: Not thread safe
                 break;
 
             default: jassertfalse; break;

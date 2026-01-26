@@ -95,7 +95,7 @@ private:
     void filterGainChanged(FilterDesign* emitter) override
     {
         gainAttachment.setValueAsCompleteGesture ((float)emitter->getGain());
-        
+
         const int writeBuffer = 1 - activeBuffer.load(std::memory_order_acquire);
         coefficients[writeBuffer].iirCoefs = filterDesigner.getIIRCoefs();
         coefficients[writeBuffer].firCoefs  = filterDesigner.getFIRCoefs();

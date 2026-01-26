@@ -74,12 +74,11 @@ public:
 
     std::atomic<float> inputLevel[MAX_CHANNELS];
     std::atomic<float> outputLevel[MAX_CHANNELS];
+    std::atomic<float> outputLevelImag[MAX_CHANNELS];
 
 private:
 
     void parameterChanged(const String& parameterID, float newValue) override;
-
-    bool bypass { false };
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
