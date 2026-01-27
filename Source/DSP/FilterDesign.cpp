@@ -28,7 +28,7 @@ void FilterDesign::setPoleZeros(std::vector<std::complex<double>>& poles_, std::
     listeners.call([this](Listener& l) { l.filterCoefficientsChanged (this); });
 }
 
-FilterDesign::Response FilterDesign::getFreqResponse(const double angle, bool applyGain) const
+FilterDesign::Response FilterDesign::getFreqResponse(double angle, bool applyGain) const
 {
     const std::complex<double>& z = std::polar(1.0, angle);
 

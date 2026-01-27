@@ -184,7 +184,10 @@ private:
 
 
         for (const auto& tick : ticks)
-            labels.emplace_back (tick, 0, false);
+        {
+            const juce::String label = tick == 0.0f ? "0" : juce::String(tick, 0, false);
+            labels.emplace_back (label);
+        }
 
         plot->setYTicks (ticks);
         plot->setYLabels (labels);
@@ -207,11 +210,15 @@ private:
         float interval = truncatedSpan / (float)(numTicks + 1);
         interval = std::ceil(interval / step) * step;
 
+        const float mag = std::pow(10.0f, std::ceil(std::log10(std::abs(interval))));
+        const float scalar = 10.0f / mag;
+
         std::vector<float> ticks;
 
         float value = start;
         while (value <= end)
         {
+            value = std::round(value * scalar) / scalar;
             ticks.emplace_back  (value);
             value += interval;
         }

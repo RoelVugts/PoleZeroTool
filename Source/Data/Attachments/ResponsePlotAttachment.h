@@ -14,7 +14,7 @@ public:
     {
         //======================================================================================================================
         magnitudePlot.getDataFn = [this](float x) -> float {
-            const int index = (int)(magnitudePlot.getXRange().convertTo0to1 (x) * (float)magnitudePlot.getNumDataPoints());
+            const int index = (int)(magnitudePlot.getXRange().convertTo0to1 (x) * (float)(magnitudePlot.getNumDataPoints() - 1));
             jassert(index < cachedResponse.size());
 
             if (state.displayInDB.getValue())
@@ -24,7 +24,7 @@ public:
         };
 
         phasePlot.getDataFn = [this](float x) -> float {
-            int index = (int)(phasePlot.getXRange().convertTo0to1 (x) * (float)phasePlot.getNumDataPoints());
+            int index = (int)(phasePlot.getXRange().convertTo0to1 (x) * (float)(phasePlot.getNumDataPoints() - 1));
             jassert(index < cachedResponse.size());
 
             // 0 Hz has no phase so display phase of the next frequency
@@ -35,7 +35,7 @@ public:
         };
 
         groupDelayPlot.getDataFn = [this](float x) -> float {
-            int index = (int)(groupDelayPlot.getXRange().convertTo0to1 (x) * (float)groupDelayPlot.getNumDataPoints());
+            int index = (int)(groupDelayPlot.getXRange().convertTo0to1 (x) * (float)(groupDelayPlot.getNumDataPoints() - 1));
             jassert(index < cachedResponse.size());
 
             if (index == 0)
@@ -84,14 +84,14 @@ public:
     void updateResponse()
     {
         const int numSamples = std::max(magnitudePlot.getNumDataPoints(), phasePlot.getNumDataPoints());
-        const auto& range = state.displayLogarithmic.getValue() ? xRange = MappedRange<float>::createExponentialRange (0.0f, juce::MathConstants<float>::pi)
-                                                                : xRange = MappedRange<float> { 0.0f, juce::MathConstants<float>::pi };
+        const auto& range = state.displayLogarithmic.getValue() ? MappedRange<double>::createExponentialRange (0.0f, juce::MathConstants<double>::pi)
+                                                                : MappedRange<double> { 0.0f, juce::MathConstants<double>::pi };
 
         cachedResponse.resize (numSamples);
 
         for (int i = 0; i < numSamples; i++)
         {
-            const float angle = range.convertFrom0to1 ((float)i / (float)numSamples);
+            const double angle = range.convertFrom0to1 ((float)i / (float)(numSamples - 1));
             cachedResponse[i] = filterDesigner.getFreqResponse (angle);
         }
     }

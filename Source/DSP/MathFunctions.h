@@ -120,9 +120,12 @@ namespace MathFunctions
     }
 
     template<typename SampleType>
-    SampleType roundToHighestMagnitude(SampleType val)
+    SampleType roundToHighestMagnitude(SampleType val, int magnitudeOffset = 0)
     {
-        const SampleType mag = std::pow(SampleType(10.0), std::ceil(std::log10(val)));
+        if (val == SampleType(0.0))
+            return SampleType(0.0);
+
+        const SampleType mag = std::pow(SampleType(10.0), std::ceil(std::log10(std::abs(val)) - magnitudeOffset));
         const SampleType scalar = SampleType(10.0) / mag;
         return std::round(val * scalar) / scalar;
     }

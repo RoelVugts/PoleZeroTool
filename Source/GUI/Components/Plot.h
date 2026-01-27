@@ -101,7 +101,7 @@ public:
             const int y = (int)((1.0f - yRange.convertTo0to1 (yTicks[i])) * plotArea.getHeight()) + (int)plotArea.getY() - textHeight / 2;
             const int x = (int)yAxisArea.getX() + borderThickness;
             if (y > 0 && y < getHeight())
-                g.drawFittedText (text, x, y, (int)yAxisArea.getWidth() - borderThickness, textHeight, juce::Justification::centred, 1, 0.9f);
+                g.drawFittedText (text, x, y, (int)yAxisArea.getWidth() - borderThickness, textHeight, juce::Justification::centred, 1, 0.6f);
         }
 
         //=======================================================
@@ -164,7 +164,7 @@ public:
         const float borderSize = std::min(bounds.getWidth() * 0.075f, 25.0f);
 
         titleArea = bounds.removeFromTop (borderSize);
-        yAxisArea = bounds.removeFromLeft (borderSize);
+        yAxisArea = bounds.removeFromLeft (borderSize + 10.0f);
         xAxisArea = bounds.removeFromBottom (borderSize);
         plotArea = bounds;
         bounds.removeFromRight (borderSize);
@@ -216,15 +216,15 @@ public:
     void updatePath()
     {
         path.clear();
+        const int width = (int)plotArea.getWidth();
 
-        if (getDataFn == nullptr)
+        if (getDataFn == nullptr || width == 0)
             return;
 
-        const int width = (int)plotArea.getWidth();
 
         for (int x = 0; x < width; x++)
         {
-            const float val = getDataFn(xRange.convertFrom0to1 ((float)x / (float)width));
+            const float val = getDataFn(xRange.convertFrom0to1 ((float)x / (float)(width - 1)));
             float y = 1.0f - yRange.convertTo0to1 (val);
             y = y * plotArea.getHeight() + plotArea.getY();
 
