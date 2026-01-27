@@ -23,7 +23,7 @@ public:
 
         for (auto* button : juce::Array<juce::TextButton*>{&decibelBtn, &groupDelayBtn, &logarithmicBtn, &unitBtn})
         {
-            button->setColour (juce::TextButton::ColourIds::buttonColourId, LAF::Colours::buttonOnColour);
+            button->setColour (juce::TextButton::ColourIds::buttonColourId, LAF::Colours::buttonOffColour);
             button->setColour (juce::TextButton::ColourIds::buttonOnColourId, LAF::Colours::buttonOnColour);
             button->setColour (juce::TextButton::ColourIds::textColourOffId, juce::Colours::white);
             button->setColour (juce::TextButton::ColourIds::textColourOnId, juce::Colours::white);
@@ -41,7 +41,7 @@ public:
             addAndMakeVisible (button);
         }
 
-        autoNormalizeAttachment = std::make_unique<ButtonAttachment>(p.apvts, paramID[PoZeParamID::autoNormalise], autoNormalizeBtn);
+        // autoNormalizeAttachment = std::make_unique<ButtonAttachment>(p.apvts, paramID[PoZeParamID::autoNormalise], autoNormalizeBtn);
 
         decibelBtn.onClick = [this]() {
             const bool isOn = decibelBtn.getToggleState();

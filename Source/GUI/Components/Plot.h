@@ -283,7 +283,12 @@ public:
      */
     std::function<float(float x)> getDataFn { nullptr };
 
+    // Called when the plot needs to refresh the data. Will be called just before calls
+    // to getDataFn().
     std::function<void(int numDataPoints)> dataRefreshFn { nullptr };
+
+    DragBox& getMinRangeBox() { return minRangeBox; }
+    DragBox& getMaxRangeBox() { return maxRangeBox; }
 
 private:
 
@@ -291,13 +296,13 @@ private:
     {
         if (box == &minRangeBox)
         {
-            setRange (MappedRange<float>(box->getValue(), yRange.end), true);
             maxRangeBox.setRange ({ minRangeBox.getValue() + 1e-3f, maxRangeBox.getRange().end });
+            setRange (MappedRange<float>(box->getValue(), yRange.end), true);
         }
         else if (box == &maxRangeBox)
         {
-            setRange (MappedRange<float>(yRange.start, box->getValue()), true);
             minRangeBox.setRange ({ minRangeBox.getRange().start, maxRangeBox.getValue() - 1e-3f });
+            setRange (MappedRange<float>(yRange.start, box->getValue()), true);
         }
     }
 

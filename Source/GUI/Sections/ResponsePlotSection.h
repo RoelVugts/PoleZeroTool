@@ -2,6 +2,8 @@
 
 #include <JuceHeader.h>
 
+#include "../../Data/Attachments/DragBoxAttachment.h"
+#include "../../Data/Attachments/PlotAttachment.h"
 #include "../../Data/Attachments/ResponsePlotAttachment.h"
 #include "../Components/Plot.h"
 #include "../DSP/MathFunctions.h"
@@ -14,7 +16,6 @@ public:
     ResponsePlotSection(AudioPluginAudioProcessor& p)
         : processor(p), state(p.state)
     {
-
         for (auto* plot : juce::Array<Plot*>{&magnitudePlot, &phasePlot, &groupDelayPlot})
         {
             plot->addListener (this);
@@ -24,33 +25,28 @@ public:
         //==================================================================================================
         state.setOnPropertyChanged (State::IDs::displayInDB, [this]() {
             const bool shouldDisplayInDecibels = state.displayInDB.getValue();
-            const auto currentRange = magnitudePlot.getYRange();
-
+            const float start = state.magnitudePlotRange.getValue().getStart();
+            const float end = state.magnitudePlotRange.getValue().getEnd();
             if (shouldDisplayInDecibels)
             {
                 magnitudePlot.setMinMaxRange (-100.0f, 100.0f);
-                magnitudePlot.setRange ({ juce::Decibels::gainToDecibels (currentRange.start), juce::Decibels::gainToDecibels (currentRange.end)}, true );
+                magnitudePlot.setRange ({ juce::Decibels::gainToDecibels (start),juce::Decibels::gainToDecibels (end)}, true );
             }
             else
             {
                 magnitudePlot.setMinMaxRange (0.0f, 100.0f);
-                magnitudePlot.setRange ({ juce::Decibels::decibelsToGain (currentRange.start), juce::Decibels::decibelsToGain (currentRange.end)}, true );
+                magnitudePlot.setRange ({ start,end }, true );
             }
         }, true);
 
-
-        //==================================================================================================
-        magnitudePlot.setRange ({ -12.0f, 12.0f }, true);
-        phasePlot.setRange ({ -juce::MathConstants<float>::twoPi, juce::MathConstants<float>::twoPi }, true);
-        groupDelayPlot.setRange ({ -4, 4 }, true);
-
         //==================================================================================================
         plotAttachment = std::make_unique<ResponsePlotAttachment> (p.state, p.filterDesign, magnitudePlot, phasePlot, groupDelayPlot);
+        phasePlotAttachment = std::make_unique<PlotAttachment>(phasePlot, state.phasePlotRange);
+        groupDelayPlotAttachment = std::make_unique<PlotAttachment>(groupDelayPlot, state.groupDelayPlotRange);
 
         //==================================================================================================
         state.setOnPropertyChanged (State::IDs::displayGroupDelay, [this]() {
-            const bool shouldDisplayGroupDelay = state.displayGroupDelay.getValue();
-            if (shouldDisplayGroupDelay)
+            if (state.displayGroupDelay.getValue())
             {
                 groupDelayPlot.setVisible (true);
                 phasePlot.setVisible (false);
@@ -167,7 +163,7 @@ private:
             if (isLogarithmic)
                 labels = { "1/512", "1/256", "1/128", "1/64", "1/32", "1/16", "1/8", "1/4", "1/2", piString};
             else
-                labels = { quarterString + piString, halfString + piString, threeQtrString + piString, piString};
+                labels = { "1/4", "1/2", "3/4", piString};
         }
 
         for (auto* plot : juce::Array<Plot*>{&magnitudePlot, &phasePlot, &groupDelayPlot})
@@ -226,7 +222,8 @@ private:
     AudioPluginAudioProcessor& processor;
     State state;
     const juce::String piString         { juce::String (juce::CharPointer_UTF8 ("\xCF\x80")) }; // pi
-    const juce::String quarterString    { juce::String (juce::CharPointer_UTF8 ("\xC2\xBC")) }; // 1/4
-    const juce::String halfString       { juce::String (juce::CharPointer_UTF8 ("\xC2\xBD")) }; // 1/2
-    const juce::String threeQtrString   { juce::String (juce::CharPointer_UTF8 ("\xC2\xBE")) }; // 3/4
+
+    std::unique_ptr<PlotAttachment> magPlotAttachment;
+    std::unique_ptr<PlotAttachment> phasePlotAttachment;
+    std::unique_ptr<PlotAttachment> groupDelayPlotAttachment;
 };

@@ -5,14 +5,14 @@
 
 #include <JuceHeader.h>
 
-class ResponsePlotAttachment : private FilterDesign::Listener, private juce::ComponentListener, private juce::AsyncUpdater
+class ResponsePlotAttachment : private FilterDesign::Listener, private juce::ComponentListener, private juce::AsyncUpdater, private Plot::Listener
 {
 public:
 
     ResponsePlotAttachment(State& settings, FilterDesign& filterDesign, Plot& magPlot, Plot& phasePlot_, Plot& groupDelayPlot_)
         : state(settings), filterDesigner (filterDesign), magnitudePlot (magPlot), phasePlot (phasePlot_), groupDelayPlot (groupDelayPlot_)
     {
-
+        //======================================================================================================================
         magnitudePlot.getDataFn = [this](float x) -> float {
             const int index = (int)(magnitudePlot.getXRange().convertTo0to1 (x) * (float)magnitudePlot.getNumDataPoints());
             jassert(index < cachedResponse.size());
@@ -52,14 +52,33 @@ public:
                     updateResponse();
             };
 
-        
+        //======================================================================================================================
         updateResponse();
         filterDesigner.addListener (this);
+
+        //======================================================================================================================
+        state.setOnPropertyChanged (State::IDs::magnitudePlotRange, [this]() {
+            if (! ignoreCallbacks)
+            {
+                float start = state.magnitudePlotRange.getValue().getStart();
+                float end = state.magnitudePlotRange.getValue().getEnd();
+
+                if (state.displayInDB.getValue())
+                {
+                    start = juce::Decibels::gainToDecibels (start);
+                    end = juce::Decibels::gainToDecibels (end);
+                }
+                magnitudePlot.setRange ({ start, end }, true);
+            }
+        }, true);
+
+        magnitudePlot.addListener (this);
     }
 
     ~ResponsePlotAttachment() override
     {
         filterDesigner.removeListener (this);
+        magnitudePlot.removeListener (this);
     }
 
     void updateResponse()
@@ -75,8 +94,6 @@ public:
             const float angle = range.convertFrom0to1 ((float)i / (float)numSamples);
             cachedResponse[i] = filterDesigner.getFreqResponse (angle);
         }
-
-
     }
 
 private:
@@ -104,6 +121,23 @@ private:
         updateAllPlots();
     }
 
+    void rangeChanged(Plot* plot) override
+    {
+        if (plot == &magnitudePlot)
+        {
+            float start = magnitudePlot.getYRange().start;
+            float end = magnitudePlot.getYRange().end;
+
+            if (state.displayInDB.getValue())
+            {
+                start = juce::Decibels::decibelsToGain (start);
+                end = juce::Decibels::decibelsToGain (end);
+            }
+            juce::ScopedValueSetter<bool> svs(ignoreCallbacks, true);
+            state.magnitudePlotRange.setValue ({ start, end });
+        }
+    }
+
 
     State state;
     Plot& magnitudePlot;
@@ -112,4 +146,6 @@ private:
     FilterDesign& filterDesigner;
     std::vector<FilterDesign::Response> cachedResponse;
     MappedRange<float> xRange;
+
+    bool ignoreCallbacks { false };
 };
