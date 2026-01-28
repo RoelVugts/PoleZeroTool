@@ -2,12 +2,13 @@
 
 #include <JuceHeader.h>
 
-#include "../../Data/Attachments/DragBoxAttachment.h"
-#include "../../Data/Attachments/PlotAttachment.h"
-#include "../../Data/Attachments/ResponsePlotAttachment.h"
+#include "../../Data/Attachments/PlotRangeAttachment.h"
+#include "../../Data/Attachments/PlotDataAttachment.h"
 #include "../Components/Plot.h"
 #include "../DSP/MathFunctions.h"
 #include "../LookAndFeel.h"
+
+#include <magic_enum/magic_enum.hpp>
 
 class ResponsePlotSection : public juce::Component, private Plot::Listener
 {
@@ -16,46 +17,33 @@ public:
     ResponsePlotSection(AudioPluginAudioProcessor& p)
         : processor(p), state(p.state)
     {
-        for (auto* plot : juce::Array<Plot*>{&magnitudePlot, &phasePlot, &groupDelayPlot})
+
+        for (auto* plot : juce::Array<Plot*>{&firstPlot, &secondPlot})
         {
             plot->addListener (this);
             addAndMakeVisible (plot);
         }
 
         //==================================================================================================
-        state.setOnPropertyChanged (State::IDs::displayInDB, [this]() {
-            const bool shouldDisplayInDecibels = state.displayInDB.getValue();
-            const float start = state.magnitudePlotRange.getValue().getStart();
-            const float end = state.magnitudePlotRange.getValue().getEnd();
-            if (shouldDisplayInDecibels)
-            {
-                magnitudePlot.setMinMaxRange (-100.0f, 100.0f);
-                magnitudePlot.setRange ({ juce::Decibels::gainToDecibels (start),juce::Decibels::gainToDecibels (end)}, true );
-            }
-            else
-            {
-                magnitudePlot.setMinMaxRange (0.0f, 100.0f);
-                magnitudePlot.setRange ({ start,end }, true );
-            }
+        plotAttachment = std::make_unique<PlotDataAttachment> (p.state, p.filterDesign, firstPlot, secondPlot);
+        firstPlotRangeAttachment  = std::make_unique<PlotRangeAttachment>(state, firstPlot,  0);
+        secondPlotRangeAttachment = std::make_unique<PlotRangeAttachment>(state, secondPlot, 1);
+
+        //==================================================================================================
+        state.setOnPropertyChanged (State::IDs::firstPlotType, [this]() {
+            const auto selectedType = state.firstPlotType.getValue();
+            const juce::String& title = magic_enum::enum_name(selectedType).data();
+            firstPlot.setPlotTitle (title);
+            firstPlotRangeAttachment->updateRange();
+            firstPlot.updatePath();
         }, true);
 
-        //==================================================================================================
-        plotAttachment = std::make_unique<ResponsePlotAttachment> (p.state, p.filterDesign, magnitudePlot, phasePlot, groupDelayPlot);
-        phasePlotAttachment = std::make_unique<PlotAttachment>(phasePlot, state.phasePlotRange);
-        groupDelayPlotAttachment = std::make_unique<PlotAttachment>(groupDelayPlot, state.groupDelayPlotRange);
-
-        //==================================================================================================
-        state.setOnPropertyChanged (State::IDs::displayGroupDelay, [this]() {
-            if (state.displayGroupDelay.getValue())
-            {
-                groupDelayPlot.setVisible (true);
-                phasePlot.setVisible (false);
-            }
-            else
-            {
-                groupDelayPlot.setVisible (false);
-                phasePlot.setVisible (true);
-            }
+        state.setOnPropertyChanged (State::IDs::secondPlotType, [this]() {
+            const auto selectedType = state.secondPlotType.getValue();
+            const juce::String& title = magic_enum::enum_name(selectedType).data();
+            secondPlot.setPlotTitle (title);
+            secondPlotRangeAttachment->updateRange();
+            secondPlot.updatePath();
         }, true);
 
         //==================================================================================================
@@ -79,18 +67,16 @@ public:
 
         const float plotHeight = (height - LAF::Layout::defaultSpacing) * 0.5f;
         auto magPlotArea = bounds.removeFromTop (plotHeight);
-        magnitudePlot.setBounds (magPlotArea.toNearestInt());
+        firstPlot.setBounds (magPlotArea.toNearestInt());
 
         bounds.removeFromTop (LAF::Layout::defaultSpacing);
         auto phasePlotArea = bounds;
-        phasePlot.setBounds (phasePlotArea.toNearestInt());
-        groupDelayPlot.setBounds (phasePlotArea.toNearestInt());
+        secondPlot.setBounds (phasePlotArea.toNearestInt());
     }
 
-    Plot magnitudePlot { "Magnitude", -100.0f, 100.0f };
-    Plot phasePlot { "Phase", -1000.0f, 1000.0f };
-    Plot groupDelayPlot { "Group Delay", -1000.0f, 1000.0f };
-    std::unique_ptr<ResponsePlotAttachment> plotAttachment;
+    Plot firstPlot { "Magnitude" , -100.0f, 100.0f };
+    Plot secondPlot { "Phase" , -1000.0f, 1000.0f };
+
 
 private:
 
@@ -100,7 +86,7 @@ private:
         {
             MappedRange<float> logRange = MappedRange<float>::createExponentialRange (0.0f, juce::MathConstants<float>::pi);
 
-            for (auto* plot : juce::Array<Plot*>{&magnitudePlot, &phasePlot, &groupDelayPlot})
+            for (auto* plot : juce::Array<Plot*>{&firstPlot, &secondPlot})
             {
                 plot->setDomain (logRange);
                 plot->setXTicks ({
@@ -119,7 +105,7 @@ private:
         }
         else
         {
-            for (auto* plot : juce::Array<Plot*>{&magnitudePlot, &phasePlot, &groupDelayPlot})
+            for (auto* plot : juce::Array<Plot*>{&firstPlot, &secondPlot})
             {
                 plot->setDomain ({ 0.0f, juce::MathConstants<float>::pi });
                 plot->setXTicks ({
@@ -166,22 +152,28 @@ private:
                 labels = { "1/4", "1/2", "3/4", piString};
         }
 
-        for (auto* plot : juce::Array<Plot*>{&magnitudePlot, &phasePlot, &groupDelayPlot})
+        for (auto* plot : juce::Array<Plot*>{&firstPlot, &secondPlot})
             plot->setXLabels (labels);
 
     }
 
     void rangeChanged(Plot* plot) override
     {
+        const PlotType type = plot == &firstPlot ? state.firstPlotType.getValue()
+                                                 : state.secondPlotType.getValue();
+        updatePlotGrid (plot, type);
+    }
+
+    static void updatePlotGrid(Plot* plot, PlotType type)
+    {
         const auto& range = plot->getYRange();
         std::vector<float> ticks;
         std::vector<juce::String> labels;
 
-        if (plot == &magnitudePlot || &groupDelayPlot)
+        if (type != PlotType::Phase)
             ticks = getGridYTicks (range, 8, 5.0f);
-        else if (plot == &phasePlot)
+        else
             ticks = getGridYTicks (range, 8, juce::MathConstants<float>::pi);
-
 
         for (const auto& tick : ticks)
         {
@@ -230,7 +222,7 @@ private:
     State state;
     const juce::String piString         { juce::String (juce::CharPointer_UTF8 ("\xCF\x80")) }; // pi
 
-    std::unique_ptr<PlotAttachment> magPlotAttachment;
-    std::unique_ptr<PlotAttachment> phasePlotAttachment;
-    std::unique_ptr<PlotAttachment> groupDelayPlotAttachment;
+    std::unique_ptr<PlotDataAttachment> plotAttachment;
+    std::unique_ptr<PlotRangeAttachment> firstPlotRangeAttachment;
+    std::unique_ptr<PlotRangeAttachment> secondPlotRangeAttachment;
 };

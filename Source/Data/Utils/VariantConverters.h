@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../../Plugin/Parameters.h"
+
 #include <JuceHeader.h>
 
 #include "../GUI/Components/PoZePlot.h"
@@ -59,5 +61,21 @@ struct juce::VariantConverter<juce::Range<float>>
         const int64_t packed = static_cast<int64_t>(static_cast<uint64_t> (realBits) << 32 | static_cast<uint64_t> (imagBits));
 
         return { packed };
+    }
+};
+
+template <>
+struct juce::VariantConverter<PlotType>
+{
+    static PlotType fromVar(const juce::var& var)
+    {
+        const int enumValue = var;
+        return static_cast<PlotType>(enumValue);
+    }
+
+    static juce::var toVar(const PlotType& type)
+    {
+        const int enumValue = static_cast<int>(type);
+        return { enumValue };
     }
 };

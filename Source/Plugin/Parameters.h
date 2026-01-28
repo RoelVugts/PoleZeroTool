@@ -14,6 +14,14 @@ enum PoZeParamID
     parameterCount
 };
 
+enum class PlotType
+{
+    Magnitude,
+    Phase,
+    GroupDelay,
+    PhaseDelay,
+};
+
 struct ParamMessage
 {
     PoZeParamID id;

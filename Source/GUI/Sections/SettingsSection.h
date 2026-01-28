@@ -6,6 +6,7 @@
 #include "../../Data/State.h"
 #include "../Components/DragBox.h"
 #include "../LookAndFeel.h"
+#include <magic_enum/magic_enum.hpp>
 
 class SettingsSection : public juce::Component
 {
@@ -21,15 +22,17 @@ public:
         gainAttachment = DragBoxAttachment::makeAttachment (p.apvts, paramID[PoZeParamID::gain], gainBox);
         addAndMakeVisible (gainBox);
 
-        for (auto* button : juce::Array<juce::TextButton*>{&decibelBtn, &groupDelayBtn, &logarithmicBtn, &unitBtn})
+        for (auto* button : juce::Array<juce::TextButton*>{&firstPlotBtn, &secondPlotBtn, &decibelBtn, &logarithmicBtn, &unitBtn})
         {
             button->setColour (juce::TextButton::ColourIds::buttonColourId, LAF::Colours::buttonOffColour);
             button->setColour (juce::TextButton::ColourIds::buttonOnColourId, LAF::Colours::buttonOnColour);
             button->setColour (juce::TextButton::ColourIds::textColourOffId, juce::Colours::white);
             button->setColour (juce::TextButton::ColourIds::textColourOnId, juce::Colours::white);
-            button->setClickingTogglesState (true);
             addAndMakeVisible (button);
         }
+
+        for (auto* button : juce::Array<juce::TextButton*>{&decibelBtn, &logarithmicBtn, &unitBtn, &autoNormalizeBtn, &bypassBtn})
+            button->setClickingTogglesState (true);
 
         for (auto* button : juce::Array<juce::TextButton*>{&autoNormalizeBtn, &bypassBtn})
         {
@@ -37,36 +40,44 @@ public:
             button->setColour (juce::TextButton::ColourIds::buttonOnColourId, LAF::Colours::buttonOnColour);
             button->setColour (juce::TextButton::ColourIds::textColourOffId, LAF::Colours::textColour);
             button->setColour (juce::TextButton::ColourIds::textColourOnId, juce::Colours::white);
-            button->setClickingTogglesState (true);
             addAndMakeVisible (button);
         }
-
-        // autoNormalizeAttachment = std::make_unique<ButtonAttachment>(p.apvts, paramID[PoZeParamID::autoNormalise], autoNormalizeBtn);
 
         decibelBtn.onClick = [this]() {
             const bool isOn = decibelBtn.getToggleState();
             decibelBtn.setButtonText (isOn ? "dB" : "Amp");
         };
-        decibelAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayInDB, decibelBtn, nullptr);
 
-        groupDelayBtn.onClick = [this]() {
-            const bool isOn = groupDelayBtn.getToggleState();
-            groupDelayBtn.setButtonText (isOn ? "Phase" : "Delay");
-        };
-        groupDelayAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayGroupDelay, groupDelayBtn, nullptr);
+        firstPlotBtn.onClick = [this]() {
+            juce::PopupMenu menu = createPlotMenu (state.firstPlotType.getValue());
+            menu.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (firstPlotBtn), [this](int result) {
+                if (result > 0)
+                    state.firstPlotType.setValue (static_cast<PlotType>(result - 1));
+            });
+        };;
+
+        secondPlotBtn.onClick = [this]() {
+            juce::PopupMenu menu = createPlotMenu (state.secondPlotType.getValue());
+            menu.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (secondPlotBtn), [this](int result) {
+                if (result > 0)
+                    state.secondPlotType.setValue (static_cast<PlotType>(result - 1));
+            });
+        };;
 
         logarithmicBtn.onClick = [this]() {
             const bool isOn = logarithmicBtn.getToggleState();
             logarithmicBtn.setButtonText (isOn ? "Linear" : "Log");
         };
-        logarithmicAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayLogarithmic, logarithmicBtn, nullptr);
 
         unitBtn.onClick = [this]() {
             const bool isOn = unitBtn.getToggleState();
             unitBtn.setButtonText (isOn ? "Radians" : "Hz");
         };
-        unitAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayInHz, unitBtn, nullptr);
 
+        autoNormalizeAttachment = std::make_unique<ButtonAttachment>(p.apvts, paramID[PoZeParamID::autoNormalise], autoNormalizeBtn);
+        decibelAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayInDB, decibelBtn, nullptr);
+        logarithmicAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayLogarithmic, logarithmicBtn, nullptr);
+        unitAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayInHz, unitBtn, nullptr);
         bypassAttachment = std::make_unique<ButtonAttachment>(p.apvts, paramID[PoZeParamID::bypass], bypassBtn);
     }
 
@@ -82,45 +93,46 @@ public:
         auto bounds = getLocalBounds().toFloat();
         bounds.reduce(LAF::Layout::defaultSpacing * 2, bounds.getHeight() * 0.2f);
 
-        static constexpr int numButtons = 7;
+        static constexpr int numButtons = 8;
         constexpr float spacingWidth = (float)(numButtons - 1) * LAF::Layout::defaultSpacing;
         const float btnSize = (bounds.getWidth() - spacingWidth) / numButtons;
 
         auto gainBoxArea = bounds.removeFromLeft (btnSize);
         gainBox.setBounds (gainBoxArea.toNearestInt());
 
-        bounds.removeFromLeft (LAF::Layout::defaultSpacing);
-        auto normalizeBtnArea = bounds.removeFromLeft (btnSize);
-        autoNormalizeBtn.setBounds (normalizeBtnArea.toNearestInt());
-
-        bounds.removeFromLeft (LAF::Layout::defaultSpacing);
-        auto decibelBtnArea = bounds.removeFromLeft (btnSize);
-        decibelBtn.setBounds (decibelBtnArea.toNearestInt());
-
-        bounds.removeFromLeft (LAF::Layout::defaultSpacing);
-        auto groupDelayArea = bounds.removeFromLeft (btnSize);
-        groupDelayBtn.setBounds (groupDelayArea.toNearestInt());
-
-        bounds.removeFromLeft (LAF::Layout::defaultSpacing);
-        auto logBtnArea = bounds.removeFromLeft (btnSize);
-        logarithmicBtn.setBounds (logBtnArea.toNearestInt());
-
-        bounds.removeFromLeft (LAF::Layout::defaultSpacing);
-        auto unitBtnArea = bounds.removeFromLeft (btnSize);
-        unitBtn.setBounds (unitBtnArea.toNearestInt());
-
-        bounds.removeFromLeft (LAF::Layout::defaultSpacing);
-        auto bypassBtnArea = bounds.removeFromLeft (btnSize);
-        bypassBtn.setBounds (bypassBtnArea.toNearestInt());
+        for (auto* b : juce::Array<juce::Button*>{&autoNormalizeBtn, &firstPlotBtn, &secondPlotBtn, &decibelBtn, &logarithmicBtn, &unitBtn, &bypassBtn})
+        {
+            bounds.removeFromLeft (LAF::Layout::defaultSpacing);
+            auto area = bounds.removeFromLeft (btnSize);
+            b->setBounds (area.toNearestInt());
+        }
     }
 
 private:
+
+    juce::PopupMenu createPlotMenu(PlotType currentlySelectedPlot)
+    {
+        juce::PopupMenu menu;
+        static constexpr int numPlots = (int)magic_enum::enum_count<PlotType>();
+
+        for (int i = 0; i < numPlots; i++)
+        {
+            const auto type = static_cast<PlotType>(i);
+            const juce::String& name = magic_enum::enum_name(type).data();
+            const bool isTicked = type == currentlySelectedPlot;
+            menu.addItem (i + 1, name, true, isTicked);
+        }
+
+        return menu;
+    }
+
     State state;
     DragBox gainBox;
 
     juce::TextButton autoNormalizeBtn       { "Normalize" };
+    juce::TextButton firstPlotBtn           { "1st plot" };
+    juce::TextButton secondPlotBtn           { "2nd plot" };
     juce::TextButton decibelBtn             { "Amp" };
-    juce::TextButton groupDelayBtn          { "Delay" };
     juce::TextButton logarithmicBtn         { "Linear" };
     juce::TextButton unitBtn                { "Hz" };
     juce::TextButton bypassBtn              { "Bypass" };
@@ -128,7 +140,6 @@ private:
     std::unique_ptr<DragBoxAttachment> gainAttachment;
     std::unique_ptr<ButtonAttachment> autoNormalizeAttachment;
     std::unique_ptr<ButtonPropertyAttachment> decibelAttachment;
-    std::unique_ptr<ButtonPropertyAttachment> groupDelayAttachment;
     std::unique_ptr<ButtonPropertyAttachment> logarithmicAttachment;
     std::unique_ptr<ButtonPropertyAttachment> unitAttachment;
     std::unique_ptr<ButtonAttachment> bypassAttachment;

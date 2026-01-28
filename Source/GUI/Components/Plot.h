@@ -183,7 +183,7 @@ public:
         auto minRangeArea = rangeArea.removeFromRight (rangeBoxWidth);
         minRangeBox.setBounds (minRangeArea.toNearestInt());
 
-        juce::NullCheckedInvocation::invoke(dataRefreshFn, getNumDataPoints());
+        juce::NullCheckedInvocation::invoke(onNumDataPointsChanged, getNumDataPoints());
 
         updatePath();
     }
@@ -224,7 +224,8 @@ public:
 
         for (int x = 0; x < width; x++)
         {
-            const float val = getDataFn(xRange.convertFrom0to1 ((float)x / (float)(width - 1)));
+            const float xValue = xRange.convertFrom0to1 ((float)x / (float)(width - 1));
+            const float val = getDataFn(xValue, x);
             float y = 1.0f - yRange.convertTo0to1 (val);
             y = y * plotArea.getHeight() + plotArea.getY();
 
@@ -279,13 +280,13 @@ public:
      *  y value.
      *
      *  @param x                The denormalized x value
+     *  @param index            Index of the data point
      *  @returns                The denormalized y value
      */
-    std::function<float(float x)> getDataFn { nullptr };
+    std::function<float(float x, int index)> getDataFn { nullptr };
 
-    // Called when the plot needs to refresh the data. Will be called just before calls
-    // to getDataFn().
-    std::function<void(int numDataPoints)> dataRefreshFn { nullptr };
+    // Called when the number of data points the plot needs is changed.
+    std::function<void(int numDataPoints)> onNumDataPointsChanged { nullptr };
 
     DragBox& getMinRangeBox() { return minRangeBox; }
     DragBox& getMaxRangeBox() { return maxRangeBox; }

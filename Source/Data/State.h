@@ -14,14 +14,18 @@ public:
     {
         static const juce::Identifier type;
         static const juce::Identifier poleZeroState;
+
+        static const juce::Identifier firstPlotType;
+        static const juce::Identifier secondPlotType;
+
         static const juce::Identifier displayInDB;
-        static const juce::Identifier displayGroupDelay;
         static const juce::Identifier displayLogarithmic;
         static const juce::Identifier displayInHz;
+
         static const juce::Identifier magnitudePlotRange;
-        static const juce::Identifier magnitudePlotRangeDB;
         static const juce::Identifier phasePlotRange;
         static const juce::Identifier groupDelayPlotRange;
+        static const juce::Identifier phaseDelayPlotRange;
     };
 
     State(juce::ValueTree tree);
@@ -29,13 +33,16 @@ public:
     void setState(const State& other);
 
     PoleZeroState poleZeroState;
+
+    TreePropertyWrapper<PlotType> firstPlotType;
+    TreePropertyWrapper<PlotType> secondPlotType;
+
     TreePropertyWrapper<bool> displayInDB;
-    TreePropertyWrapper<bool> displayGroupDelay;
     TreePropertyWrapper<bool> displayLogarithmic;
     TreePropertyWrapper<bool> displayInHz;
 
     TreePropertyWrapper<juce::Range<float>> magnitudePlotRange;
-    TreePropertyWrapper<juce::Range<float>> magnitudePlotRangeDB;
     TreePropertyWrapper<juce::Range<float>> phasePlotRange;
     TreePropertyWrapper<juce::Range<float>> groupDelayPlotRange;
+    TreePropertyWrapper<juce::Range<float>> phaseDelayPlotRange;
 };
