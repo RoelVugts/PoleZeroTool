@@ -64,7 +64,7 @@ public:
      */
     Response getFreqResponse(double angle, bool applyGain = true) const;
 
-    double getGroupDelay(Response& a, Response& b) const;
+    static double getGroupDelay(Response& a, Response& b);
 
     /** Returns the frequency response with the highest
      *  magnitude. It finds the highest magnitude by testing multiple frequencies.

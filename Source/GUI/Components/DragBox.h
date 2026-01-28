@@ -76,7 +76,7 @@ public:
 
     void setValue(float newValue, bool sendNotification)
     {
-        jassert(newValue >= range.start && value <= range.end);
+        jassert(newValue >= range.start && newValue <= range.end);
 
         if (approximatelyEqual (newValue, value))
             return;

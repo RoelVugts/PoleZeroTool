@@ -202,8 +202,8 @@ public:
 
     void setMinMaxRange(float minValue, float maxValue)
     {
-        minRangeBox.setRange ({ minValue, maxValue - 1e-3f });
-        maxRangeBox.setRange({ minValue + 1e-3f, maxValue });
+        minRangeBox.setRange ({ minValue, maxRangeBox.getValue() - 1e-3f });
+        maxRangeBox.setRange({ minRangeBox.getValue() + 1e-3f, maxValue });
     }
 
     void setDomain(const MappedRange<float>& domain) {

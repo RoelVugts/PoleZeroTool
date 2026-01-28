@@ -58,14 +58,16 @@ FilterDesign::Response FilterDesign::getFreqResponse(double angle, bool applyGai
     for (auto pole : poles)
         phaseShift -= MathFunctions::getAngleOfDifferenceVector (pole, z);
 
-    double phaseDelay = phaseShift / angle;
+
+    const double phaseDelay = approximatelyEqual (angle, 0.0) ? 0.0
+                                                              : -phaseShift / angle;
 
     std::complex<double> totalResponse = numerator / denumerator;
     double responseGain = std::abs(totalResponse);
     return FilterDesign::Response(std::arg(z), responseGain, phaseShift, phaseDelay);
 }
 
-double FilterDesign::getGroupDelay (Response& a, Response& b) const
+double FilterDesign::getGroupDelay (Response& a, Response& b)
 {
     const double angleDelta = a.angle - b.angle;
     const double phaseDelta = a.phase - b.phase;

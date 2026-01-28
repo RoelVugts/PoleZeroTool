@@ -121,6 +121,11 @@ private:
 
             case PlotType::PhaseDelay:
             {
+
+                // 0 Hz has no phase so display phase delay of the next frequency
+                if (index == 0)
+                    return (float)cachedResponse[1].phaseDelay;
+
                 return (float)cachedResponse[index].phaseDelay;
             }
 

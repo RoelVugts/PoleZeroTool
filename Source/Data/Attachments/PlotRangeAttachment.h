@@ -33,25 +33,7 @@ public:
 
         //======================================================================================================================
         state.setOnPropertyChanged (State::IDs::displayInDB, [this]() {
-            const PlotType type = getPlotType();
-
-            if (type == PlotType::Magnitude)
-            {
-                const bool shouldDisplayInDecibels = state.displayInDB.getValue();
-                const float start = state.magnitudePlotRange.getValue().getStart();
-                const float end = state.magnitudePlotRange.getValue().getEnd();
-
-                if (shouldDisplayInDecibels)
-                {
-                    plot.setMinMaxRange (-100.0f, 100.0f);
-                    plot.setRange ({ juce::Decibels::gainToDecibels (start),juce::Decibels::gainToDecibels (end)}, true );
-                }
-                else
-                {
-                    plot.setMinMaxRange (0.0f, 100.0f);
-                    plot.setRange ({ start,end }, true );
-                }
-            }
+            updateRange();
         }, true);
 
         //======================================================================================================================
@@ -79,6 +61,23 @@ public:
             jassertfalse;
             return state.magnitudePlotRange.getValue();
         }();
+
+        if (type == PlotType::Magnitude)
+        {
+            const bool shouldDisplayInDecibels = state.displayInDB.getValue();
+
+            if (shouldDisplayInDecibels)
+                // Limit to -100 dB and +100 dB
+                plot.setMinMaxRange (-100.0f, 100.0f);
+            else
+                // Limit gain plot minium to 0 (negative gain would be weird)
+                plot.setMinMaxRange (0.0f, 100.0f);
+        }
+        else
+        {
+            // Set wide range for other plots
+            plot.setMinMaxRange (-1000.0f, 1000.0f);
+        }
 
         setRange (range, type);
     }
