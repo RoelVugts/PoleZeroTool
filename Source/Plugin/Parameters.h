@@ -3,6 +3,7 @@
 #include <JuceHeader.h>
 
 #define APVTS_ID "APVTS"
+#define MINUS_INFINITY_DB -200.0
 
 enum PoZeParamID
 {
@@ -38,6 +39,6 @@ const std::array<juce::String, parameterCount> paramID =
 const std::array<juce::String, parameterCount> paramName
 {
     "Gain"
-       "Auto Normalise"
-       "Bypass"
+    "Auto Normalise"
+    "Bypass"
 };

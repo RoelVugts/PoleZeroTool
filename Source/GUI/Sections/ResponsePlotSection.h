@@ -32,18 +32,12 @@ public:
         //==================================================================================================
         state.setOnPropertyChanged (State::IDs::firstPlotType, [this]() {
             const auto selectedType = state.firstPlotType.getValue();
-            const juce::String& title = magic_enum::enum_name(selectedType).data();
-            firstPlot.setPlotTitle (title);
-            firstPlotRangeAttachment->updateRange();
-            firstPlot.updatePath();
+            setPlotType (0, selectedType);
         }, true);
 
         state.setOnPropertyChanged (State::IDs::secondPlotType, [this]() {
             const auto selectedType = state.secondPlotType.getValue();
-            const juce::String& title = magic_enum::enum_name(selectedType).data();
-            secondPlot.setPlotTitle (title);
-            secondPlotRangeAttachment->updateRange();
-            secondPlot.updatePath();
+            setPlotType (1, selectedType);
         }, true);
 
         //==================================================================================================
@@ -65,16 +59,27 @@ public:
         auto bounds = getLocalBounds().toFloat();
         const float height = bounds.getHeight();
 
-        const float plotHeight = (height - LAF::Layout::defaultSpacing) * 0.5f;
-        auto magPlotArea = bounds.removeFromTop (plotHeight);
-        firstPlot.setBounds (magPlotArea.toNearestInt());
+        const bool bothPlotsHaveSameType = state.firstPlotType.getValue() == state.secondPlotType.getValue();
+        secondPlot.setVisible (! bothPlotsHaveSameType);
 
-        bounds.removeFromTop (LAF::Layout::defaultSpacing);
-        auto phasePlotArea = bounds;
-        secondPlot.setBounds (phasePlotArea.toNearestInt());
+        if (bothPlotsHaveSameType)
+        {
+            auto plotArea = bounds.removeFromTop (height);
+            firstPlot.setBounds (plotArea.toNearestInt());
+        }
+        else
+        {
+            const float plotHeight = (height - LAF::Layout::defaultSpacing) * 0.5f;
+            auto magPlotArea = bounds.removeFromTop (plotHeight);
+            firstPlot.setBounds (magPlotArea.toNearestInt());
+
+            bounds.removeFromTop (LAF::Layout::defaultSpacing);
+            auto phasePlotArea = bounds;
+            secondPlot.setBounds (phasePlotArea.toNearestInt());
+        }
     }
 
-    Plot firstPlot { "Magnitude" , -100.0f, 100.0f };
+    Plot firstPlot { "Magnitude" , -200.0f, 200.0f };
     Plot secondPlot { "Phase" , -1000.0f, 1000.0f };
 
 
@@ -216,6 +221,27 @@ private:
         }
 
         return ticks;
+    }
+
+    void setPlotType(int plotIndex, PlotType type)
+    {
+        juce::String title = magic_enum::enum_name(type).data();
+        for (int i = 1; i < title.length(); ++i)
+        {
+            if (juce::CharacterFunctions::isUpperCase(title[i]))
+            {
+                title = title.substring(0, i) + " " + title.substring(i);
+                ++i;
+            }
+        }
+
+        auto& plot = plotIndex == 0 ? firstPlot : secondPlot;
+        auto& attachment = plotIndex == 0 ? firstPlotRangeAttachment : secondPlotRangeAttachment;
+
+        plot.setPlotTitle (title);
+        attachment->updateRange();
+        plot.updatePath();
+        resized();
     }
 
     AudioPluginAudioProcessor& processor;

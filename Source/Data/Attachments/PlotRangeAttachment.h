@@ -13,22 +13,22 @@ public:
         //======================================================================================================================
         state.setOnPropertyChanged (State::IDs::magnitudePlotRange, [this]() {
             if (getPlotType() == PlotType::Magnitude)
-                setRange (state.magnitudePlotRange.getValue(), PlotType::Magnitude);
+                updateRange ();
         }, true);
 
         state.setOnPropertyChanged (State::IDs::phasePlotRange, [this]() {
             if (getPlotType() == PlotType::Phase)
-                setRange (state.phasePlotRange.getValue(), PlotType::Phase);
+                updateRange ();
         }, true);
 
         state.setOnPropertyChanged (State::IDs::groupDelayPlotRange, [this]() {
             if (getPlotType() == PlotType::GroupDelay)
-                setRange (state.groupDelayPlotRange.getValue(), PlotType::GroupDelay);
+                updateRange ();
         }, true);
 
         state.setOnPropertyChanged (State::IDs::phaseDelayPlotRange, [this]() {
             if (getPlotType() == PlotType::PhaseDelay)
-                setRange (state.phaseDelayPlotRange.getValue(), PlotType::PhaseDelay);
+                updateRange ();
         }, true);
 
         //======================================================================================================================
@@ -68,10 +68,10 @@ public:
 
             if (shouldDisplayInDecibels)
                 // Limit to -100 dB and +100 dB
-                plot.setMinMaxRange (-100.0f, 100.0f);
+                plot.setMinMaxRange (-200.0f, 200.0f);
             else
                 // Limit gain plot minium to 0 (negative gain would be weird)
-                plot.setMinMaxRange (0.0f, 100.0f);
+                plot.setMinMaxRange (0.0f,  1000.0f);
         }
         else
         {
@@ -96,8 +96,8 @@ private:
                 // Convert values back to dB if we are in dB mode
                 if (state.displayInDB.getValue())
                 {
-                    start = juce::Decibels::gainToDecibels (start);
-                    end = juce::Decibels::gainToDecibels (end);
+                    start = juce::Decibels::gainToDecibels (start, (float)MINUS_INFINITY_DB);
+                    end = juce::Decibels::gainToDecibels (end, (float)MINUS_INFINITY_DB);
                 }
             }
 
@@ -121,8 +121,8 @@ private:
                 // Convert values back to gain if we are in dB mode
                 if (state.displayInDB.getValue())
                 {
-                    start = juce::Decibels::decibelsToGain (start);
-                    end = juce::Decibels::decibelsToGain (end);
+                    start = juce::Decibels::decibelsToGain (start, (float)MINUS_INFINITY_DB);
+                    end = juce::Decibels::decibelsToGain (end, (float)MINUS_INFINITY_DB);
                 }
 
                 state.magnitudePlotRange.setValue ({ start, end });

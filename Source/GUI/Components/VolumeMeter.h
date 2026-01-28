@@ -18,7 +18,7 @@ public:
 
     void paint(juce::Graphics& g) override
     {
-        const float db = std::clamp(juce::Decibels::gainToDecibels (currentLevel), minLevel, maxLevel);
+        const float db = std::clamp(juce::Decibels::gainToDecibels (currentLevel, (float)MINUS_INFINITY_DB), minLevel, maxLevel);
         const float norm = range.convertTo0to1 (db);
         const float y = (1.0f - norm) * area.getHeight() + area.getY();
 

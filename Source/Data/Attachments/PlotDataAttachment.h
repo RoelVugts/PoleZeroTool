@@ -91,7 +91,7 @@ private:
                 jassert(index < cachedResponse.size());
 
                 if (state.displayInDB.getValue())
-                    return (float)juce::Decibels::gainToDecibels (cachedResponse[index].magnitude);
+                    return (float)juce::Decibels::gainToDecibels (cachedResponse[index].magnitude, MINUS_INFINITY_DB);
 
                 return (float)cachedResponse[index].magnitude;
             }

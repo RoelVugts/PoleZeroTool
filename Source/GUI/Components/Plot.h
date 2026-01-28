@@ -202,8 +202,8 @@ public:
 
     void setMinMaxRange(float minValue, float maxValue)
     {
-        minRangeBox.setRange ({ minValue, maxRangeBox.getValue() - 1e-3f });
-        maxRangeBox.setRange({ minRangeBox.getValue() + 1e-3f, maxValue });
+        minRangeBox.setRange ({ minValue, maxValue - minSpan });
+        maxRangeBox.setRange({ minValue + minSpan, maxValue });
     }
 
     void setDomain(const MappedRange<float>& domain) {
@@ -297,12 +297,16 @@ private:
     {
         if (box == &minRangeBox)
         {
-            maxRangeBox.setRange ({ minRangeBox.getValue() + 1e-3f, maxRangeBox.getRange().end });
+            if (minRangeBox.getValue() >= (maxRangeBox.getValue() - minSpan))
+                minRangeBox.setValue (maxRangeBox.getValue() - minSpan, true);
+
             setRange (MappedRange<float>(box->getValue(), yRange.end), true);
         }
         else if (box == &maxRangeBox)
         {
-            minRangeBox.setRange ({ minRangeBox.getRange().start, maxRangeBox.getValue() - 1e-3f });
+            if (maxRangeBox.getValue() <= (minRangeBox.getValue() + minSpan))
+                maxRangeBox.setValue (minRangeBox.getValue() + minSpan, true);
+
             setRange (MappedRange<float>(yRange.start, box->getValue()), true);
         }
     }
@@ -326,4 +330,5 @@ private:
 
     float lineThickness { 0.5f };
     static constexpr int borderThickness { 2 };
+    static constexpr float minSpan { 1e-3f };
 };
