@@ -40,7 +40,7 @@ public:
         auto bounds = getLocalBounds();
         viewport.setBounds (bounds);
 
-        const float fontHeight = (float)getHeight() * 0.2f;
+        const float fontHeight = (float)getHeight() * 0.23f;
         label.setFont (juce::FontOptions(fontHeight));
 
         bounds = bounds.reduced(padding);

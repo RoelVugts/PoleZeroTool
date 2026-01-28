@@ -118,7 +118,8 @@ private:
         for (int i = 0; i < numPlots; i++)
         {
             const auto type = static_cast<PlotType>(i);
-            const juce::String& name = magic_enum::enum_name(type).data();
+            juce::String name = magic_enum::enum_name(type).data();
+            name = Utils::insertSpacesForEveryUpperCase (name);
             const bool isTicked = type == currentlySelectedPlot;
             menu.addItem (i + 1, name, true, isTicked);
         }

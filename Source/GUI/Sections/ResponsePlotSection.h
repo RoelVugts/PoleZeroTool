@@ -226,15 +226,7 @@ private:
     void setPlotType(int plotIndex, PlotType type)
     {
         juce::String title = magic_enum::enum_name(type).data();
-        for (int i = 1; i < title.length(); ++i)
-        {
-            if (juce::CharacterFunctions::isUpperCase(title[i]))
-            {
-                title = title.substring(0, i) + " " + title.substring(i);
-                ++i;
-            }
-        }
-
+        title = Utils::insertSpacesForEveryUpperCase (title);
         auto& plot = plotIndex == 0 ? firstPlot : secondPlot;
         auto& attachment = plotIndex == 0 ? firstPlotRangeAttachment : secondPlotRangeAttachment;
 
