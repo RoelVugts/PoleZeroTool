@@ -52,7 +52,7 @@ public:
         auto plotArea = bounds.removeFromTop (poZePlotSize);
         poZePlot.setBounds (plotArea.toNearestInt());
 
-        plotArea = plotArea.reduced (LAF::Layout::defaultSpacing);
+        plotArea = plotArea.reduced (plotArea.getWidth() * 0.04f);
         const float infoBtnSize = plotArea.getWidth() * 0.1f;
         auto infoBtnArea = plotArea.removeFromTop (infoBtnSize).removeFromRight (infoBtnSize);
         infoBtn.setBounds (infoBtnArea.toNearestInt());
