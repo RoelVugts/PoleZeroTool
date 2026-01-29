@@ -6,13 +6,13 @@
 
 class PoZeToolLaf;
 
-class PoZePlot : public RoundedCornerComponent
+class PoZePlot : public RoundedCornerComponent, public juce::SettableTooltipClient
 {
 public:
 
     //======================================================================
     // Point in a Pole-Zero plot, representing either a Pole or a Zero
-    class Point : public RoundedCornerComponent, public juce::KeyListener
+    class Point : public RoundedCornerComponent, public juce::KeyListener, public juce::SettableTooltipClient
     {
     public:
 

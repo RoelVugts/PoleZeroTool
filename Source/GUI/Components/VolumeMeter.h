@@ -2,7 +2,7 @@
 
 #include <JuceHeader.h>
 
-class VolumeMeter : public juce::Component, private juce::Timer
+class VolumeMeter : public juce::Component, private juce::Timer, public juce::SettableTooltipClient
 {
 public:
 

@@ -72,6 +72,8 @@ public:
             else
                 // Limit gain plot minium to 0 (negative gain would be weird)
                 plot.setMinMaxRange (0.0f,  1000.0f);
+
+            plot.setUnitText (shouldDisplayInDecibels ? "dB" : "Amp");
         }
         else
         {

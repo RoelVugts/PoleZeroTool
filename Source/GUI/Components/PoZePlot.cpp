@@ -7,6 +7,7 @@ const int PoZePlot::Point::magKeyCode { juce::KeyPress::createFromDescription ("
 
 PoZePlot::Point::Point (Type type_) : type(type_)
 {
+    SettableTooltipClient::setTooltip (getType() == PoZePlot::Point::Type::pole ? "Pole" : "Zero");
     setWantsKeyboardFocus (true);
 }
 

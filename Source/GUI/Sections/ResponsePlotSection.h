@@ -2,8 +2,9 @@
 
 #include <JuceHeader.h>
 
-#include "../../Data/Attachments/PlotRangeAttachment.h"
 #include "../../Data/Attachments/PlotDataAttachment.h"
+#include "../../Data/Attachments/PlotRangeAttachment.h"
+#include "../Components/DragBox.h"
 #include "../Components/Plot.h"
 #include "../DSP/MathFunctions.h"
 #include "../LookAndFeel.h"
@@ -17,9 +18,19 @@ public:
     ResponsePlotSection(AudioPluginAudioProcessor& p)
         : processor(p), state(p.state)
     {
-
         for (auto* plot : juce::Array<Plot*>{&firstPlot, &secondPlot})
         {
+            plot->getMinRangeBox().setColour (DragBox::ColourIds::backgroundColourId, LAF::Colours::buttonColour);
+            plot->getMinRangeBox().setColour (DragBox::ColourIds::outlineColourId, LAF::Colours::buttonOutlineColour);
+            plot->getMaxRangeBox().setColour (DragBox::ColourIds::backgroundColourId, LAF::Colours::buttonColour);
+            plot->getMaxRangeBox().setColour (DragBox::ColourIds::outlineColourId, LAF::Colours::buttonOutlineColour);
+            plot->getMinRangeBox().setTooltip ("The lower limit of the plot range");
+            plot->getMaxRangeBox().setTooltip ("The upper limit of the plot range");
+
+            plot->setColour (Plot::ColourIds::borderOutlineColourId, LAF::Colours::buttonOutlineColour);
+            plot->setColour (Plot::ColourIds::titleBackgroundColourId, LAF::Colours::secondaryColour);
+            plot->setColour (Plot::ColourIds::gridColourId, LAF::Colours::plotGridColour.darker ());
+            plot->setColour (Plot::ColourIds::plotBackgroundColourId, LAF::Colours::plotBackgroundColour);
             plot->addListener (this);
             addAndMakeVisible (plot);
         }
@@ -234,6 +245,30 @@ private:
         attachment->updateRange();
         plot.updatePath();
         resized();
+
+        switch (type)
+        {
+            case PlotType::Magnitude:
+                plot.setUnitText (state.displayInDB.getValue() ? "dB" : "Amp");
+                plot.setTooltip ("Shows the magnitude frequency response");
+                break;
+
+            case PlotType::Phase:
+                plot.setUnitText ("Radians");
+                plot.setTooltip ("Shows the phase response");
+                break;
+
+            case PlotType::PhaseDelay:
+                plot.setUnitText ("Samples");
+                plot.setTooltip ("Shows the phase delay (negative of the phase divided by the frequency)");
+                break;
+
+            case PlotType::GroupDelay:
+                plot.setUnitText ("Samples");
+                plot.setTooltip ("Shows the group delay (derivative of the phase response)");
+                break;
+
+        }
     }
 
     AudioPluginAudioProcessor& processor;

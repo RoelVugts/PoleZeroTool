@@ -18,16 +18,19 @@ public:
         : state(p.state)
     {
         gainBox.setNumDecimalsToDisplay (5);
-        gainBox.setColour (DragBox::ColourIds::backgroundColourId, juce::Colour(30, 30, 30));
+        gainBox.setColour (DragBox::ColourIds::backgroundColourId, LAF::Colours::buttonColour);
+        gainBox.setColour (DragBox::ColourIds::textColourId, LAF::Colours::textColour);
+        gainBox.setColour (DragBox::ColourIds::outlineColourId, LAF::Colours::buttonOutlineColour);
         gainAttachment = DragBoxAttachment::makeAttachment (p.apvts, paramID[PoZeParamID::gain], gainBox);
         addAndMakeVisible (gainBox);
 
         for (auto* button : juce::Array<juce::TextButton*>{&firstPlotBtn, &secondPlotBtn, &decibelBtn, &logarithmicBtn, &unitBtn})
         {
-            button->setColour (juce::TextButton::ColourIds::buttonColourId, LAF::Colours::buttonOffColour);
-            button->setColour (juce::TextButton::ColourIds::buttonOnColourId, LAF::Colours::buttonOnColour);
-            button->setColour (juce::TextButton::ColourIds::textColourOffId, juce::Colours::white);
-            button->setColour (juce::TextButton::ColourIds::textColourOnId, juce::Colours::white);
+            button->setColour (juce::TextButton::ColourIds::buttonColourId, LAF::Colours::buttonColour);
+            button->setColour (juce::TextButton::ColourIds::buttonOnColourId, LAF::Colours::buttonColour);
+            button->setColour (juce::ComboBox::outlineColourId, LAF::Colours::buttonOutlineColour);
+            button->setColour (juce::TextButton::ColourIds::textColourOffId, LAF::Colours::textColour);
+            button->setColour (juce::TextButton::ColourIds::textColourOnId, LAF::Colours::textColour);
             addAndMakeVisible (button);
         }
 
@@ -36,10 +39,11 @@ public:
 
         for (auto* button : juce::Array<juce::TextButton*>{&autoNormalizeBtn, &bypassBtn})
         {
-            button->setColour (juce::TextButton::ColourIds::buttonColourId, LAF::Colours::buttonOffColour);
+            button->setColour (juce::TextButton::ColourIds::buttonColourId, LAF::Colours::buttonColour);
             button->setColour (juce::TextButton::ColourIds::buttonOnColourId, LAF::Colours::buttonOnColour);
-            button->setColour (juce::TextButton::ColourIds::textColourOffId, LAF::Colours::textColour);
-            button->setColour (juce::TextButton::ColourIds::textColourOnId, juce::Colours::white);
+            button->setColour (juce::ComboBox::outlineColourId, LAF::Colours::buttonOutlineColour);
+            button->setColour (juce::TextButton::ColourIds::textColourOffId, LAF::Colours::disabledTextColour);
+            button->setColour (juce::TextButton::ColourIds::textColourOnId, LAF::Colours::textColour);
             addAndMakeVisible (button);
         }
 
@@ -79,12 +83,21 @@ public:
         logarithmicAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayLogarithmic, logarithmicBtn, nullptr);
         unitAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayInHz, unitBtn, nullptr);
         bypassAttachment = std::make_unique<ButtonAttachment>(p.apvts, paramID[PoZeParamID::bypass], bypassBtn);
+
+        gainBox.setTooltip ("The gain applied to the filter");
+        autoNormalizeBtn.setTooltip ("If on, will set the gain so the higest peak of the filter is at unity gain");
+        firstPlotBtn.setTooltip ("Set the plot type for the first plot");
+        secondPlotBtn.setTooltip ("Set the plot type for the second plot");
+        decibelBtn.setTooltip ("Display the magnitude plot in decibels or in amplitude");
+        logarithmicBtn.setTooltip ("Display the domain (x-axis) logarithmically or linear");
+        unitBtn.setTooltip ("Display the x-axis in radians (fractions of pi) or frequency (Hz)");
+        bypassBtn.setTooltip ("Bypass the filter");
     }
 
 
     void paint(Graphics& g) override
     {
-        g.setColour (juce::Colours::black);
+        g.setColour (LAF::Colours::secondaryColour);
         g.fillRect (getLocalBounds());
     }
 

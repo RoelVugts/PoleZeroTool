@@ -10,6 +10,7 @@
 #include "Sections/PoleZeroSection.h"
 #include "Sections/ResponsePlotSection.h"
 #include "Sections/SettingsSection.h"
+#include "Sections/TooltipSection.h"
 
 class GUI : public juce::Component, private juce::Timer
 {
@@ -26,6 +27,8 @@ public:
         addAndMakeVisible (plotSection);
         addAndMakeVisible (formulaSection);
         addAndMakeVisible (settingsSection);
+        addAndMakeVisible (tooltipSection);
+
         addAndMakeVisible (inputMeter[0]);
         addAndMakeVisible (inputMeter[1]);
         addAndMakeVisible (outputMeter[0]);
@@ -33,7 +36,21 @@ public:
         addAndMakeVisible (outputMeterImag[0]);
         addAndMakeVisible (outputMeterImag[1]);
 
+        for (auto& ch : inputMeter)
+            ch.setTooltip ("Input volume meter");
+
+        for (auto& ch : outputMeter)
+            ch.setTooltip ("Real output volume meter");
+
+        for (auto& ch : outputMeterImag)
+            ch.setTooltip ("Imag Output volume meter");
+
         startTimerHz (30);
+    }
+
+    void paint(Graphics& g) override
+    {
+        g.fillAll(LAF::Colours::primaryColour);
     }
 
     void resized() override
@@ -43,7 +60,9 @@ public:
         const float width = bounds.getWidth();
 
         // Border area
-        auto headerArea = bounds.removeFromTop (height * 0.05f);
+        auto toolTipArea = bounds.removeFromBottom (height * 0.05f);
+        tooltipSection.setBounds (toolTipArea.toNearestInt());
+
         auto settingsArea = bounds.removeFromBottom (height * 0.05f);
         settingsSection.setBounds (settingsArea.toNearestInt());
 
@@ -70,7 +89,7 @@ public:
         outputMeterImag[1].setBounds (imagMeterArea.toNearestInt());
 
         // Margins
-        bounds.removeFromBottom (LAF::Layout::defaultSpacing);
+        bounds.removeFromBottom (LAF::Layout::defaultSpacing * 0.5f);
         bounds.removeFromTop (LAF::Layout::defaultSpacing);
 
         // Content area
@@ -111,6 +130,8 @@ private:
     ResponsePlotSection plotSection;
     FormulaSection formulaSection;
     SettingsSection settingsSection;
+    ToolTipSection tooltipSection;
+
     VolumeMeter inputMeter[2];
     VolumeMeter outputMeter[2];
     VolumeMeter outputMeterImag[2];

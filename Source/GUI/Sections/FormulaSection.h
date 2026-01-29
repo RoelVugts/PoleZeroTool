@@ -2,9 +2,9 @@
 
 #include <JuceHeader.h>
 
+#include "../../DSP/FilterDesign.h"
 #include "../Components/BoxedLabel.h"
 #include "../FilterTextFormatter.h"
-#include "../../DSP/FilterDesign.h"
 #include "LookAndFeel.h"
 
 class FormulaSection : public juce::Component, private FilterDesign::Listener
@@ -15,11 +15,17 @@ public:
     {
         diffEquationLabel.setFont (juce::FontOptions(11.0f));
         diffEquationLabel.setText (FilterTextFormatter::differenceEquation (p.filterDesign));
+        diffEquationLabel.setTooltip ("The difference equation");
+        diffEquationLabel.setColour (BoxedLabel::ColourIds::backgroundColourId, LAF::Colours::secondaryColour);
+        diffEquationLabel.setColour (BoxedLabel::ColourIds::outlineColourId, LAF::Colours::buttonOutlineColour);
         addAndMakeVisible (diffEquationLabel);
 
-        transferFucntionLabel.setFont (juce::FontOptions(11.0f));
-        transferFucntionLabel.setText (FilterTextFormatter::transferFunction (p.filterDesign));
-        addAndMakeVisible (transferFucntionLabel);
+        transferFunctionLabel.setFont (juce::FontOptions(11.0f));
+        transferFunctionLabel.setText (FilterTextFormatter::transferFunction (p.filterDesign));
+        transferFunctionLabel.setTooltip ("The transfer function");
+        transferFunctionLabel.setColour (BoxedLabel::ColourIds::backgroundColourId, LAF::Colours::secondaryColour);
+        transferFunctionLabel.setColour (BoxedLabel::ColourIds::outlineColourId, LAF::Colours::buttonOutlineColour);
+        addAndMakeVisible (transferFunctionLabel);
 
         filterDesigner.addListener (this);
     }
@@ -36,7 +42,7 @@ public:
 
         const float transferFunctionWidth = (width - LAF::Layout::defaultSpacing) * LAF::Layout::poZeContentWidthRatio;
         auto diffEquationArea = bounds.removeFromLeft (transferFunctionWidth);
-        transferFucntionLabel.setBounds (diffEquationArea.toNearestInt());
+        transferFunctionLabel.setBounds (diffEquationArea.toNearestInt());
         bounds.removeFromLeft (LAF::Layout::defaultSpacing);
         diffEquationLabel.setBounds (bounds.toNearestInt());
     }
@@ -46,17 +52,17 @@ private:
     void filterCoefficientsChanged(FilterDesign* emitter) override
     {
         diffEquationLabel.setText (FilterTextFormatter::differenceEquation (*emitter));
-        transferFucntionLabel.setText (FilterTextFormatter::transferFunction (*emitter));
+        transferFunctionLabel.setText (FilterTextFormatter::transferFunction (*emitter));
     }
 
     void filterGainChanged(FilterDesign* emitter) override
     {
         diffEquationLabel.setText (FilterTextFormatter::differenceEquation (*emitter));
-        transferFucntionLabel.setText (FilterTextFormatter::transferFunction (*emitter));
+        transferFunctionLabel.setText (FilterTextFormatter::transferFunction (*emitter));
     }
 
     FilterDesign& filterDesigner;
-    BoxedLabel transferFucntionLabel;
+    BoxedLabel transferFunctionLabel;
     BoxedLabel diffEquationLabel;
 
 };

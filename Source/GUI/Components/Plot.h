@@ -7,7 +7,7 @@
 #include "../../DSP/FilterDesign.h"
 #include "../../Utils/MappedRange.h"
 
-class Plot : public juce::Component, private DragBox::Listener
+class Plot : public juce::Component, private DragBox::Listener, public juce::SettableTooltipClient
 {
 public:
 
@@ -58,6 +58,7 @@ public:
         g.fillRect (plotArea);
         g.fillRect (yAxisArea);
         g.fillRect (xAxisArea);
+        g.fillRect (headerArea);
 
         //=======================================================
         // Draw grid lines
@@ -140,17 +141,21 @@ public:
         //=======================================================
         // Draw frame and title area
         g.setColour (findColour (titleBackgroundColourId));
-        g.fillRect (titleArea);
+        g.fillRect (headerArea);
 
         g.setColour (findColour (borderOutlineColourId));
-        g.drawRect (titleArea, borderThickness);
-
+        g.drawRect (headerArea, borderThickness);
+        g.drawRect (getLocalBounds(), borderThickness);
 
         //=======================================================
         // Draw title
         g.setColour (findColour (textColourId));
         g.setFont (juce::FontOptions (13.0f, juce::Font::bold));
         g.drawFittedText (title, titleArea.toNearestInt(), juce::Justification::centred, 1, 0.9f);
+
+        g.setColour (findColour (textColourId).darker ());
+        g.setFont (juce::FontOptions (11.0f));
+        g.drawFittedText (unit, unitArea.toNearestInt(), juce::Justification::centredLeft, 1, 0.9f);
 
         //=======================================================
 
@@ -163,16 +168,21 @@ public:
         auto bounds = getLocalBounds().toFloat();
         const float borderSize = std::min(bounds.getWidth() * 0.075f, 25.0f);
 
-        titleArea = bounds.removeFromTop (borderSize);
+        headerArea = bounds.removeFromTop (borderSize);
+        titleArea = headerArea.withSizeKeepingCentre (bounds.getWidth() * 0.5f, headerArea.getHeight());
         yAxisArea = bounds.removeFromLeft (borderSize + 10.0f);
         xAxisArea = bounds.removeFromBottom (borderSize);
         plotArea = bounds;
         bounds.removeFromRight (borderSize);
 
-        auto rangeArea = titleArea;
+        auto rangeArea = headerArea;
         const float titleRight = titleArea.getCentreX() + juce::GlyphArrangement::getStringWidth (juce::FontOptions(10.0f), title) * 0.5f;
         rangeArea.removeFromLeft (titleRight);
         rangeArea.reduce(10.0f, titleArea.getHeight() * 0.2f);
+
+        auto unitTextArea = headerArea;
+        unitArea = unitTextArea.removeFromLeft (titleArea.getX());
+        unitArea.removeFromLeft (10.0f);
 
         const float rangeBoxWidth = rangeArea.getWidth() * 0.3f;
         const float spacing = rangeArea.getWidth() * 0.05f;
@@ -268,6 +278,12 @@ public:
         repaint();
     }
 
+    void setUnitText(const juce::String& text)
+    {
+        unit = text;
+        repaint();
+    }
+
     // Returns the number of data points this plot will query.
     // This will be equal to the amount of (logical) width pixels
     int getNumDataPoints() const { return (int)plotArea.getWidth(); }
@@ -312,6 +328,7 @@ private:
     }
 
     juce::String title;
+    juce::String unit;
 
     juce::Path path;
     juce::PathStrokeType pathStroke { 1.0f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded };
@@ -320,8 +337,8 @@ private:
     std::vector<float> xTicks, yTicks;
     std::vector<juce::String> xLabels, yLabels;
 
-    juce::Rectangle<float> plotArea;
-    juce::Rectangle<float> xAxisArea, yAxisArea, titleArea;
+    juce::Rectangle<float> plotArea, headerArea;
+    juce::Rectangle<float> xAxisArea, yAxisArea, titleArea, unitArea;
 
     DragBox maxRangeBox;
     DragBox minRangeBox;

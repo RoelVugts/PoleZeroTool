@@ -14,10 +14,18 @@ public:
     PoleZeroSection(AudioPluginAudioProcessor& p)
         : poZeTable (p.state.poleZeroState)
     {
-        poZePlot.setColour (PoZePlot::ColourIds::backgroundColourId, LAF::Colours::darkBackgroundColour);
+        poZePlot.setColour (PoZePlot::ColourIds::backgroundColourId, LAF::Colours::plotBackgroundColour);
+        poZePlot.setColour (PoZePlot::ColourIds::unitCircleColourId, LAF::Colours::plotGridColour);
+
+        #if JUCE_MAC
+            poZePlot.setTooltip ("The Pole Zero plot | Command+Click: Add Pole | Shift+Click: Add Zero | Alt+Click: Remove Pole/Zero | Command+Shift+Click: Add conjugate");
+        #else
+            poZePlot.setTooltip ("The Pole Zero plot | Command+Click: Add Pole | Shift+Click: Add Zero | Alt+Click: Remove Pole/Zero | Ctrl+Shift+Click: Add conjugate");
+        #endif
         poZePlotAttachment = std::make_unique<PoZePlotAttachment>(p.state.poleZeroState, poZePlot, &p.undoManager);
         addAndMakeVisible (poZePlot);
 
+        poZeTable.setTooltip ("Editable list of the Poles and Zeros");
         addAndMakeVisible (poZeTable);
     }
 

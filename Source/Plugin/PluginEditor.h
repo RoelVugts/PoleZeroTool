@@ -13,7 +13,6 @@ public:
     ~AudioPluginAudioProcessorEditor() override;
 
     //==============================================================================
-    void paint (juce::Graphics&) override;
     void resized() override;
 
 private:

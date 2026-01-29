@@ -1,16 +1,28 @@
 #pragma once
 
 #include "Components/PoZePlot.h"
+#include "Components/DragBox.h"
 #include <JuceHeader.h>
 
 namespace LAF
 {
     namespace Colours
     {
-        static const juce::Colour darkBackgroundColour { 25, 25, 25 };
-        static const juce::Colour textColour { 200, 200, 200 };
-        static const juce::Colour buttonOffColour{ 20, 20, 20 };
-        static const juce::Colour buttonOnColour{ 60, 60, 60 };
+        static const juce::Colour primaryColour { 31, 38, 49 };
+        static const juce::Colour secondaryColour { 25, 28, 36 };
+        static const juce::Colour darkBackgroundColour { 21, 22, 28 };
+
+        static const juce::Colour textColour { 227, 227, 227 };
+        static const juce::Colour disabledTextColour { 179, 179, 179 };
+        static const juce::Colour highlightedColour{ 228, 159, 125 };
+
+        static const juce::Colour buttonColour{ 41, 46, 58 };
+        static const juce::Colour buttonOnColour{ 72, 80, 101 };
+        static const juce::Colour buttonOutlineColour{ 0, 0, 0 };
+
+        static const juce::Colour plotBackgroundColour{ 1, 3, 7 };
+        static const juce::Colour plotGridColour{ 153, 153, 153 };
+
     }
 
     namespace Layout
@@ -46,5 +58,20 @@ public:
                 break;
             }
         }
+    }
+
+    static void drawDragBoxBackground(juce::Graphics& g, DragBox& box)
+    {
+        auto bounds = box.getLocalBounds().toFloat();
+        const float cornerSize = std::min(bounds.getHeight(), bounds.getWidth()) * 0.4f;
+
+        g.setColour (box.findColour (DragBox::backgroundColourId));
+        g.fillRoundedRectangle(bounds, cornerSize);
+
+        static constexpr float lineThickness = 1.0f;
+        bounds = bounds.reduced (lineThickness * 0.5f);
+
+        g.setColour (box.findColour (DragBox::outlineColourId));
+        g.drawRoundedRectangle (bounds, cornerSize, lineThickness);
     }
 };

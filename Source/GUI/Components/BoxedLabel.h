@@ -2,7 +2,7 @@
 
 #include <JuceHeader.h>
 
-class BoxedLabel : public juce::Component
+class BoxedLabel : public juce::Component, public juce::SettableTooltipClient
 {
 public:
 
@@ -17,7 +17,10 @@ public:
         setColour (backgroundColourId, juce::Colours::black);
         setColour (outlineColourId, juce::Colours::grey);
         viewport.getHorizontalScrollBar().setColour (juce::ScrollBar::ColourIds::thumbColourId, juce::Colours::grey);
+        viewport.setScrollBarThickness (5);
+        viewport.setScrollBarsShown (false, true, false, true);
 
+        label.setInterceptsMouseClicks (false, false);
         label.setJustificationType (juce::Justification::centredLeft);
         viewport.setViewedComponent (&label, false);
         addAndMakeVisible (viewport);
@@ -38,12 +41,13 @@ public:
     void resized() override
     {
         auto bounds = getLocalBounds();
+        bounds.reduce(5, 0);
         viewport.setBounds (bounds);
 
         const float fontHeight = (float)getHeight() * 0.23f;
         label.setFont (juce::FontOptions(fontHeight));
 
-        bounds = bounds.reduced(padding);
+        bounds = getLocalBounds().reduced(padding);
         int maxWidth = 0;
 
         for (const auto& line : juce::StringArray::fromLines (label.getText ()))
@@ -52,6 +56,7 @@ public:
             maxWidth = std::max(lineWidth, maxWidth);
         }
 
+        bounds.expand (0, 3);
         label.setBounds (bounds.withWidth (maxWidth + 20));
     }
 

@@ -9,6 +9,14 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     juce::LookAndFeel::setDefaultLookAndFeel (&laf);
 
+    if (auto laf4 = dynamic_cast<juce::LookAndFeel_V4*> (&getLookAndFeel()))
+    {
+        auto& colourScheme = laf4->getCurrentColourScheme();
+        colourScheme.setUIColour (juce::LookAndFeel_V4::ColourScheme::widgetBackground,
+                                  LAF::Colours::darkBackgroundColour);
+    }
+
+
     static constexpr int defaultWidth = 825;
     static constexpr int defaultHeight = 550;
 
@@ -23,13 +31,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
 {
-}
-
-//==============================================================================
-void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
-{
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
 }
 
 void AudioPluginAudioProcessorEditor::resized()

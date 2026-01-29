@@ -75,7 +75,7 @@ private:
             const double real = (isOutput ? -1.0f : 1.0f) * std::real(coefs[i]);
             const double imag = (isOutput ? -1.0f : 1.0f) * std::imag(coefs[i]);
 
-            result += formatComplexTerm (real, imag, domain, i, (int)coefs.size(), delayOffset, isOutput, result.isEmpty());
+            result += formatComplexTerm (real, imag, domain, i, (int)coefs.size(), delayOffset, isOutput, result.isEmpty() && ! isOutput);
         }
 
         return result;

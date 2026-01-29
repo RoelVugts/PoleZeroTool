@@ -50,11 +50,13 @@ public:
         if (editor == nullptr)
         {
             editor = new juce::TextEditor("Cell Editor");
-            const auto defaultTextColour = owner.findColour (ListBox::textColourId);
-            editor->setColour (juce::TextEditor::ColourIds::textColourId, defaultTextColour);
-            editor->setColour (juce::TextEditor::ColourIds::backgroundColourId, juce::Colours::black);
+            editor->setColour (juce::TextEditor::ColourIds::textColourId, owner.findColour (juce::ListBox::ColourIds::textColourId));
+            editor->setColour (juce::TextEditor::ColourIds::backgroundColourId, LAF::Colours::buttonColour);
+            editor->setColour (juce::TextEditor::ColourIds::outlineColourId, LAF::Colours::buttonOutlineColour);
+            editor->setColour (juce::TextEditor::ColourIds::focusedOutlineColourId, LAF::Colours::highlightedColour);
             editor->setFont (font);
             editor->setJustification (juce::Justification::centredLeft);
+            editor->setTooltip (owner.getTooltip());
 
             editor->onReturnKey = [=]() {
                 const juce::String& text = editor->getText();
@@ -95,6 +97,8 @@ public:
 
                     default: jassertfalse; break;
                 }
+
+                editor->giveAwayKeyboardFocus();
             };
         }
 
@@ -144,13 +148,22 @@ class PoZeTable : public juce::TableListBox, private juce::AsyncUpdater
 public:
     PoZeTable(PoleZeroState settings) : state(settings)
     {
-        getHeader().addColumn ("Type", PoZeTableModel::typeColumnId, 50, 30);
-        getHeader().addColumn ("Mag", PoZeTableModel::magColumnId, 50, 30);
-        getHeader().addColumn ("Angle", PoZeTableModel::angleColumnId, 50, 30);
+        getHeader().addColumn ("Type", PoZeTableModel::typeColumnId, 50, 30, -1, TableHeaderComponent::ColumnPropertyFlags::notSortable);
+        getHeader().addColumn ("Mag", PoZeTableModel::magColumnId, 50, 30, -1, TableHeaderComponent::ColumnPropertyFlags::notSortable);
+        getHeader().addColumn ("Angle", PoZeTableModel::angleColumnId, 50, 30, -1, TableHeaderComponent::ColumnPropertyFlags::notSortable);
         getHeader().setStretchToFitActive (true);
         setRowHeight (18);
 
-        setColour (juce::ListBox::textColourId, juce::Colours::white);
+        getHeader().setColour (juce::TableHeaderComponent::ColourIds::textColourId, LAF::Colours::textColour);
+        getHeader().setColour (juce::TableHeaderComponent::ColourIds::outlineColourId, LAF::Colours::buttonOutlineColour);
+        getHeader().setColour (juce::TableHeaderComponent::ColourIds::highlightColourId, LAF::Colours::highlightedColour);
+        getHeader().setColour (juce::TableHeaderComponent::ColourIds::backgroundColourId, LAF::Colours::secondaryColour);
+
+        setColour (juce::ListBox::ColourIds::textColourId, LAF::Colours::textColour);
+        setColour (juce::ListBox::ColourIds::backgroundColourId, LAF::Colours::primaryColour);
+        setColour (juce::ListBox::ColourIds::outlineColourId, LAF::Colours::buttonOutlineColour);
+
+
 
         model = std::make_unique<PoZeTableModel>(settings, *this);
         setModel (model.get());
@@ -171,6 +184,17 @@ public:
     ~PoZeTable() override
     {
         setModel (nullptr);
+    }
+
+    void paintOverChildren(Graphics& g) override
+    {
+        auto bounds = getLocalBounds();
+        int headerHeight = getHeaderHeight();
+        int contentHeight = getRowHeight() * getNumRows();
+        auto outlineArea = bounds.removeFromTop (headerHeight + contentHeight);
+
+        g.setColour (LAF::Colours::buttonOutlineColour);
+        g.drawRect (outlineArea, 2);
     }
 
 private:
