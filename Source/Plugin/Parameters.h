@@ -42,3 +42,6 @@ const std::array<juce::String, parameterCount> paramName
     "Auto Normalise"
     "Bypass"
 };
+
+static constexpr double minPoZePlotRange { -1.5 };
+static constexpr double maxPoZePlotRange { 1.5 };

@@ -127,7 +127,7 @@ public:
         void updateDragMode();
         //======================================================================
         PoZeToolLaf* getCustomLookAndFeel() const;
-        static juce::MouseCursor getRotatedMagnitudeCursor(double angle);
+        static juce::MouseCursor getRotatedMagnitudeCursor(float angle);
 
         juce::NormalisableRange<double> xRange;
         juce::NormalisableRange<double> yRange;

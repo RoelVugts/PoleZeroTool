@@ -50,10 +50,9 @@ private:
         repaint();
     }
 
-    void mouseExit(const MouseEvent& event) override
+    void mouseExit(const MouseEvent&) override
     {
         toolTipText = "";
-
         repaint();
     }
 

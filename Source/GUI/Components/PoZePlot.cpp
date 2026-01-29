@@ -234,7 +234,7 @@ bool PoZePlot::Point::keyPressed (const juce::KeyPress& key, juce::Component*)
     {
         dragMode = DragMode::magnitude;
 
-        setMouseCursor (getRotatedMagnitudeCursor (getAngle()));
+        setMouseCursor (getRotatedMagnitudeCursor ((float)getAngle()));
 
         valueBeforeDrag = getValue();
     }
@@ -261,7 +261,7 @@ void PoZePlot::Point::updateDragMode()
     }
     else if (juce::KeyPress::isKeyCurrentlyDown (magKeyCode))
     {
-        setMouseCursor (getRotatedMagnitudeCursor (getAngle()));
+        setMouseCursor (getRotatedMagnitudeCursor ((float)getAngle()));
 
         dragMode = DragMode::magnitude;
     }
@@ -281,7 +281,7 @@ PoZeToolLaf* PoZePlot::Point::getCustomLookAndFeel() const
     return nullptr;
 }
 
-juce::MouseCursor PoZePlot::Point::getRotatedMagnitudeCursor (const double angle)
+juce::MouseCursor PoZePlot::Point::getRotatedMagnitudeCursor (const float angle)
 {
 
     auto svg = juce::Drawable::createFromImageData (
@@ -294,7 +294,7 @@ juce::MouseCursor PoZePlot::Point::getRotatedMagnitudeCursor (const double angle
     auto bounds = svg->getDrawableBounds();
 
     // Make size big enough for rotation
-    const double maxDim = std::max (bounds.getWidth(), bounds.getHeight());
+    const float maxDim = std::max (bounds.getWidth(), bounds.getHeight());
 
     // Max size is at 45 degrees, with size = side * sqrt(2)
     const int imageSize = juce::roundToInt (std::sqrt (2.0f) * maxDim);

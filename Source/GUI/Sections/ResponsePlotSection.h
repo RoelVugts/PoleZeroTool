@@ -62,7 +62,9 @@ public:
             setDisplayedUnit (state.displayInHz.getValue());
         }, true);
 
+        //==================================================================================================
         processor.onSampleRateChange = [this](double) { setDisplayedUnit (state.displayInHz.getValue()); };
+
     }
 
     void resized() override

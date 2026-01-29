@@ -39,15 +39,15 @@ public:
         fillArea = area;
 
         gradient = juce::ColourGradient{
-            juce::Colours::red.withAlpha(0.5f),
+            red.withAlpha(0.5f),
             area.getTopLeft(),
-            juce::Colours::green.withAlpha(0.5f),
+            green.withAlpha(0.5f),
             area.getBottomLeft(),
             false
         };
-        gradient.addColour(0.25f, juce::Colours::red);
-        gradient.addColour(0.5, juce::Colours::yellow);
-        gradient.addColour(0.75f, juce::Colours::green);
+        gradient.addColour(0.25f, red);
+        gradient.addColour(0.5, orange);
+        gradient.addColour(0.75f, green);
 
         range = juce::NormalisableRange<float> { minLevel, maxLevel };
     }
@@ -74,5 +74,10 @@ private:
     float maxLevel { 12.0f };
 
     juce::NormalisableRange<float> range;
+
+    const juce::Colour red    { 201, 74, 74  };
+    const juce::Colour orange { 242, 165, 65 };
+    const juce::Colour green  { 76, 175, 80 };
+
 
 };

@@ -80,8 +80,8 @@ public:
                         const double mag = text.getDoubleValue();
                         const double angle = std::arg(complex);
                         complex = std::polar(mag, angle);
-                        pointState.real.setValue (complex.real());
-                        pointState.imag.setValue (complex.imag());
+                        pointState.real.setValue (std::clamp(complex.real(), minPoZePlotRange, maxPoZePlotRange));
+                        pointState.imag.setValue (std::clamp(complex.imag(), minPoZePlotRange, maxPoZePlotRange));
                         break;
                     }
                     case angleColumnId:
@@ -90,8 +90,8 @@ public:
                         const double mag = std::abs(complex);
                         const double angle = text.getDoubleValue() * juce::MathConstants<double>::pi;
                         complex = std::polar(mag, angle);
-                        pointState.real.setValue (complex.real());
-                        pointState.imag.setValue (complex.imag());
+                        pointState.real.setValue (std::clamp(complex.real(), minPoZePlotRange, maxPoZePlotRange));
+                        pointState.imag.setValue (std::clamp(complex.imag(), minPoZePlotRange, maxPoZePlotRange));
                         break;
                     }
 
@@ -116,12 +116,14 @@ public:
                 text = (pointState.pointType.getValue() == PoZePlot::Point::Type::pole) ? "Pole" : "Zero";
                 break;
             }
+
             case magColumnId:
             {
                 const double mag = std::abs( std::complex<double>{ pointState.real.getValue(), pointState.imag.getValue() });
                 text = juce::String(mag, numDecimals);
                 break;
             }
+
             case angleColumnId:
             {
                 const double angle = std::arg (std::complex<double>{ pointState.real.getValue(), pointState.imag.getValue() }) / juce::MathConstants<double>::pi;
@@ -162,6 +164,8 @@ public:
         setColour (juce::ListBox::ColourIds::textColourId, LAF::Colours::textColour);
         setColour (juce::ListBox::ColourIds::backgroundColourId, LAF::Colours::primaryColour);
         setColour (juce::ListBox::ColourIds::outlineColourId, LAF::Colours::buttonOutlineColour);
+
+        getVerticalScrollBar().setColour (juce::ScrollBar::ColourIds::thumbColourId, juce::Colours::grey);
 
         model = std::make_unique<PoZeTableModel>(settings, *this);
         setModel (model.get());

@@ -75,7 +75,7 @@ public:
         g.drawRoundedRectangle (bounds, cornerSize, lineThickness);
     }
 
-    void drawPopupMenuBackground(Graphics& g, int width, int height) override
+    void drawPopupMenuBackground(Graphics& g, int, int) override
     {
         g.fillAll(LAF::Colours::secondaryColour);
     }
@@ -85,5 +85,4 @@ public:
         setColour(juce::PopupMenu::ColourIds::highlightedBackgroundColourId, LAF::Colours::highlightedColour);
         juce::LookAndFeel_V4::drawPopupMenuItem (g, area, isSeparator, isActive, isHighlighted, isTicked, hasSubMenu, text, shortcutKeyText, icon, textColour);
     }
-
 };
