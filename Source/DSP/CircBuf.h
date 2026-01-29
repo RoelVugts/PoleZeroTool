@@ -63,12 +63,14 @@ public:
         writeIndex = 0;
     }
 
+    // Increment the write index by 1 index
     void incrementWriteIndex()
     {
         if (++writeIndex >= data.size())
             writeIndex = 0;
     }
 
+    // Returns the current write index
     int getWriteIndex() const { return writeIndex; }
 
 private:

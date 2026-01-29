@@ -23,11 +23,11 @@ public:
         firBuf.write (input);
 
         // FIR
-        for (int k = 0; k < firCoefs.size(); k++)
+        for (int k = 0; k < numFirCoefsUsed; k++)
             output += firCoefs[k] * firBuf.read (k);
 
         // IIR
-        for (int k = 1; k < iirCoefs.size(); k++)
+        for (int k = 1; k < numIirCoefsUsed; k++)
             output += -iirCoefs[k] * iirBuf.read (k);
 
         if (std::isnan (output.real()) || std::isinf (output.real()))
@@ -52,9 +52,13 @@ public:
 
     void setCoefficients(const std::vector<std::complex<double>>& iir, const std::vector<std::complex<double>>& fir)
     {
-        //TODO: Avoid mem allocations
-        iirCoefs = iir;
-        firCoefs = fir;
+        // Coefficients don't fit in pre-allocated array...
+        assert(iir.size() <= maxCoefs && fir.size() <= maxCoefs);
+
+        std::ranges::copy(fir, firCoefs.begin());
+        std::ranges::copy(iir, iirCoefs.begin());
+        numFirCoefsUsed = (int)fir.size();
+        numIirCoefsUsed = (int)iir.size();
     }
 
     void setBypass(bool shouldBeBypassed)
@@ -63,10 +67,16 @@ public:
     }
 
 private:
-    std::vector<std::complex<double>> iirCoefs; // Feedback coefficients
-    std::vector<std::complex<double>> firCoefs; // Feedforward coefficients
 
-    CircBuf<std::complex<double>> iirBuf { 128 };
-    CircBuf<std::complex<double>> firBuf { 128 };
+    static constexpr int maxCoefs { 128 };
+
+    std::array<std::complex<double>, maxCoefs> iirCoefs; // Feedback coefficients
+    std::array<std::complex<double>, maxCoefs> firCoefs; // Feedforward coefficients
+
+    CircBuf<std::complex<double>> iirBuf { maxCoefs };
+    CircBuf<std::complex<double>> firBuf { maxCoefs };
+
+    int numFirCoefsUsed { 0 };
+    int numIirCoefsUsed { 0 };
     bool bypassed { false };
 };
