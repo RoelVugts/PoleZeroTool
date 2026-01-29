@@ -43,7 +43,7 @@ public:
             ch.setTooltip ("Real output volume meter");
 
         for (auto& ch : outputMeterImag)
-            ch.setTooltip ("Imag Output volume meter");
+            ch.setTooltip ("Imaginary output volume meter");
 
         startTimerHz (30);
     }

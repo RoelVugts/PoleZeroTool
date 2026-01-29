@@ -445,32 +445,65 @@ void PoZePlot::resized()
 //======================================================================
 void PoZePlot::mouseDown (const juce::MouseEvent& event)
 {
-    if (event.eventComponent == this)
-    // Clicked on PoZePlot
+    const double x = event.position.x / (double)getWidth();
+    const double y = 1.0 - event.position.y / (double)getHeight();
+
+    if (event.mods.isRightButtonDown())
     {
-        const double x = event.position.x / (double)getWidth();
-        const double y = 1.0 - event.position.y / (double)getHeight();
-
-        if (event.mods.isCommandDown())
-            addPoint (PoZePlot::Point::Type::pole, xRange.convertFrom0to1 (x), yRange.convertFrom0to1 (y), true);
-        else if (event.mods.isShiftDown())
-            addPoint (PoZePlot::Point::Type::zero, xRange.convertFrom0to1 (x), yRange.convertFrom0to1 (y), true);
-    }
-
-    if (auto* point = dynamic_cast<PoZePlot::Point*>(event.eventComponent))
-    // Clicked on a Pole or Zero
-    {
-        const int index = points.indexOf (point);
-
-        if (event.mods.isCommandDown() && event.mods.isShiftDown())
+        juce::PopupMenu menu;
+        if (auto* point = dynamic_cast<PoZePlot::Point*>(event.eventComponent))
         {
+            const int index = points.indexOf (point);
+
             if (! point->isConjugate())
-            {
-                addPoint (point->getType(), point->getXValue(), -point->getYValue(), true);
-                makeConjugatePair (index,  points.size() - 1, true);
-            }
+                menu.addItem("Add Conjugate", [this, point, index]() {
+                    addPoint (point->getType(), point->getXValue(), -point->getYValue(), true);
+                    makeConjugatePair (index,  points.size() - 1, true);
+                });
+
+            menu.addItem("Delete", [this, index]() {
+                removePoint (index, true);
+            });
         }
-        else if (event.mods.isAltDown())
-            removePoint (index, true);
+        else
+        {
+            menu.addItem("Add Pole", [this, x, y]() {
+                addPoint (PoZePlot::Point::Type::pole, xRange.convertFrom0to1 (x), yRange.convertFrom0to1 (y), true);
+            });
+
+            menu.addItem("Add Zero", [this, x, y]() {
+                addPoint (PoZePlot::Point::Type::zero, xRange.convertFrom0to1 (x), yRange.convertFrom0to1 (y), true);
+            });
+        }
+        menu.showMenuAsync (juce::PopupMenu::Options().withMousePosition());
     }
+    else
+    {
+        if (event.eventComponent == this)
+            // Clicked on PoZePlot
+        {
+            if (event.mods.isCommandDown())
+                addPoint (PoZePlot::Point::Type::pole, xRange.convertFrom0to1 (x), yRange.convertFrom0to1 (y), true);
+            else if (event.mods.isShiftDown())
+                addPoint (PoZePlot::Point::Type::zero, xRange.convertFrom0to1 (x), yRange.convertFrom0to1 (y), true);
+        }
+
+        if (auto* point = dynamic_cast<PoZePlot::Point*>(event.eventComponent))
+            // Clicked on a Pole or Zero
+        {
+            const int index = points.indexOf (point);
+
+            if (event.mods.isCommandDown() && event.mods.isShiftDown())
+            {
+                if (! point->isConjugate())
+                {
+                    addPoint (point->getType(), point->getXValue(), -point->getYValue(), true);
+                    makeConjugatePair (index,  points.size() - 1, true);
+                }
+            }
+            else if (event.mods.isAltDown())
+                removePoint (index, true);
+        }
+    }
+
 }

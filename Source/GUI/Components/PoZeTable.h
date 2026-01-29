@@ -77,7 +77,7 @@ public:
                     case magColumnId:
                     {
                         std::complex<double> complex = { pointState.real.getValue(), pointState.imag.getValue() };
-                        const double mag = text.getFloatValue();
+                        const double mag = text.getDoubleValue();
                         const double angle = std::arg(complex);
                         complex = std::polar(mag, angle);
                         pointState.real.setValue (complex.real());
@@ -88,7 +88,7 @@ public:
                     {
                         std::complex<double> complex = { pointState.real.getValue(), pointState.imag.getValue() };
                         const double mag = std::abs(complex);
-                        const double angle = text.getFloatValue() * juce::MathConstants<double>::pi;
+                        const double angle = text.getDoubleValue() * juce::MathConstants<double>::pi;
                         complex = std::polar(mag, angle);
                         pointState.real.setValue (complex.real());
                         pointState.imag.setValue (complex.imag());
@@ -107,7 +107,7 @@ public:
 
         int digitWidth = juce::GlyphArrangement::getStringWidthInt (font, "8");
         int rowWidth = editor->getBounds().getWidth();
-        const int numDecimals = std::max((int)((double) rowWidth / digitWidth) - 5, 2);
+        const int numDecimals = std::max((int)(std::ceil((double) rowWidth / (double)digitWidth)) - 5, 10);
 
         switch (columnId)
         {
@@ -162,8 +162,6 @@ public:
         setColour (juce::ListBox::ColourIds::textColourId, LAF::Colours::textColour);
         setColour (juce::ListBox::ColourIds::backgroundColourId, LAF::Colours::primaryColour);
         setColour (juce::ListBox::ColourIds::outlineColourId, LAF::Colours::buttonOutlineColour);
-
-
 
         model = std::make_unique<PoZeTableModel>(settings, *this);
         setModel (model.get());
