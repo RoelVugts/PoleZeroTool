@@ -67,7 +67,6 @@ public:
     std::unique_ptr<FilterDesignAttachment> filterDesignAttachment;
 
     //==============================================================================
-    choc::fifo::SingleReaderMultipleWriterFIFO<ParamMessage> paramFifo;
     juce::AudioProcessorValueTreeState apvts;
 
     std::function<void(double sr)> onSampleRateChange { nullptr };
@@ -79,6 +78,7 @@ public:
 private:
 
     void parameterChanged(const String& parameterID, float newValue) override;
+    std::atomic<bool> bypassed { false };
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)

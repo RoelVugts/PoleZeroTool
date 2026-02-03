@@ -15,8 +15,6 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                      #endif
                        ), apvts(*this, nullptr, APVTS_ID, createParameters())
 {
-    paramFifo.reset(32);
-
     // Create listeners for all parameters
     for (int i = 0; i < apvts.state.getNumChildren(); i++)
         if (const auto child = apvts.state.getChild (i); child.isValid())
@@ -170,7 +168,9 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
         for (int sample = 0; sample < buffer.getNumSamples(); sample++)
         {
-            auto processed = filter[channel].processSample (channelData[sample]);
+            auto processed = bypassed.load(std::memory_order_relaxed) ? std::complex<float>(channelData[sample], 0.0f)
+                                                                                   : filter[channel].processSample (channelData[sample]);
+
             channelData[sample] = processed.real() + processed.imag();
             realSum += (double)(processed.real() * processed.real());
             imagSum += (double)(processed.imag() * processed.imag());
@@ -283,8 +283,7 @@ void AudioPluginAudioProcessor::parameterChanged (const juce::String& parameterI
                 break;
 
             case PoZeParamID::Bypass:
-                for (auto& f : filter)
-                    f.setBypass (static_cast<bool> (newValue)); //TODO: Not thread safe
+                bypassed.store(static_cast<bool>(newValue), std::memory_order_relaxed);
                 break;
 
             default: jassertfalse; break;

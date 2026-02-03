@@ -49,16 +49,20 @@ public:
 
 private:
 
-    void filterCoefficientsChanged(FilterDesign* emitter) override
+    void filterCoefficientsChanged(FilterDesign*) override
     {
-        diffEquationLabel.setText (FilterTextFormatter::differenceEquation (*emitter));
-        transferFunctionLabel.setText (FilterTextFormatter::transferFunction (*emitter));
+        juce::MessageManager::callAsync ([this]() {
+            diffEquationLabel.setText (FilterTextFormatter::differenceEquation (filterDesigner));
+            transferFunctionLabel.setText (FilterTextFormatter::transferFunction (filterDesigner));
+        });
     }
 
-    void filterGainChanged(FilterDesign* emitter) override
+    void filterGainChanged(FilterDesign*) override
     {
-        diffEquationLabel.setText (FilterTextFormatter::differenceEquation (*emitter));
-        transferFunctionLabel.setText (FilterTextFormatter::transferFunction (*emitter));
+        juce::MessageManager::callAsync ([this]() {
+            diffEquationLabel.setText (FilterTextFormatter::differenceEquation (filterDesigner));
+            transferFunctionLabel.setText (FilterTextFormatter::transferFunction (filterDesigner));
+        });
     }
 
     FilterDesign& filterDesigner;

@@ -14,9 +14,6 @@ public:
 
     std::complex<float> processSample(const float& input)
     {
-        if (bypassed)
-            return { input, 0.0f };
-
         std::complex<double> output(0.0, 0.0);
 
         // Write input into buffer
@@ -67,11 +64,6 @@ public:
         numIirCoefsUsed = (int)iir.size();
     }
 
-    void setBypass(bool shouldBeBypassed)
-    {
-        bypassed = shouldBeBypassed;
-    }
-
 private:
 
     static constexpr int maxCoefs { 128 };
@@ -84,5 +76,4 @@ private:
 
     int numFirCoefsUsed { 0 };
     int numIirCoefsUsed { 0 };
-    bool bypassed { false };
 };

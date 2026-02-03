@@ -25,6 +25,7 @@ void FilterDesign::setPoleZeros(std::vector<std::complex<double>>& poles_, std::
     if (autoNormalise)
         updateNormalisationGain();
 
+
     listeners.call([this](Listener& l) { l.filterCoefficientsChanged (this); });
 }
 
