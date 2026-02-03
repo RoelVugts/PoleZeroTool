@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<installer-gui-script minSpecVersion="1">
+    <title>PoZeTool</title>
+
+    <license file="../license.rtf"/>
+    <readme file="../readme.rtf"/>
+
+    <pkg-ref id="com.rvaudiodesign.pkg.vst3"/>
+    <pkg-ref id="com.rvaudiodesign.pkg.au"/>
+    <pkg-ref id="com.rvaudiodesign.pkg.app"/>
+    <options customize="allow" customLocation="true" require-scripts="false" hostArchitectures="x86_64,arm64"/>
+    <choices-outline>
+        <line choice="default">
+            <line choice="com.rvaudiodesign.pkg.vst3"/>
+            <line choice="com.rvaudiodesign.pkg.au"/>
+            <line choice="com.rvaudiodesign.pkg.app"/>
+        </line>
+    </choices-outline>
+    <choice id="default" title="PoZeTool"/>
+    <choice id="com.rvaudiodesign.pkg.vst3" title="VST3" description="VST3 Format that can be loaded in almost every DAW." customLocation="/Library/Audio/Plug-Ins/VST3/" visible="true">
+        <pkg-ref id="com.rvaudiodesign.pkg.vst3"/>
+    </choice>
+    <choice id="com.rvaudiodesign.pkg.au" title="AU" description="Audio Unit (AU). Apple specific format that can be loaded in Logic Pro and GarageBand." customLocation="/Library/Audio/Plug-Ins/Components/" visible="true">
+        <pkg-ref id="com.rvaudiodesign.pkg.au"/>
+    </choice>
+    <choice id="com.rvaudiodesign.pkg.app" title="Standalone" description="Standalone application." visible="true">
+        <pkg-ref id="com.rvaudiodesign.pkg.app"/>
+    </choice>
+    <pkg-ref id="com.rvaudiodesign.pkg.vst3" version="${VERSION}" onConclusion="none">PoZeTool-MacOS-${VERSION}-VST3.pkg</pkg-ref>
+    <pkg-ref id="com.rvaudiodesign.pkg.au" version="${VERSION}" onConclusion="none">PoZeTool-MacOS-${VERSION}-AU.pkg</pkg-ref>
+    <pkg-ref id="com.rvaudiodesign.pkg.app" version="${VERSION}" onConclusion="none">PoZeTool-MacOS-${VERSION}-APP.pkg</pkg-ref>
+</installer-gui-script>

@@ -70,6 +70,6 @@ target_link_libraries(${PROJECT_NAME}
         juce::juce_recommended_warning_flags
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE Libraries/choc libraries/magic_enum/include)
+target_include_directories(${PROJECT_NAME} PRIVATE Libraries/choc Libraries/magic_enum/include)
 
 include(GithubENV)
