@@ -70,3 +70,5 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE Libraries/choc libraries/magic_enum/include)
+
+include(GithubENV)
