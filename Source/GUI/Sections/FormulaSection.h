@@ -54,7 +54,7 @@ private:
         triggerAsyncUpdate();
     }
 
-    void filterGainChanged(FilterDesign* emitter) override
+    void filterGainChanged(FilterDesign*) override
     {
         triggerAsyncUpdate();
     }

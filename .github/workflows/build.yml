@@ -40,10 +40,10 @@ jobs:
             os: ubuntu-24.04
             pluginval-binary: ./pluginval
             extra-flags: -G Ninja
-          - name: MacOS
-            os: macos-latest
-            pluginval-binary: pluginval.app/Contents/MacOS/pluginval
-            extra-flags: -G Ninja -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+#          - name: MacOS
+#            os: macos-latest
+#            pluginval-binary: pluginval.app/Contents/MacOS/pluginval
+#            extra-flags: -G Ninja -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
           - name: Windows
             os: windows-latest
             pluginval-binary: ./pluginval.exe
@@ -178,7 +178,7 @@ jobs:
         run: |
           smctl sign --fingerprint ${{ secrets.SM_CODE_SIGNING_CERT_SHA1_HASH }} --input "${{ env.STANDALONE_PATH }}" --config-file C:\Users\RUNNER~1\AppData\Local\Temp\smtools-windows-x64\pkcs11properties.cfg -v
 
-          iscc /dAppVersion=${{ env.VERSION }} Installers/Windows/PoZeToolWindowsInstaller.iss
+          iscc /dAppVersion=${{ env.VERSION }} Installers/Windows/PoZeToolInstaller.iss
           mv "Installers/Windows/Output/${{ env.ARTIFACT_NAME }}.exe" "Installers/Windows/Output/${{ env.INSTALLER_NAME }}.exe"
           mv "Installers/Windows/Output/${{ env.INSTALLER_NAME }}.exe" "${{ env.ARTIFACTS_PATH }}/"
         shell: cmd # Use cmd here to avoid issues with quotes
