@@ -52,6 +52,7 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_LOG_ASSERTIONS=1
         JUCE_STRICT_REFCOUNTEDPOINTER=1
         WIN32_LEAN_AND_MEAN=1
+        JUCE_WEB_BROWSER=0
         JUCE_USE_CURL=1
 )
 
