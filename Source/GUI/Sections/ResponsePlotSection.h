@@ -11,7 +11,7 @@
 
 #include <magic_enum/magic_enum.hpp>
 
-class ResponsePlotSection : public juce::Component, private Plot::Listener
+class ResponsePlotSection : public juce::Component, private Plot::Listener, private juce::AsyncUpdater
 {
 public:
 
@@ -59,14 +59,12 @@ public:
         }, true);
 
         state.setOnPropertyChanged (State::IDs::displayInHz, [this]() {
-            setDisplayedUnit (state.displayInHz.getValue());
+            setPlotDomainLabels (state.displayInHz.getValue());
         }, true);
 
         //==================================================================================================
         processor.onSampleRateChange = [this](double) {
-            juce::MessageManager::callAsync ([this]() {
-                setDisplayedUnit (state.displayInHz.getValue());
-            });
+            triggerAsyncUpdate();
         };
     }
 
@@ -143,10 +141,10 @@ private:
             }
         }
 
-        setDisplayedUnit (state.displayInHz.getValue());
+        setPlotDomainLabels (state.displayInHz.getValue());
     }
 
-    void setDisplayedUnit(bool hzIsTrueRadiansIsFalse)
+    void setPlotDomainLabels(bool hzIsTrueRadiansIsFalse)
     {
         const double sampleRate = processor.getSampleRate();
         const bool isLogarithmic = state.displayLogarithmic.getValue();
@@ -279,6 +277,11 @@ private:
                 break;
 
         }
+    }
+
+    void handleAsyncUpdate() override
+    {
+        setPlotDomainLabels (state.displayInHz.getValue());
     }
 
     AudioPluginAudioProcessor& processor;
