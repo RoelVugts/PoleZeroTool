@@ -15,6 +15,8 @@ if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Support macOS down to High Sierra")
 endif()
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 add_subdirectory(Libraries/JUCE)
 
 project(${PROJECT_NAME} VERSION 0.0.1 LANGUAGES CXX C)
@@ -57,7 +59,6 @@ file(GLOB_RECURSE RESOURCE_FILES "Resources/*.*")
 juce_add_binary_data(${PROJECT_NAME}_AudioPluginData SOURCES
         ${RESOURCE_FILES}
 )
-
 
 target_link_libraries(${PROJECT_NAME}
         PRIVATE
