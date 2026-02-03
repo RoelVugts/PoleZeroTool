@@ -290,7 +290,7 @@ juce::MouseCursor PoZePlot::Point::getRotatedMagnitudeCursor (const float angle)
     const float maxDim = std::max (bounds.getWidth(), bounds.getHeight());
 
     // Max size is at 45 degrees, with size = side * sqrt(2)
-    const int imageSize = juce::roundToInt (std::sqrt (2.0f) * maxDim);
+    const float imageSize = std::round (std::sqrt (2.0f) * maxDim);
 
     juce::Image image (juce::Image::ARGB, imageSize, imageSize, true);
 
