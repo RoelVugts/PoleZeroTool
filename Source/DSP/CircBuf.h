@@ -48,7 +48,7 @@ public:
      */
     SampleType read(int index)
     {
-        assert(index < data.size());
+        assert(index < (int)data.size());
 
         int idx = writeIndex - index;
         if (idx < 0) idx += (int)data.size();

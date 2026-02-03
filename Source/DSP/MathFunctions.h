@@ -35,7 +35,7 @@ namespace MathFunctions
     template <typename SampleType>
     SampleType calculateSumOfCombinations (const std::vector<SampleType>& list, int r)
     {
-        assert (r <= list.size()); // Impossible to make combinations with more elements than the list contains
+        assert (r <= (int)list.size()); // Impossible to make combinations with more elements than the list contains
 
         SampleType sum = 0.0;
         const size_t n = list.size();

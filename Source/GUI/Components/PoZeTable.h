@@ -150,9 +150,9 @@ class PoZeTable : public juce::TableListBox, private juce::AsyncUpdater
 public:
     PoZeTable(PoleZeroState settings) : state(settings)
     {
-        getHeader().addColumn ("Type", PoZeTableModel::typeColumnId, 50, 30, -1, TableHeaderComponent::ColumnPropertyFlags::notSortable);
-        getHeader().addColumn ("Mag", PoZeTableModel::magColumnId, 50, 30, -1, TableHeaderComponent::ColumnPropertyFlags::notSortable);
-        getHeader().addColumn ("Angle", PoZeTableModel::angleColumnId, 50, 30, -1, TableHeaderComponent::ColumnPropertyFlags::notSortable);
+        getHeader().addColumn ("Type", PoZeTableModel::typeColumnId, 55, 10, 60, TableHeaderComponent::ColumnPropertyFlags::notSortable);
+        getHeader().addColumn ("Mag", PoZeTableModel::magColumnId, 80, 30, -1, TableHeaderComponent::ColumnPropertyFlags::notSortable);
+        getHeader().addColumn ("Angle", PoZeTableModel::angleColumnId, 80, 30, -1, TableHeaderComponent::ColumnPropertyFlags::notSortable);
         getHeader().setStretchToFitActive (true);
         setRowHeight (18);
 
@@ -166,6 +166,7 @@ public:
         setColour (juce::ListBox::ColourIds::outlineColourId, LAF::Colours::buttonOutlineColour);
 
         getVerticalScrollBar().setColour (juce::ScrollBar::ColourIds::thumbColourId, juce::Colours::grey);
+        getHorizontalScrollBar().setColour (juce::ScrollBar::ColourIds::thumbColourId, juce::Colours::grey);
 
         model = std::make_unique<PoZeTableModel>(settings, *this);
         setModel (model.get());
