@@ -63,7 +63,7 @@ public:
         const juce::StringArray& cmdLines = juce::StringArray::fromLines (commandText.getText ());
         const juce::StringArray& descLines = juce::StringArray::fromLines (descText.getText ());
 
-        for (int i = 0; i < cmdLines.size(); i++)
+        for (int i = 0; i < (int)cmdLines.size(); i++)
         {
             const int lineWidth = 30 + juce::GlyphArrangement::getStringWidthInt (getLookAndFeel().getLabelFont (commandText), cmdLines[i])
                                      + juce::GlyphArrangement::getStringWidthInt (getLookAndFeel().getLabelFont (descText), descLines[i]);
@@ -78,7 +78,7 @@ public:
     {
         const float lineHeight = commandText.getFont().getHeight();
         float totalHeight = LAF::Layout::defaultSpacing * 4.0f;;
-        totalHeight += lineHeight * juce::StringArray::fromLines (commandText.getText ()).size();
+        totalHeight += lineHeight * (float)juce::StringArray::fromLines (commandText.getText ()).size();
 
         return (int)std::ceil(totalHeight);
     }

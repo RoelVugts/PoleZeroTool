@@ -183,7 +183,7 @@ namespace MathFunctions
         if (approximatelyEqual(val, SampleType(0.0)))
             return SampleType(0.0);
 
-        const SampleType mag = std::pow(SampleType(10.0), std::ceil(std::log10(std::abs(val)) - magnitudeOffset));
+        const SampleType mag = std::pow(SampleType(10.0), std::ceil(std::log10(std::abs(val)) - (SampleType)magnitudeOffset));
         const SampleType scalar = SampleType(10.0) / mag;
         return std::round(val * scalar) / scalar;
     }
