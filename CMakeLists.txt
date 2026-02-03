@@ -21,7 +21,8 @@ project(${PROJECT_NAME} VERSION 0.0.1 LANGUAGES CXX C)
 
 juce_add_plugin(${PROJECT_NAME}
         VERSION                     ${PLUGIN_VERSION}
-        COMPANY_NAME                "RV Audio Design"
+        PRODUCT_NAME                ${PRODUCT_NAME}
+        COMPANY_NAME                ${COMPANY_NAME}
         IS_SYNTH                    FALSE
         NEEDS_MIDI_INPUT            FALSE               # Does the plugin need midi input?
         NEEDS_MIDI_OUTPUT           FALSE              # Does the plugin need midi output?
@@ -31,10 +32,9 @@ juce_add_plugin(${PROJECT_NAME}
         PLUGIN_MANUFACTURER_CODE    Rvad               # A four-character manufacturer id with at least one upper-case character
         PLUGIN_CODE                 PoZe                           # A unique four-character plugin id with exactly one upper-case character
         FORMATS                     VST3 AU Standalone                 # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
-        PRODUCT_NAME                ${PRODUCT_NAME}
         BUNDLE_ID                   com.rvaudiodesign.pozetool
-        AAX_CATEGORY                Effect
-        AAX_COPY_DIR                ${CMAKE_CURRENT_BINARY_DIR}/AAX_COPY
+        ICON_BIG                    "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Plot.png"
+        ICON_SMALL                  "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Plot.png"
 )
 
 juce_generate_juce_header(${PROJECT_NAME})
@@ -50,6 +50,7 @@ target_compile_definitions(${PROJECT_NAME}
         JUCE_LOG_ASSERTIONS=1
         JUCE_STRICT_REFCOUNTEDPOINTER=1
         WIN32_LEAN_AND_MEAN=1
+        JUCE_USE_CURL=1
 )
 
 file(GLOB_RECURSE RESOURCE_FILES "Resources/*.*")
