@@ -23,7 +23,7 @@ public:
         g.fillAll (LAF::Colours::darkBackgroundColour);
 
         auto bounds = getLocalBounds().toFloat();
-        bounds.removeFromLeft (LAF::Layout::defaultSpacing);
+        bounds.removeFromLeft (LAF::Layout::defaultSpacing * 0.5f);
 
         const float tipsTextWidth = juce::GlyphArrangement::getStringWidth (juce::FontOptions(12.0f), "Tips");
         auto tipsTextArea = bounds.removeFromLeft (tipsTextWidth * 2.0f);

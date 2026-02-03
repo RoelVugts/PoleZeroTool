@@ -5,12 +5,14 @@
 #include "../Plugin/PluginProcessor.h"
 
 #include "Components/VolumeMeter.h"
+#include "Components/LogoButton.h"
 #include "LookAndFeel.h"
 #include "Sections/FormulaSection.h"
 #include "Sections/PoleZeroSection.h"
 #include "Sections/ResponsePlotSection.h"
 #include "Sections/SettingsSection.h"
 #include "Sections/TooltipSection.h"
+#include "Sections/Overlay.h"
 
 class GUI : public juce::Component, private juce::Timer
 {
@@ -37,12 +39,26 @@ public:
         outputMeter.setTooltip ("Real output volume meter");
         outputMeterImag.setTooltip ("Imaginary output volume meter");
 
+        addChildComponent (overlay);
+        logoBtn.onClick = [this]() { overlay.setVisible (true); };
+        addAndMakeVisible (logoBtn);
+
         startTimerHz (30);
     }
 
     void paint(Graphics& g) override
     {
         g.fillAll(LAF::Colours::primaryColour);
+
+        g.setColour (LAF::Colours::darkBackgroundColour);
+        g.fillRect (getLocalBounds().removeFromBottom (tooltipSection.getHeight()));
+    }
+
+    void paintOverChildren(Graphics& g) override
+    {
+        auto dividerArea = juce::Rectangle<int>(tooltipSection.getX(), logoBtn.getY(), 1, logoBtn.getHeight());
+        g.setColour (LAF::Colours::primaryColour);
+        g.fillRect (dividerArea);
     }
 
     void resized() override
@@ -51,9 +67,14 @@ public:
         const float height = bounds.getHeight();
         const float width = bounds.getWidth();
 
+        // Overlay
+        overlay.setBounds (bounds.toNearestInt());
+
         // Border area
-        auto toolTipArea = bounds.removeFromBottom (height * 0.05f);
-        tooltipSection.setBounds (toolTipArea.toNearestInt());
+        auto footerArea = bounds.removeFromBottom (height * 0.05f);
+        auto logoArea = footerArea.removeFromLeft (bounds.getWidth() * 0.05f);
+        logoBtn.setBounds (logoArea.reduced (logoArea.getHeight() * 0.15f).toNearestInt());
+        tooltipSection.setBounds (footerArea.toNearestInt());
 
         // Settings bar
         auto settingsArea = bounds.removeFromBottom (height * 0.05f);
@@ -120,4 +141,7 @@ private:
     StereoMeter inputMeter;
     StereoMeter outputMeter;
     StereoMeter outputMeterImag;
+
+    LogoButton logoBtn;
+    Overlay overlay;
 };
