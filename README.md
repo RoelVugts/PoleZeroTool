@@ -21,7 +21,7 @@ PoZeTool provides real-time visualization of:
 
 It also implements a filter so you can hear how the filter sounds. 
 
-![PoZeTool screenshot](Resources/PoZeTool.png)
+![PoZeTool screenshot](PoZeTool.png)
 
 ### Supported platforms
 - Windows
