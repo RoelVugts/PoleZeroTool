@@ -6,7 +6,7 @@
 #include "../../Data/Attachments/PlotRangeAttachment.h"
 #include "../Components/DragBox.h"
 #include "../Components/Plot.h"
-#include "../DSP/MathFunctions.h"
+#include "../../DSP/MathFunctions.h"
 #include "../LookAndFeel.h"
 
 #include <magic_enum/magic_enum.hpp>

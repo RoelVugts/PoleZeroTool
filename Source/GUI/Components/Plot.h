@@ -90,8 +90,8 @@ public:
 
         for (int i = 0; i < (int)xTicks.size(); i++)
         {
-            const juce::String& text = i < (int)xLabels.size() ? xLabels[i] : "";
-            int x = (int)(xRange.convertTo0to1 (xTicks[i]) * plotArea.getWidth() + plotArea.getX());
+            const juce::String& text = i < (int)xLabels.size() ? xLabels[(size_t)i] : "";
+            int x = (int)(xRange.convertTo0to1 (xTicks[(size_t)i]) * plotArea.getWidth() + plotArea.getX());
             const int y = (int)xAxisArea.getY();
             const int textWidth = juce::GlyphArrangement::getStringWidthInt (g.getCurrentFont(), text);
             if ((x + textWidth) > getWidth()) x -= ((x + textWidth) - getWidth());
@@ -100,9 +100,9 @@ public:
 
         for (int i = 0; i < (int)yTicks.size(); i++)
         {
-            const juce::String& text = i < (int)yLabels.size() ? yLabels[i] : "";
+            const juce::String& text = i < (int)yLabels.size() ? yLabels[(size_t)i] : "";
             const int textHeight = (int)juce::GlyphArrangement::getStringBounds (g.getCurrentFont(), text).getHeight();
-            const int y = (int)((1.0f - yRange.convertTo0to1 (yTicks[i])) * plotArea.getHeight()) + (int)plotArea.getY() - textHeight / 2;
+            const int y = (int)((1.0f - yRange.convertTo0to1 (yTicks[(size_t)i])) * plotArea.getHeight()) + (int)plotArea.getY() - textHeight / 2;
             const int x = (int)yAxisArea.getX() + (int)getStrokeThickness();
             if (y > 0 && y < getHeight())
                 g.drawFittedText (text, x, y, (int)yAxisArea.getWidth() - (int)getStrokeThickness(), textHeight, juce::Justification::centred, 1, 0.6f);
@@ -133,8 +133,8 @@ public:
 
         for (int i = 0; i < (int)xTicks.size(); i++)
         {
-            const juce::String& text = i < (int)xLabels.size() ? xLabels[i] : "";
-            int x = (int)(xRange.convertTo0to1 (xTicks[i]) * plotArea.getWidth() + plotArea.getX());
+            const juce::String& text = i < (int)xLabels.size() ? xLabels[(size_t)i] : "";
+            int x = (int)(xRange.convertTo0to1 (xTicks[(size_t)i]) * plotArea.getWidth() + plotArea.getX());
             const int y = (int)xAxisArea.getY();
             const int textWidth = juce::GlyphArrangement::getStringWidthInt (g.getCurrentFont(), text);
             if ((x + textWidth) > getWidth()) x -= ((x + textWidth) - getWidth());
@@ -291,8 +291,8 @@ public:
     // This will be equal to the amount of (logical) width pixels
     int getNumDataPoints() const { return (int)plotArea.getWidth(); }
 
-    const MappedRange<float>& getXRange() const { return xRange; };
-    const MappedRange<float>& getYRange() const { return yRange; };
+    const MappedRange<float>& getXRange() const { return xRange; }
+    const MappedRange<float>& getYRange() const { return yRange; }
 
     /** The plot will call this to get the y value to be drawn.
      *  It will pass in an x value and expects it to return the corresponding

@@ -122,6 +122,9 @@ public:
         void mouseExit(const MouseEvent& event) override;
 
         //======================================================================
+        using juce::Component::keyPressed;
+        using juce::Component::keyStateChanged;
+
         bool keyPressed(const KeyPress& key, Component* originatingComponent) override;
         bool keyStateChanged(bool isKeyDown, Component* originatingComponent) override;
         void updateDragMode();
@@ -220,7 +223,7 @@ public:
     //======================================================================
     Point* getPoint(int index);
     int getNumPoints() const { return points.size(); }
-    juce::OwnedArray<Point>& getPoints() { return points; };
+    juce::OwnedArray<Point>& getPoints() { return points; }
 
     juce::NormalisableRange<double> getXRange() const { return xRange; }
     juce::NormalisableRange<double> getYRange() const { return yRange; }

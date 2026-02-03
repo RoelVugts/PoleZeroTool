@@ -21,7 +21,7 @@ public:
      */
     void setSize(int size)
     {
-        data.resize(size, static_cast<SampleType>(0.0));
+        data.resize((size_t)size, static_cast<SampleType>(0.0));
         std::fill(data.begin(), data.end(), static_cast<SampleType>(0.0));
 
         writeIndex = 0;
@@ -39,7 +39,7 @@ public:
         // Initialize the fifo first !
         assert(data.size() > 0);
 
-        data[writeIndex] = sample;
+        data[(size_t)writeIndex] = sample;
     }
 
     /** Read a sample from the buffer.
@@ -53,7 +53,7 @@ public:
         int idx = writeIndex - index;
         if (idx < 0) idx += (int)data.size();
 
-        return data[idx];
+        return data[(size_t)idx];
     }
 
     /** Clears the buffer.*/
@@ -66,7 +66,7 @@ public:
     // Increment the write index by 1 index
     void incrementWriteIndex()
     {
-        if (++writeIndex >= data.size())
+        if (++writeIndex >= (int)data.size())
             writeIndex = 0;
     }
 

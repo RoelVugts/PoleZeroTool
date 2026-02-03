@@ -4,7 +4,7 @@
 
 #include <JuceHeader.h>
 
-#include "../GUI/Components/PoZePlot.h"
+#include "../../GUI/Components/PoZePlot.h"
 
 template<>
 struct juce::VariantConverter<PoZePlot::Point::Type>

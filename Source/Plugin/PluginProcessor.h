@@ -8,8 +8,7 @@
 #include "../DSP/FilterDesign.h"
 #include "../Data/Attachments/FilterDesignAttachment.h"
 #include "../Data/State.h"
-#include "../Utils/Utils.h"
-#include <choc/containers/choc_SingleReaderMultipleWriterFIFO.h>
+
 
 #define MAX_CHANNELS 2
 

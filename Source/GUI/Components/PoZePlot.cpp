@@ -20,7 +20,7 @@ void PoZePlot::Point::setValue (double x_, double y_, bool sendNotification)
     jassert(y_ >= yRange.start && y_ <= yRange.end);
 
     // Prevent infinite loop when updating conjugate
-    if (x == x_ && y == y_)
+    if (approximatelyEqual (x, x_) && approximatelyEqual (y, y_))
         return;
 
     x = x_;

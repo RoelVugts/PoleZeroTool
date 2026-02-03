@@ -6,7 +6,6 @@
 #include "../PoleZeroState.h"
 #include "PropertyAttachment.h"
 
-#include "../../Gui/Components/PoZePlot.h"
 #include <complex>
 
 class PointAttachment : private PoZePlot::Point::Listener

@@ -50,12 +50,12 @@ public:
         range.end = end;
 
         curve = std::pow(curve, SampleType(3.0));
-        range.convertFrom0To1Func = [curve](SampleType start, SampleType end, SampleType v) {
-            return ((std::pow(curve + SampleType(1.0), v) - SampleType(1.0)) / curve) * (end - start) + start;
+        range.convertFrom0To1Func = [curve](SampleType s, SampleType e, SampleType v) {
+            return ((std::pow(curve + SampleType(1.0), v) - SampleType(1.0)) / curve) * (e - s) + s;
         };
 
-        range.convertTo0To1Func = [curve](SampleType start, SampleType end, SampleType v) {
-            return MathFunctions::logBase (curve + 1, ((v - start) / (end - start)) * curve + 1);
+        range.convertTo0To1Func = [curve](SampleType s, SampleType e, SampleType v) {
+            return MathFunctions::logBase (curve + 1, ((v - s) / (e - s)) * curve + 1);
         };
 
         return range;

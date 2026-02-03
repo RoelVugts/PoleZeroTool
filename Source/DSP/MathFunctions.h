@@ -12,7 +12,7 @@ namespace MathFunctions
      *
      * @param n             The number to calculate factorial for
      */
-    static int64_t factorial (int n)
+    inline int64_t factorial (int n)
     {
         // This function only works for factorials smaller than 21, since larger ones
         // will result in integer overflow...
@@ -33,15 +33,15 @@ namespace MathFunctions
      * @return
      */
     template <typename SampleType>
-    static SampleType calculateSumOfCombinations (const std::vector<SampleType>& list, int r)
+    SampleType calculateSumOfCombinations (const std::vector<SampleType>& list, int r)
     {
         assert (r <= list.size()); // Impossible to make combinations with more elements than the list contains
 
         SampleType sum = 0.0;
-        const int n = (int)list.size();
+        const size_t n = list.size();
 
         // Calculate the total number of combinations
-        const int totalCombinations = (int)(factorial (n) / (factorial (r) * factorial (n - r))); // nCr
+        const int totalCombinations = (int)(factorial ((int)n) / (factorial (r) * factorial ((int)n - r))); // nCr
 
         // Generate all combinations
         std::vector<bool> combination (n, false); // Combination mask (e.g. 0101 if r = 2)
@@ -50,7 +50,7 @@ namespace MathFunctions
         for (int i = 0; i < totalCombinations; ++i)
         {
             SampleType product = 1.0;
-            for (int j = 0; j < n; ++j)
+            for (size_t j = 0; j < n; ++j)
             {
                 if (combination[j])
                     // Multiply the numbers in the current combination
@@ -84,7 +84,7 @@ namespace MathFunctions
         @return       A vector containing the expanded polynomial coefficients.
     */
     template <typename SampleType>
-    static std::vector<SampleType> expandPolynomialFromRoots (const std::vector<SampleType>& roots)
+    std::vector<SampleType> expandPolynomialFromRoots (const std::vector<SampleType>& roots)
     {
         std::vector<SampleType> coefficients;
 
@@ -180,7 +180,7 @@ namespace MathFunctions
     template<typename SampleType>
     SampleType roundToHighestMagnitude(SampleType val, int magnitudeOffset = 0)
     {
-        if (val == SampleType(0.0))
+        if (approximatelyEqual(val, SampleType(0.0)))
             return SampleType(0.0);
 
         const SampleType mag = std::pow(SampleType(10.0), std::ceil(std::log10(std::abs(val)) - magnitudeOffset));

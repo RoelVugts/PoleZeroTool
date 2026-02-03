@@ -141,7 +141,7 @@ void DragBox::mouseWheelMove(const MouseEvent& event, const MouseWheelDetails& w
     float inc = wheel.deltaY;
 
     #if JUCE_MAC
-    if (event.mods.isShiftDown() && wheel.deltaY == 0 && wheel.deltaX != 0)
+    if (event.mods.isShiftDown() && approximatelyEqual (wheel.deltaY, 0.0f) && ! approximatelyEqual (wheel.deltaX, 0.0f))
         inc = wheel.deltaX;
     #endif
 

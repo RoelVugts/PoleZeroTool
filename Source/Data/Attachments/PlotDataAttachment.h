@@ -17,7 +17,7 @@ public:
         for (auto* plot : juce::Array<Plot*>{&firstPlot, &secondPlot})
             plot->onNumDataPointsChanged = [this](int numDataPoints) {
                 // Update the cached response for the number of data points
-                if (numDataPoints != cachedResponse.size())
+                if (numDataPoints != (int)cachedResponse.size())
                     updateResponse();
             };
 
@@ -46,12 +46,12 @@ public:
         const auto& range = state.displayLogarithmic.getValue() ? MappedRange<double>::createExponentialRange (0.0f, juce::MathConstants<double>::pi)
                                                                 : MappedRange<double> { 0.0f, juce::MathConstants<double>::pi };
 
-        cachedResponse.resize (numSamples);
+        cachedResponse.resize ((size_t)numSamples);
 
         for (int i = 0; i < numSamples; i++)
         {
             const double angle = range.convertFrom0to1 ((double)i / (double)(numSamples - 1));
-            cachedResponse[i] = filterDesigner.getFreqResponse (angle);
+            cachedResponse[(size_t)i] = filterDesigner.getFreqResponse (angle);
         }
     }
 
@@ -85,49 +85,44 @@ private:
     //======================================================================================================================
     float getDataPointForPlotType(int index, PlotType type)
     {
+        jassert(index < (int)cachedResponse.size());
+
         switch (type)
         {
             case PlotType::Magnitude:
             {
-                jassert(index < cachedResponse.size());
-
                 if (state.displayInDB.getValue())
-                    return (float)juce::Decibels::gainToDecibels (cachedResponse[index].magnitude, MINUS_INFINITY_DB);
+                    return (float)juce::Decibels::gainToDecibels (cachedResponse[(size_t)index].magnitude, MINUS_INFINITY_DB);
 
-                return (float)cachedResponse[index].magnitude;
+                return (float)cachedResponse[(size_t)index].magnitude;
             }
 
             case PlotType::Phase:
             {
-                jassert(index < cachedResponse.size());
-
                 // 0 Hz has no phase so display phase of the next frequency
                 if (index == 0)
                     return (float)cachedResponse[1].phase;
 
-                return (float)cachedResponse[index].phase;
+                return (float)cachedResponse[(size_t)index].phase;
             }
 
             case PlotType::GroupDelay:
             {
-                jassert(index < cachedResponse.size());
-
                 if (index == 0)
                     index += 1;
                 else if (index == (int)cachedResponse.size() - 1)
                     index -= 1;
 
-                return (float)filterDesigner.getGroupDelay (cachedResponse[index], cachedResponse[index + 1]);
+                return (float)filterDesigner.getGroupDelay (cachedResponse[(size_t)index], cachedResponse[(size_t)index + 1]);
             }
 
             case PlotType::PhaseDelay:
             {
-
                 // 0 Hz has no phase so display phase delay of the next frequency
                 if (index == 0)
                     return (float)cachedResponse[1].phaseDelay;
 
-                return (float)cachedResponse[index].phaseDelay;
+                return (float)cachedResponse[(size_t)index].phaseDelay;
             }
 
             default:
@@ -140,11 +135,9 @@ private:
     }
 
     State state;
+    FilterDesign& filterDesigner;
     Plot& firstPlot;
     Plot& secondPlot;
-    FilterDesign& filterDesigner;
     std::vector<FilterDesign::Response> cachedResponse;
     MappedRange<float> xRange;
-
-    bool ignoreCallbacks { false };
 };

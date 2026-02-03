@@ -58,7 +58,7 @@ public:
             editor->setJustification (juce::Justification::centredLeft);
             editor->setTooltip (owner.getTooltip());
 
-            editor->onReturnKey = [=]() {
+            editor->onReturnKey = [=, this]() {
                 const juce::String& text = editor->getText();
                 PointState pointState = state.points[rowNumber];
 

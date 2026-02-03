@@ -63,7 +63,7 @@ private:
 
         juce::String result;
 
-        for (int i = 0; i < coefs.size(); ++i)
+        for (size_t i = 0; i < coefs.size(); ++i)
         {
             if (approximatelyEqual (coefs[i].real(), 0.0)
              && approximatelyEqual (coefs[i].imag(), 0.0))
@@ -75,7 +75,7 @@ private:
             const double real = (isOutput ? -1.0f : 1.0f) * std::real(coefs[i]);
             const double imag = (isOutput ? -1.0f : 1.0f) * std::imag(coefs[i]);
 
-            result += formatComplexTerm (real, imag, domain, i, (int)coefs.size(), delayOffset, isOutput, result.isEmpty() && ! isOutput);
+            result += formatComplexTerm (real, imag, domain, (int)i, (int)coefs.size(), delayOffset, isOutput, result.isEmpty() && ! isOutput);
         }
 
         return result;

@@ -5,7 +5,7 @@
 #include "../../DSP/FilterDesign.h"
 #include "../Components/BoxedLabel.h"
 #include "../FilterTextFormatter.h"
-#include "LookAndFeel.h"
+#include "../LookAndFeel.h"
 
 class FormulaSection : public juce::Component, private FilterDesign::Listener
 {

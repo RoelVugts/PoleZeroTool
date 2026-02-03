@@ -110,7 +110,7 @@ public:
     {
         jassert(isPositiveAndBelow (index, numChannels));
 
-        return meters[index];
+        return meters[(size_t)index];
     }
 
 private:

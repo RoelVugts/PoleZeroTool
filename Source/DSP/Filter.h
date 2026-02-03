@@ -22,11 +22,11 @@ public:
         //===============================================================
         // FIR
         for (int k = 0; k < numFirCoefsUsed; k++)
-            output += firCoefs[k] * firBuf.read (k);
+            output += firCoefs[(size_t)k] * firBuf.read (k);
 
         // IIR
         for (int k = 1; k < numIirCoefsUsed; k++)
-            output += -iirCoefs[k] * iirBuf.read (k);
+            output += -iirCoefs[(size_t)k] * iirBuf.read (k);
 
         //===============================================================
         // Make sure we don't blow up the speakers when a pole is placed outside the unit circle

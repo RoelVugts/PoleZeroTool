@@ -2,7 +2,7 @@
 
 #include <JuceHeader.h>
 
-#include "../../Gui/Components/DragBox.h"
+#include "../../GUI/Components/DragBox.h"
 
 /** Keeps a DragBox and an AudioParameter in sync.*/
 class DragBoxAttachment : private DragBox::Listener

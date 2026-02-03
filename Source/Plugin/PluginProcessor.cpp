@@ -169,7 +169,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         for (int sample = 0; sample < buffer.getNumSamples(); sample++)
         {
             auto processed = bypassed.load(std::memory_order_relaxed) ? std::complex<float>(channelData[sample], 0.0f)
-                                                                                   : filter[channel].processSample (channelData[sample]);
+                                                                                   : filter[(size_t)channel].processSample (channelData[sample]);
 
             channelData[sample] = processed.real() + processed.imag();
             realSum += (double)(processed.real() * processed.real());
@@ -254,6 +254,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                 params.push_back (std::make_unique<juce::AudioParameterBool>(juce::ParameterID(paramID, 1), paramName, false));
                 break;
 
+            case PoZeParamID::ParameterCount:
+                jassertfalse; break;
+
             default: jassertfalse; break;
         }
     }
@@ -285,6 +288,9 @@ void AudioPluginAudioProcessor::parameterChanged (const juce::String& parameterI
             case PoZeParamID::Bypass:
                 bypassed.store(static_cast<bool>(newValue), std::memory_order_relaxed);
                 break;
+
+            case PoZeParamID::ParameterCount:
+                jassertfalse; break;
 
             default: jassertfalse; break;
         }

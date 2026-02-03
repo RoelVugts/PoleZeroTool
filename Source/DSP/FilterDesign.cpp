@@ -39,14 +39,14 @@ FilterDesign::Response FilterDesign::getFreqResponse(double angle, bool applyGai
     std::complex<double> numerator(0.0f, 0.0f);
     std::complex<double> denumerator (0.0f, 0.0f);
 
-    for (int i = 0; i < firCoefs.size(); i++) {
+    for (int i = 0; i < (int)firCoefs.size(); i++) {
         int power = (int)firCoefs.size() - (i + 1);
-        numerator += (std::pow(z, (double)power) * firCoefs[i] * (applyGain ? gain : 1.0));
+        numerator += (std::pow(z, (double)power) * firCoefs[(size_t)i] * (applyGain ? gain : 1.0));
     }
 
-    for (int i = 0; i < iirCoefs.size(); i++) {
+    for (int i = 0; i < (int)iirCoefs.size(); i++) {
         int power = (int)iirCoefs.size() - (i + 1);
-        denumerator += std::pow(z, (double)power) * iirCoefs[i];
+        denumerator += std::pow(z, (double)power) * iirCoefs[(size_t)i];
     }
 
     // Get the total (unwrapped) phase shift by accumulating the phase shift
