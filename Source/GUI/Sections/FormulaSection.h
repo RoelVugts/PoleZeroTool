@@ -7,7 +7,7 @@
 #include "../FilterTextFormatter.h"
 #include "../LookAndFeel.h"
 
-class FormulaSection : public juce::Component, private FilterDesign::Listener
+class FormulaSection : public juce::Component, private FilterDesign::Listener, private juce::AsyncUpdater
 {
 public:
 
@@ -51,22 +51,21 @@ private:
 
     void filterCoefficientsChanged(FilterDesign*) override
     {
-        juce::MessageManager::callAsync ([this]() {
-            diffEquationLabel.setText (FilterTextFormatter::differenceEquation (filterDesigner));
-            transferFunctionLabel.setText (FilterTextFormatter::transferFunction (filterDesigner));
-        });
+        triggerAsyncUpdate();
     }
 
-    void filterGainChanged(FilterDesign*) override
+    void filterGainChanged(FilterDesign* emitter) override
     {
-        juce::MessageManager::callAsync ([this]() {
-            diffEquationLabel.setText (FilterTextFormatter::differenceEquation (filterDesigner));
-            transferFunctionLabel.setText (FilterTextFormatter::transferFunction (filterDesigner));
-        });
+        triggerAsyncUpdate();
+    }
+
+    void handleAsyncUpdate() override
+    {
+        diffEquationLabel.setText (FilterTextFormatter::differenceEquation (filterDesigner));
+        transferFunctionLabel.setText (FilterTextFormatter::transferFunction (filterDesigner));
     }
 
     FilterDesign& filterDesigner;
     BoxedLabel transferFunctionLabel;
     BoxedLabel diffEquationLabel;
-
 };

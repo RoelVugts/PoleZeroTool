@@ -114,5 +114,5 @@ private:
 
     double gain { 1.0f };
     bool autoNormalise { true };
-    juce::ListenerList<Listener> listeners;
+    juce::ThreadSafeListenerList<Listener> listeners;
 };

@@ -101,7 +101,9 @@ private:
 
     void filterGainChanged(FilterDesign* emitter) override
     {
-        gainAttachment.setValueAsCompleteGesture ((float)emitter->getGain());
+        juce::MessageManager::callAsync ([this, emitter]() {
+            gainAttachment.setValueAsCompleteGesture ((float)emitter->getGain());
+        });
 
         // Write to the inactive buffer
         const int writeBuffer = 1 - activeBuffer.load(std::memory_order_acquire);

@@ -63,8 +63,16 @@ public:
         }, true);
 
         //==================================================================================================
-        processor.onSampleRateChange = [this](double) { setDisplayedUnit (state.displayInHz.getValue()); };
+        processor.onSampleRateChange = [this](double) {
+            juce::MessageManager::callAsync ([this]() {
+                setDisplayedUnit (state.displayInHz.getValue());
+            });
+        };
+    }
 
+    ~ResponsePlotSection() override
+    {
+        processor.onSampleRateChange = nullptr;
     }
 
     void resized() override
