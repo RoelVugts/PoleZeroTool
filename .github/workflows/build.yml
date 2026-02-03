@@ -213,14 +213,15 @@ jobs:
       - name: Zip
         if: ${{ matrix.name == 'Linux' }}
         working-directory: ${{ env.ARTIFACTS_PATH }}
-        run: 7z a -tzip "${{ env.ARTIFACT_NAME }}.zip" "-xr!lib${{ env.PRODUCT_NAME }}_SharedCode.a"
+        run: |
+          7z a -tzip "${{ env.INSTALLER_NAME }}.zip" "-xr!lib${{ env.PRODUCT_NAME }}_SharedCode.a"
 
       - name: Upload Build (Linux)
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.INSTALLER_NAME }}
-          path: "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.zip"
+          path: "${{ env.ARTIFACTS_PATH }}/${{ env.INSTALLER_NAME }}.zip"
 
       - name: Upload Installer (MacOS)
         if: runner.os == 'MacOS'
