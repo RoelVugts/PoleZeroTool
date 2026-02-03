@@ -26,7 +26,7 @@ struct juce::VariantConverter<juce::Range<float>>
 {
     static juce::Range<float> fromVar(const juce::var& var)
     {
-        const uint64_t packed = static_cast<uint64_t> (static_cast<int64_t> (var));
+        const uint64_t packed = static_cast<uint64_t> (static_cast<int64> (var));
 
         // Extract real and imaginary part
         uint32_t startBits = static_cast<uint32_t> (packed >> 32);
@@ -58,7 +58,7 @@ struct juce::VariantConverter<juce::Range<float>>
         std::memcpy(&imagBits, &imag, sizeof(float));
 
         // Pack both int32 into one int64
-        const int64_t packed = static_cast<int64_t>(static_cast<uint64_t> (realBits) << 32 | static_cast<uint64_t> (imagBits));
+        const int64 packed = static_cast<int64_t>(static_cast<uint64_t> (realBits) << 32 | static_cast<uint64_t> (imagBits));
 
         return { packed };
     }
