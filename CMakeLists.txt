@@ -35,8 +35,8 @@ juce_add_plugin(${PROJECT_NAME}
         PLUGIN_CODE                 PoZe                           # A unique four-character plugin id with exactly one upper-case character
         FORMATS                     VST3 AU Standalone                 # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
         BUNDLE_ID                   com.rvaudiodesign.pozetool
-        ICON_BIG                    "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Plot.png"
-        ICON_SMALL                  "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Plot.png"
+        ICON_BIG                    "${CMAKE_CURRENT_SOURCE_DIR}/Installers/Plot.png"
+        ICON_SMALL                  "${CMAKE_CURRENT_SOURCE_DIR}/Installers/Plot.png"
 )
 
 juce_generate_juce_header(${PROJECT_NAME})
