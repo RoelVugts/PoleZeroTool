@@ -34,7 +34,7 @@ public:
     static juce::String transferFunction   (const FilterDesign& filter)
     {
         if (approximatelyEqual (filter.getGain(), 0.0))
-            return "\nH(z) = 0";
+            return "H(z) = 0";
 
         const juce::String& numerator = formatCoefficients (filter.getFIRCoefs(), PolynomialDomain::ZDomain,false,0);
         const juce::String& denumerator = formatCoefficients (filter.getIIRCoefs(), PolynomialDomain::ZDomain, false,0);

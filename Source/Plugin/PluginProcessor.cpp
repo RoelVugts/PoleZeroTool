@@ -15,14 +15,14 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                      #endif
                        ), apvts(*this, nullptr, APVTS_ID, createParameters())
 {
-    paramFifo.reset(128);
+    paramFifo.reset(32);
 
     // Create listeners for all parameters
     for (int i = 0; i < apvts.state.getNumChildren(); i++)
         if (const auto child = apvts.state.getChild (i); child.isValid())
             apvts.addParameterListener(child.getProperty("id").toString(), this);
 
-    auto* param = apvts.getParameter (paramID[PoZeParamID::gain]);
+    auto* param = apvts.getParameter (getParamID(PoZeParamID::Gain));
     jassert(param != nullptr);
 
     filterDesignAttachment = std::make_unique<FilterDesignAttachment>(state.poleZeroState, filterDesign, *param);
@@ -163,7 +163,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     {
         auto* channelData = buffer.getWritePointer (channel);
 
-        inputLevel[channel] = buffer.getRMSLevel (channel, 0, buffer.getNumSamples());
+        inputLevel[channel].store(buffer.getRMSLevel (channel, 0, buffer.getNumSamples()), std::memory_order_relaxed);
 
         double realSum = 0.0;
         double imagSum = 0.0;
@@ -176,9 +176,8 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             imagSum += (double)(processed.imag() * processed.imag());
         }
 
-        outputLevel[channel] = (float)std::sqrt(realSum / (double)buffer.getNumSamples());
-        outputLevelImag[channel] = (float)std::sqrt(imagSum / (double)buffer.getNumSamples());
-
+        outputLevel[channel].store((float)std::sqrt(realSum / (double)buffer.getNumSamples()), std::memory_order_relaxed);
+        outputLevelImag[channel].store((float)std::sqrt(imagSum / (double)buffer.getNumSamples()), std::memory_order_relaxed);
     }
 }
 
@@ -235,22 +234,24 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 {
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
-    for (int i = 0; i < PoZeParamID::parameterCount; i++)
+    for (int i = 0; i < PoZeParamID::ParameterCount; i++)
     {
         const auto id = static_cast<PoZeParamID>(i);
+        const juce::String& paramID = getParamID(id);
+        const juce::String& paramName = getParamName(id);
 
         switch (id)
         {
-            case PoZeParamID::gain:
-                params.push_back (std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(paramID[i], 1), paramName[i], juce::NormalisableRange<float>{ 0.0f, 1.0f, 1e-7f }, 1.0f));
+            case PoZeParamID::Gain:
+                params.push_back (std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(paramID, 1), paramName, juce::NormalisableRange<float>{ 0.0f, 1.0f, 1e-7f }, 1.0f));
                 break;
 
-            case PoZeParamID::autoNormalise:
-                params.push_back (std::make_unique<juce::AudioParameterBool>(juce::ParameterID(paramID[i], 1), paramName[i], true));
+            case PoZeParamID::AutoNormalise:
+                params.push_back (std::make_unique<juce::AudioParameterBool>(juce::ParameterID(paramID, 1), paramName, true));
                 break;
 
-            case PoZeParamID::bypass:
-                params.push_back (std::make_unique<juce::AudioParameterBool>(juce::ParameterID(paramID[i], 1), paramName[i], false));
+            case PoZeParamID::Bypass:
+                params.push_back (std::make_unique<juce::AudioParameterBool>(juce::ParameterID(paramID, 1), paramName, false));
                 break;
 
             default: jassertfalse; break;
@@ -262,28 +263,26 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 
 juce::AudioProcessorParameter* AudioPluginAudioProcessor::getBypassParameter() const
 {
-    return apvts.getParameter (paramID[PoZeParamID::bypass]);
+    return apvts.getParameter (getParamID(PoZeParamID::Bypass));
 }
 
 void AudioPluginAudioProcessor::parameterChanged (const juce::String& parameterID, float newValue)
 {
-    const int index = Utils::indexOf (paramID, parameterID);
-    jassert(index >= 0);
+    const auto paramID = magic_enum::enum_cast<PoZeParamID>(parameterID.toStdString(), magic_enum::case_insensitive);
 
-    if (index >= 0)
+    if (paramID.has_value())
     {
-        const auto id = static_cast<PoZeParamID>(index);
-        switch (id)
+        switch (paramID.value())
         {
-            case PoZeParamID::gain:
+            case PoZeParamID::Gain:
                 filterDesign.setGain ((double)newValue);
                 break;
 
-            case PoZeParamID::autoNormalise:
+            case PoZeParamID::AutoNormalise:
                 filterDesign.setAutoNormalize (static_cast<bool> (newValue));
                 break;
 
-            case PoZeParamID::bypass:
+            case PoZeParamID::Bypass:
                 for (auto& f : filter)
                     f.setBypass (static_cast<bool> (newValue)); //TODO: Not thread safe
                 break;

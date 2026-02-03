@@ -78,6 +78,42 @@ private:
     const juce::Colour red    { 201, 74, 74  };
     const juce::Colour orange { 242, 165, 65 };
     const juce::Colour green  { 76, 175, 80 };
+};
 
 
+//===================================================================
+// Stereo meter
+class StereoMeter : public juce::Component, public juce::SettableTooltipClient
+{
+public:
+
+    StereoMeter()
+    {
+        for (auto& meter : meters)
+            addAndMakeVisible (meter);
+    }
+
+    void paint(Graphics& g) override
+    {
+        g.fillAll(meters[0].findColour (VolumeMeter::backgroundColourId));
+    }
+
+    void resized() override
+    {
+        auto bounds = getLocalBounds().toFloat();
+        auto leftMeterArea = bounds.removeFromLeft (bounds.getWidth() * 0.5f);
+        meters[0].setBounds (leftMeterArea.toNearestInt());
+        meters[1].setBounds (bounds.toNearestInt());
+    }
+
+    VolumeMeter& getChannelMeter(int index)
+    {
+        jassert(isPositiveAndBelow (index, numChannels));
+
+        return meters[index];
+    }
+
+private:
+    static constexpr int numChannels { 2 };
+    std::array<VolumeMeter, numChannels> meters;
 };

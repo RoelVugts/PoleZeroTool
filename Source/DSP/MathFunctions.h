@@ -65,6 +65,24 @@ namespace MathFunctions
         return sum;
     }
 
+    /**
+        Expands a polynomial from its roots and returns the coefficients.
+
+        Given a list of roots, this function computes the polynomial coefficients
+        such that:
+
+            P(x) = (x - r0)(x - r1)(x - r2)...(x - rN)
+
+        The coefficients are returned in ascending order of powers:
+
+            coefficients[0] = 1
+            coefficients[1] = -(r0 + r1 + ...)
+            coefficients[2] = (sum of pairwise products)
+            ...
+
+        @param roots  The roots of the polynomial.
+        @return       A vector containing the expanded polynomial coefficients.
+    */
     template <typename SampleType>
     static std::vector<SampleType> expandPolynomialFromRoots (const std::vector<SampleType>& roots)
     {
@@ -84,6 +102,23 @@ namespace MathFunctions
         return coefficients;
     }
 
+    /**
+        Computes the angle of the vector difference between two complex points.
+
+        Treats z1 and z2 as points in the complex plane and computes the angle
+        of the vector pointing from z1 to z2.
+
+        This is equivalent to:
+
+            angle = atan2(imag(z2 - z1), real(z2 - z1))
+
+        with additional logic to prevent phase wrapping discontinuities
+        when working near the unit circle.
+
+        @param z1  Start point in the complex plane.
+        @param z2  End point in the complex plane.
+        @return    Angle (in radians) of the difference vector.
+    */
     template<typename SampleType>
     SampleType getAngleOfDifferenceVector(std::complex<SampleType> z1, std::complex<SampleType> z2)
     {
@@ -112,6 +147,16 @@ namespace MathFunctions
         return angle;
     }
 
+    /**
+        Rounds a value to a fixed number of decimal places.
+
+        Example:
+            roundToDecimals(3.14159, 2) → 3.14
+
+        @param val          Value to round.
+        @param numDecimals  Number of decimal places to keep.
+        @return             Rounded value.
+    */
     template<typename SampleType>
     SampleType roundToDecimals(SampleType val, int numDecimals)
     {
@@ -119,6 +164,19 @@ namespace MathFunctions
         return std::round(val * multiplier) / multiplier;
     }
 
+    /**
+        Rounds a value to its most significant magnitude.
+
+        This rounds the value to the nearest digit at the highest order of magnitude.
+
+        Example:
+            roundToHighestMagnitude(1234)  → 1000
+            roundToHighestMagnitude(0.056) → 0.06
+
+        @param val              Value to round.
+        @param magnitudeOffset  Optional offset for shifting the rounding scale.
+        @return                 Rounded value.
+    */
     template<typename SampleType>
     SampleType roundToHighestMagnitude(SampleType val, int magnitudeOffset = 0)
     {
@@ -130,6 +188,17 @@ namespace MathFunctions
         return std::round(val * scalar) / scalar;
     }
 
+    /**
+        Computes the logarithm of a value with an arbitrary base.
+
+        This is equivalent to:
+
+            log_base(val) = log(val) / log(base)
+
+        @param base Logarithmic base.
+        @param val  Value to compute the logarithm of.
+        @return     Logarithm of val with the given base.
+    */
     template<typename SampleType>
     SampleType logBase(SampleType base, SampleType val)
     {

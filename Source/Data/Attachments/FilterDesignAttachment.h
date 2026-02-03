@@ -5,6 +5,7 @@
 
 #include <JuceHeader.h>
 
+/** Attachment to keep the filter designer and the state in sync.*/
 class FilterDesignAttachment : private juce::AsyncUpdater, private FilterDesign::Listener
 {
 public:
@@ -35,24 +36,28 @@ public:
         filterDesigner.removeListener (this);
     }
 
+    //=========================================================================
+    // Returns true if the filter coefficients have changed
     bool filterChanged() const
     {
         return newCoefsReady.load(std::memory_order_acquire);
     }
 
+    // Gets the most recently updated coefficients
     FilterDesign::CoefficientSet getCoefficients() const
     {
         const int readBuffer = activeBuffer.load(std::memory_order_acquire);
         return coefficients[readBuffer];
     }
 
+    // Marks the coefficients as consumed.
     void markCoefficientsAsConsumed()
     {
         newCoefsReady.store(false, std::memory_order_release);
     }
 
 private:
-
+    //=========================================================================
     void triggerUpdate()
     {
         if (isUpdatePending())
@@ -82,12 +87,14 @@ private:
             }
         }
 
+        // Write to the inactive buffer
         const int writeBuffer = 1 - activeBuffer.load(std::memory_order_acquire);
 
         filterDesigner.setPoleZeros (poles, zeros);
         coefficients[writeBuffer].iirCoefs = filterDesigner.getIIRCoefs();
         coefficients[writeBuffer].firCoefs  = filterDesigner.getFIRCoefs();
 
+        // Swap buffers
         activeBuffer.store(writeBuffer, std::memory_order_release);
         newCoefsReady.store (true, std::memory_order_release);
     }
@@ -96,14 +103,17 @@ private:
     {
         gainAttachment.setValueAsCompleteGesture ((float)emitter->getGain());
 
+        // Write to the inactive buffer
         const int writeBuffer = 1 - activeBuffer.load(std::memory_order_acquire);
         coefficients[writeBuffer].iirCoefs = filterDesigner.getIIRCoefs();
         coefficients[writeBuffer].firCoefs  = filterDesigner.getFIRCoefs();
 
+        // Swap buffers
         activeBuffer.store(writeBuffer, std::memory_order_release);
         newCoefsReady.store (true, std::memory_order_release);
     }
 
+    //=========================================================================
     PoleZeroState state;
     FilterDesign& filterDesigner;
 

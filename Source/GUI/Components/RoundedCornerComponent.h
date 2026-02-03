@@ -23,6 +23,7 @@ public:
         addComponentListener (this);
     }
 
+    //============================================================
     /** Sets a clipping path for this component and all child components.
      *
      * @param radius    The corner radius
@@ -33,22 +34,13 @@ public:
         repaint();
     }
 
-    void setStroke(float thickness)  { strokeThickness = thickness; }
+    //============================================================
+    void setStrokeThickness(float thickness)  { strokeThickness = thickness; }
+    float getStrokeThickness() const { return strokeThickness; }
 
     //============================================================
-    juce::Path* getClipPath() { return clipPath.get(); }
+    juce::Path* getClipPath() const { return clipPath.get(); }
 
-    /** If this component has reduced its bounds by setting the reduce in setRoundedCorners(),
-     *  then this will return that reduced rectangle.
-     *  @see setRoundedCorners
-     */
-    juce::Rectangle<int> getReducedLocalBounds() const noexcept
-    {
-        if (auto reduce = getProperties().getVarPointer ("shadow-reduce"))
-            return getLocalBounds().reduced ((int)*reduce);
-
-        return getLocalBounds();
-    }
 
     //============================================================
     /** Will paint within the rounded corners. Everything outside of the rounded
@@ -69,6 +61,7 @@ public:
 
 private:
 
+    //============================================================
     void paint(juce::Graphics& g) final
     {
         if (clipPath && getLocalBounds().toFloat().intersects (clipPath->getBounds()))

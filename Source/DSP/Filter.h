@@ -22,6 +22,7 @@ public:
         // Write input into buffer
         firBuf.write (input);
 
+        //===============================================================
         // FIR
         for (int k = 0; k < numFirCoefsUsed; k++)
             output += firCoefs[k] * firBuf.read (k);
@@ -30,6 +31,8 @@ public:
         for (int k = 1; k < numIirCoefsUsed; k++)
             output += -iirCoefs[k] * iirBuf.read (k);
 
+        //===============================================================
+        // Make sure we don't blow up the speakers when a pole is placed outside the unit circle
         if (std::isnan (output.real()) || std::isinf (output.real()))
             output = { 0.0f, output.imag() };
 
@@ -39,6 +42,7 @@ public:
         output = { std::clamp(output.real(), -1.0, 1.0),
                       std::clamp(output.imag(), -1.0, 1.0) };
 
+        //===============================================================
         // Write output back into output buf
         iirBuf.write (output);
 
@@ -46,7 +50,6 @@ public:
         firBuf.incrementWriteIndex();
         iirBuf.incrementWriteIndex();
 
-        // Make sure we don't blow up the speakers when a pole is placed outside the unit circle
         return static_cast<std::complex<float>> (output);
     }
 
@@ -55,8 +58,11 @@ public:
         // Coefficients don't fit in pre-allocated array...
         assert(iir.size() <= maxCoefs && fir.size() <= maxCoefs);
 
-        std::ranges::copy(fir, firCoefs.begin());
-        std::ranges::copy(iir, iirCoefs.begin());
+        const int numFirCoefs = std::min((int)fir.size(), maxCoefs);
+        const int numIirCoefs = std::min((int)iir.size(), maxCoefs);
+
+        std::ranges::copy_n(fir.begin(), numFirCoefs, firCoefs.begin());
+        std::ranges::copy_n(iir.begin(), numIirCoefs, iirCoefs.begin());
         numFirCoefsUsed = (int)fir.size();
         numIirCoefsUsed = (int)iir.size();
     }

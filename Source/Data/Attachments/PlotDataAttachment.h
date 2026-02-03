@@ -5,6 +5,7 @@
 
 #include <JuceHeader.h>
 
+/** Feeds the plot with data whenever the underlying data is changed.*/
 class PlotDataAttachment : private FilterDesign::Listener, private juce::ComponentListener, private juce::AsyncUpdater, private Plot::Listener
 {
 public:

@@ -7,7 +7,7 @@
 #include "../../DSP/FilterDesign.h"
 #include "../../Utils/MappedRange.h"
 
-class Plot : public juce::Component, private DragBox::Listener, public juce::SettableTooltipClient
+class Plot : public RoundedCornerComponent, private DragBox::Listener, public juce::SettableTooltipClient
 {
 public:
 
@@ -48,9 +48,12 @@ public:
 
         minRangeBox.addListener (this);
         maxRangeBox.addListener (this);
+
+        setRoundedCorners (10.0f);
+        setStrokeThickness (2.0f);
     }
 
-    void paint(juce::Graphics& g) override
+    void paintWithinCorners(juce::Graphics& g) override
     {
         //=======================================================
         // Draw background
@@ -100,9 +103,9 @@ public:
             const juce::String& text = i < (int)yLabels.size() ? yLabels[i] : "";
             const int textHeight = (int)juce::GlyphArrangement::getStringBounds (g.getCurrentFont(), text).getHeight();
             const int y = (int)((1.0f - yRange.convertTo0to1 (yTicks[i])) * plotArea.getHeight()) + (int)plotArea.getY() - textHeight / 2;
-            const int x = (int)yAxisArea.getX() + borderThickness;
+            const int x = (int)yAxisArea.getX() + (int)getStrokeThickness();
             if (y > 0 && y < getHeight())
-                g.drawFittedText (text, x, y, (int)yAxisArea.getWidth() - borderThickness, textHeight, juce::Justification::centred, 1, 0.6f);
+                g.drawFittedText (text, x, y, (int)yAxisArea.getWidth() - (int)getStrokeThickness(), textHeight, juce::Justification::centred, 1, 0.6f);
         }
 
         //=======================================================
@@ -144,8 +147,8 @@ public:
         g.fillRect (headerArea);
 
         g.setColour (findColour (borderOutlineColourId));
-        g.drawRect (headerArea, borderThickness);
-        g.drawRect (getLocalBounds(), borderThickness);
+        // g.drawRect (headerArea, borderThickness);
+        // g.drawRect (getLocalBounds(), borderThickness);
 
         //=======================================================
         // Draw title
@@ -346,6 +349,5 @@ private:
     juce::ListenerList<Listener> listeners;
 
     float lineThickness { 0.5f };
-    static constexpr int borderThickness { 2 };
     static constexpr float minSpan { 1e-3f };
 };

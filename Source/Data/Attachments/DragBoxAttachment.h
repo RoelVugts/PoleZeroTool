@@ -4,9 +4,11 @@
 
 #include "../../Gui/Components/DragBox.h"
 
+/** Keeps a DragBox and an AudioParameter in sync.*/
 class DragBoxAttachment : private DragBox::Listener
 {
 public:
+    //===================================================================
     static std::unique_ptr<DragBoxAttachment>
         makeAttachment (juce::AudioProcessorValueTreeState& apvts, const juce::String& paramIdentifier, DragBox& comp, juce::UndoManager* um = nullptr)
     {
@@ -16,6 +18,7 @@ public:
         return std::make_unique<DragBoxAttachment> (*param, comp, um);
     }
 
+    //===================================================================
     DragBoxAttachment (juce::RangedAudioParameter& param, DragBox& comp, juce::UndoManager* um = nullptr)
         : attachment (param, [this] (float v) { setValue (v); }), dragBox (comp)
     {
@@ -47,12 +50,14 @@ public:
     }
 
 private:
+    //===================================================================
     void setValue (float value)
     {
         juce::ScopedValueSetter<bool> svs (ignoreCallbacks, true);
         dragBox.setValue (value, true);
     }
 
+    //===================================================================
     void dragStarted (DragBox*) override { attachment.beginGesture(); }
     void dragEnded (DragBox*) override { attachment.endGesture(); }
 
@@ -64,6 +69,7 @@ private:
         }
     }
 
+    //===================================================================
     juce::ParameterAttachment attachment;
     DragBox& dragBox;
     bool ignoreCallbacks { false };

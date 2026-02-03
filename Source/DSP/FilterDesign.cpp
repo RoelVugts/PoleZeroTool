@@ -91,22 +91,6 @@ FilterDesign::Response FilterDesign::getMaxMagnitudeResponse(const int numAngles
     return maxResponse;
 }
 
-FilterDesign::Response FilterDesign::getMaxPhaseResponse(const int numAngles) const
-{
-    Response maxResponse {};
-    const double angleStep = juce::MathConstants<double>::pi / (double)numAngles;
-
-    for (int i = 0; i < numAngles; i++)
-    {
-        const double angle = (double) i * angleStep;
-        maxResponse = std::max (getFreqResponse (angle), maxResponse, [] (const Response& a, const Response& b) {
-            return std::abs(a.phase) > std::abs(b.phase);
-        });
-    }
-
-    return maxResponse;
-}
-
 void FilterDesign::setGain (double gain_)
 {
     gain = gain_;

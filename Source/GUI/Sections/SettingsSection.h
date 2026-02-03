@@ -21,7 +21,7 @@ public:
         gainBox.setColour (DragBox::ColourIds::backgroundColourId, LAF::Colours::buttonColour);
         gainBox.setColour (DragBox::ColourIds::textColourId, LAF::Colours::textColour);
         gainBox.setColour (DragBox::ColourIds::outlineColourId, LAF::Colours::buttonOutlineColour);
-        gainAttachment = DragBoxAttachment::makeAttachment (p.apvts, paramID[PoZeParamID::gain], gainBox);
+        gainAttachment = DragBoxAttachment::makeAttachment (p.apvts, getParamID(PoZeParamID::Gain), gainBox);
         addAndMakeVisible (gainBox);
 
         for (auto* button : juce::Array<juce::TextButton*>{&firstPlotBtn, &secondPlotBtn, &decibelBtn, &logarithmicBtn, &unitBtn})
@@ -78,11 +78,11 @@ public:
             unitBtn.setButtonText (isOn ? "Radians" : "Hz");
         };
 
-        autoNormalizeAttachment = std::make_unique<ButtonAttachment>(p.apvts, paramID[PoZeParamID::autoNormalise], autoNormalizeBtn);
+        autoNormalizeAttachment = std::make_unique<ButtonAttachment>(p.apvts, getParamID(PoZeParamID::AutoNormalise), autoNormalizeBtn);
         decibelAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayInDB, decibelBtn, nullptr);
         logarithmicAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayLogarithmic, logarithmicBtn, nullptr);
         unitAttachment = std::make_unique<ButtonPropertyAttachment>(state.displayInHz, unitBtn, nullptr);
-        bypassAttachment = std::make_unique<ButtonAttachment>(p.apvts, paramID[PoZeParamID::bypass], bypassBtn);
+        bypassAttachment = std::make_unique<ButtonAttachment>(p.apvts, getParamID(PoZeParamID::Bypass), bypassBtn);
 
         gainBox.setTooltip ("The gain applied to the filter");
         autoNormalizeBtn.setTooltip ("If on, will set the gain so the higest peak of the filter is at unity gain");

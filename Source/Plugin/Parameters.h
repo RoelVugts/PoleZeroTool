@@ -1,5 +1,8 @@
 #pragma once
 
+#include "../Utils/Utils.h"
+
+#include "magic_enum/magic_enum.hpp"
 #include <JuceHeader.h>
 
 #define APVTS_ID "APVTS"
@@ -7,12 +10,12 @@
 
 enum PoZeParamID
 {
-    gain,
-    autoNormalise,
-    bypass,
+    Gain,
+    AutoNormalise,
+    Bypass,
 
     // Keep last to get total parameter count
-    parameterCount
+    ParameterCount
 };
 
 enum class PlotType
@@ -29,19 +32,17 @@ struct ParamMessage
     float value;
 };
 
-const std::array<juce::String, parameterCount> paramID =
+inline juce::String getParamID(PoZeParamID id)
 {
-    "GAIN",
-    "AUTO_NORMALISE"
-       "BYPASS"
-};
+    const juce::String enumName = magic_enum::enum_name(id).data();
+    return enumName.toUpperCase();
+}
 
-const std::array<juce::String, parameterCount> paramName
+inline juce::String getParamName(PoZeParamID id)
 {
-    "Gain"
-    "Auto Normalise"
-    "Bypass"
-};
+    const juce::String enumName = magic_enum::enum_name(id).data();
+    return Utils::insertSpacesForEveryUpperCase (enumName);
+}
 
 static constexpr double minPoZePlotRange { -1.5 };
 static constexpr double maxPoZePlotRange { 1.5 };

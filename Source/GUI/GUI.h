@@ -29,21 +29,13 @@ public:
         addAndMakeVisible (settingsSection);
         addAndMakeVisible (tooltipSection);
 
-        addAndMakeVisible (inputMeter[0]);
-        addAndMakeVisible (inputMeter[1]);
-        addAndMakeVisible (outputMeter[0]);
-        addAndMakeVisible (outputMeter[1]);
-        addAndMakeVisible (outputMeterImag[0]);
-        addAndMakeVisible (outputMeterImag[1]);
+        addAndMakeVisible (inputMeter);
+        addAndMakeVisible (outputMeter);
+        addAndMakeVisible (outputMeterImag);
 
-        for (auto& ch : inputMeter)
-            ch.setTooltip ("Input volume meter");
-
-        for (auto& ch : outputMeter)
-            ch.setTooltip ("Real output volume meter");
-
-        for (auto& ch : outputMeterImag)
-            ch.setTooltip ("Imaginary output volume meter");
+        inputMeter.setTooltip ("Input volume meter");
+        outputMeter.setTooltip ("Real output volume meter");
+        outputMeterImag.setTooltip ("Imaginary output volume meter");
 
         startTimerHz (30);
     }
@@ -63,34 +55,28 @@ public:
         auto toolTipArea = bounds.removeFromBottom (height * 0.05f);
         tooltipSection.setBounds (toolTipArea.toNearestInt());
 
+        // Settings bar
         auto settingsArea = bounds.removeFromBottom (height * 0.05f);
         settingsSection.setBounds (settingsArea.toNearestInt());
 
-        auto inputMeterArea = bounds.removeFromLeft (width * 0.05f);
-        inputMeterArea = inputMeterArea.reduced(LAF::Layout::defaultSpacing);
-        auto leftMeterArea = inputMeterArea.removeFromLeft (inputMeterArea.getWidth() * 0.5f);
-        inputMeter[0].setBounds (leftMeterArea.toNearestInt());
-        inputMeter[1].setBounds (inputMeterArea.toNearestInt());
-
-        auto outputMeterArea = bounds.removeFromRight (width * 0.1f);
-        outputMeterArea = outputMeterArea.reduced(LAF::Layout::defaultSpacing);
-        const float meterWidth = (outputMeterArea.getWidth() - LAF::Layout::defaultSpacing) * 0.5f;
-
-        auto realMeterArea = outputMeterArea.removeFromRight (meterWidth);
-        leftMeterArea = realMeterArea.removeFromLeft (realMeterArea.getWidth() * 0.5f);
-        outputMeter[0].setBounds (leftMeterArea.toNearestInt());
-        outputMeter[1].setBounds (realMeterArea.toNearestInt());
-
-        outputMeterArea.removeFromRight (LAF::Layout::defaultSpacing);
-
-        auto imagMeterArea = outputMeterArea.removeFromLeft (meterWidth);
-        leftMeterArea = imagMeterArea.removeFromLeft (imagMeterArea.getWidth() * 0.5f);
-        outputMeterImag[0].setBounds (leftMeterArea.toNearestInt());
-        outputMeterImag[1].setBounds (imagMeterArea.toNearestInt());
-
         // Margins
-        bounds.removeFromBottom (LAF::Layout::defaultSpacing * 0.5f);
-        bounds.removeFromTop (LAF::Layout::defaultSpacing);
+        bounds.reduce (LAF::Layout::defaultSpacing, LAF::Layout::defaultSpacing);
+
+        // Input volume meter
+        const float meterWidth = width * 0.03f;
+        auto inputMeterArea = bounds.removeFromLeft (meterWidth);
+        inputMeter.setBounds (inputMeterArea.toNearestInt());
+        bounds.removeFromLeft (LAF::Layout::defaultSpacing);
+
+        // (Real) output meter
+        auto outputMeterArea = bounds.removeFromRight (meterWidth);
+        outputMeter.setBounds (outputMeterArea.toNearestInt());
+        bounds.removeFromRight (LAF::Layout::defaultSpacing);
+
+        // (Imaginary) output meter
+        auto imagMeterArea = bounds.removeFromRight (meterWidth);
+        outputMeterImag.setBounds (imagMeterArea.toNearestInt());
+        bounds.removeFromRight (LAF::Layout::defaultSpacing);
 
         // Content area
         const float availableWidth = bounds.getWidth() - LAF::Layout::defaultSpacing; // Spacing between poze section and response plots
@@ -118,11 +104,10 @@ private:
     {
         for (int ch = 0; ch < 2; ch++)
         {
-            inputMeter[ch].setLevel (processor.inputLevel[ch]);
-            outputMeter[ch].setLevel (processor.outputLevel[ch]);
-            outputMeterImag[ch].setLevel (processor.outputLevelImag[ch]);
+            inputMeter.getChannelMeter (ch).setLevel (processor.inputLevel[ch].load(std::memory_order_relaxed));
+            outputMeter.getChannelMeter (ch).setLevel (processor.outputLevel[ch].load(std::memory_order_relaxed));
+            outputMeterImag.getChannelMeter (ch).setLevel (processor.outputLevelImag[ch].load(std::memory_order_relaxed));
         }
-
     }
 
     AudioPluginAudioProcessor& processor;
@@ -132,7 +117,7 @@ private:
     SettingsSection settingsSection;
     ToolTipSection tooltipSection;
 
-    VolumeMeter inputMeter[2];
-    VolumeMeter outputMeter[2];
-    VolumeMeter outputMeterImag[2];
+    StereoMeter inputMeter;
+    StereoMeter outputMeter;
+    StereoMeter outputMeterImag;
 };

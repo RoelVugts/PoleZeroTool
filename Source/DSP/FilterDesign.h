@@ -64,6 +64,14 @@ public:
      */
     Response getFreqResponse(double angle, bool applyGain = true) const;
 
+    /** Returns the group delay. The group delay is the derivative of the (negative) phase shift.
+     *  Therefore we need to calculate the difference between two frequencies.
+     *
+     *  @param a            The lower frequency
+     *  @param b            The higher frequency
+     *
+     *  @return            The group delay in samples
+     */
     static double getGroupDelay(Response& a, Response& b);
 
     /** Returns the frequency response with the highest
@@ -77,21 +85,22 @@ public:
      */
     Response getMaxMagnitudeResponse(int numAngles = 256) const;
 
-    /** Returns the frequency response with the largest absolute phas shift.
-     *  It finds it by testing multiple frequencies.
-     *  This is a bit of a brute force way but there is (afaik) no direct formula to get <(H(z))
+    //=======================================================================
+    /** Set the overall filter gain.
      *
-     *  @param numAngles            The number of angles / frequencies to test.
-     *                              The interval between frequencies will be pi / numAngles.
-     *
-     *  @returns                    The frequency response with the largest absolute phase shift.
+     * @param gain          Gain in amplitude
      */
-    Response getMaxPhaseResponse(int numAngles = 256) const;
-
     void setGain(double gain);
+
+    // Returns the gain applied to the filter.
     double getGain() const { return gain; }
 
-    void setAutoNormalize(bool shouldAutoNormalize);
+    /** Enables automatic normalisation. If enabled the gain will be set so the highest
+     *  filter peak will be at unity gain.
+     */
+    void setAutoNormalize(bool shouldAutoNormalise);
+
+    // Returns true if automatic normalisation is enabled.
     bool isAutoNormalising() const { return autoNormalise; }
 
 private:

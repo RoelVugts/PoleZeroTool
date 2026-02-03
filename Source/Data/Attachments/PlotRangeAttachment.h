@@ -3,7 +3,7 @@
 #include "../../GUI/Components/Plot.h"
 #include "../State.h"
 
-
+/** Keeps the plot range in sync with the state settings.*/
 class PlotRangeAttachment : private Plot::Listener
 {
 public:
