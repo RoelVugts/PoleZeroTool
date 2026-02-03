@@ -28,7 +28,7 @@ public:
         const float tipsTextWidth = juce::GlyphArrangement::getStringWidth (juce::FontOptions(12.0f), "Tips");
         auto tipsTextArea = bounds.removeFromLeft (tipsTextWidth * 2.0f);
 
-        g.setFont (juce::FontOptions(12.0f));
+        g.setFont (juce::FontOptions(bounds.getHeight() * 0.4f));
         g.setColour (LAF::Colours::highlightedColour);
         g.drawFittedText ("Tips: ", tipsTextArea.toNearestInt(), juce::Justification::centred, 1, 0.9f);
         g.setColour (LAF::Colours::disabledTextColour);

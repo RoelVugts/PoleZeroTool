@@ -150,7 +150,7 @@ void PoZePlot::Point::mouseDrag(const juce::MouseEvent& event)
 
                 const double xNorm = (constrainToRealAxis ? (double)parent->getMouseXYRelative().getX()
                                                          : (double)getBounds().getCentreX()) / parentBounds.getWidth();
-                double yNorm = constrainToRealAxis ? 0.5 : 1.0f - ((double)getBounds().getCentreY() / parentBounds.getHeight());
+                double yNorm = constrainToRealAxis ? 0.5 : 1.0 - ((double)getBounds().getCentreY() / parentBounds.getHeight());
 
                 setNormalizedValue (xNorm, yNorm, true);
                 break;

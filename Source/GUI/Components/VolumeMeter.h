@@ -93,6 +93,12 @@ public:
             addAndMakeVisible (meter);
     }
 
+    void setTooltip(const String &newTooltip) override
+    {
+        for (auto& meter : meters)
+            meter.setTooltip(newTooltip);
+    }
+
     void paint(Graphics& g) override
     {
         g.fillAll(meters[0].findColour (VolumeMeter::backgroundColourId));
