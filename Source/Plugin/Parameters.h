@@ -2,7 +2,7 @@
 
 #include "../Utils/Utils.h"
 
-#include "magic_enum/magic_enum.hpp"
+#include <magic_enum/magic_enum.hpp>
 #include <JuceHeader.h>
 
 #define APVTS_ID "APVTS"

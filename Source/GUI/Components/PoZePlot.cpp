@@ -225,18 +225,13 @@ bool PoZePlot::Point::keyPressed (const juce::KeyPress& key, juce::Component*)
     if (key.getKeyCode() == angleKeyCode && dragMode != DragMode::angle)
     {
         dragMode = DragMode::angle;
-
-        if (auto* lf = getCustomLookAndFeel())
-            setMouseCursor (rotateCursor);
-
+        setMouseCursor (rotateCursor);
         valueBeforeDrag = getValue();
     }
     else if (key.getKeyCode() == magKeyCode && dragMode != DragMode::magnitude)
     {
         dragMode = DragMode::magnitude;
-
         setMouseCursor (getRotatedMagnitudeCursor ((float)getAngle()));
-
         valueBeforeDrag = getValue();
     }
 
@@ -255,15 +250,12 @@ void PoZePlot::Point::updateDragMode()
 {
     if (juce::KeyPress::isKeyCurrentlyDown (angleKeyCode))
     {
-        if (auto* lf = getCustomLookAndFeel())
-            setMouseCursor (rotateCursor);
-
+        setMouseCursor (rotateCursor);
         dragMode = DragMode::angle;
     }
     else if (juce::KeyPress::isKeyCurrentlyDown (magKeyCode))
     {
         setMouseCursor (getRotatedMagnitudeCursor ((float)getAngle()));
-
         dragMode = DragMode::magnitude;
     }
     else
