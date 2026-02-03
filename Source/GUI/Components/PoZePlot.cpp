@@ -284,7 +284,7 @@ juce::MouseCursor PoZePlot::Point::getRotatedMagnitudeCursor (const float angle)
 
     jassert (svg != nullptr);
 
-    auto bounds = svg->getDrawableBounds();
+    auto bounds = svg->getDrawableBounds().toFloat();
 
     // Make size big enough for rotation
     const float maxDim = std::max (bounds.getWidth(), bounds.getHeight());
