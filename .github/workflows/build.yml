@@ -40,10 +40,10 @@ jobs:
             os: ubuntu-24.04
             pluginval-binary: ./pluginval
             extra-flags: -G Ninja
-#          - name: MacOS
-#            os: macos-latest
-#            pluginval-binary: pluginval.app/Contents/MacOS/pluginval
-#            extra-flags: -G Ninja -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+          - name: MacOS
+            os: macos-latest
+            pluginval-binary: pluginval.app/Contents/MacOS/pluginval
+            extra-flags: -G Ninja -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
           - name: Windows
             os: windows-latest
             pluginval-binary: ./pluginval.exe
@@ -129,7 +129,6 @@ jobs:
         if: ${{ matrix.name == 'MacOS' }}
         run: |
           codesign --force -s "${{ secrets.DEVELOPER_ID_APPLICATION}}" -v "${{ env.VST3_PATH }}" --deep --strict --options=runtime --timestamp
-          codesign --force -s "${{ secrets.DEVELOPER_ID_APPLICATION}}" -v "${{ env.VST3I_PATH }}" --deep --strict --options=runtime --timestamp
           codesign --force -s "${{ secrets.DEVELOPER_ID_APPLICATION}}" -v "${{ env.AU_PATH }}" --deep --strict --options=runtime --timestamp
 
       - name: Codesign standalone (MacOS)
