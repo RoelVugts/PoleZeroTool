@@ -144,12 +144,13 @@ void PoZePlot::Point::mouseDrag(const juce::MouseEvent& event)
         {
             case DragMode::normal:
             {
-                dragger.dragComponent(this, event, &constrainer);
-                const double xNorm = (double)getBounds().getCentreX() / parentBounds.getWidth();
-                double yNorm = 1.0 - ((double)getBounds().getCentreY() / parentBounds.getHeight());
+                const bool constrainToRealAxis = event.mods.isCommandDown();
+                if (! constrainToRealAxis)
+                    dragger.dragComponent(this, event, &constrainer);
 
-                if (event.mods.isCommandDown())
-                    yNorm = 0.5;
+                const double xNorm = (constrainToRealAxis ? (double)parent->getMouseXYRelative().getX()
+                                                         : (double)getBounds().getCentreX()) / parentBounds.getWidth();
+                double yNorm = constrainToRealAxis ? 0.5 : 1.0f - ((double)getBounds().getCentreY() / parentBounds.getHeight());
 
                 setNormalizedValue (xNorm, yNorm, true);
                 break;
@@ -239,7 +240,7 @@ bool PoZePlot::Point::keyPressed (const juce::KeyPress& key, juce::Component*)
         valueBeforeDrag = getValue();
     }
 
-    return false;
+    return true;
 }
 
 bool PoZePlot::Point::keyStateChanged (bool isKeyDown, Component*)
@@ -247,7 +248,7 @@ bool PoZePlot::Point::keyStateChanged (bool isKeyDown, Component*)
     if (! isKeyDown)
         updateDragMode();
 
-    return false;
+    return true;
 }
 
 void PoZePlot::Point::updateDragMode()
