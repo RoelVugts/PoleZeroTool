@@ -8,6 +8,7 @@
 
 #include <complex>
 
+// Keeps a pole or zero in the plot in sync with the state.
 class PointAttachment : private PoZePlot::Point::Listener
 {
 public:
@@ -71,6 +72,8 @@ private:
     bool ignoreCallbacks { false };
 };
 
+//=========================================================================
+// Keeps track of the amount of poles and zeros on the plot and keeps it in sync with the state
 class PoZePlotAttachment : private PoZePlot::Listener, private juce::AsyncUpdater
 {
 public:

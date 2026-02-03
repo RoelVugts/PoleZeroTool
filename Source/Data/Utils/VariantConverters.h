@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../../Plugin/Parameters.h"
-
 #include <JuceHeader.h>
 
+#include "../../Plugin/Parameters.h"
 #include "../../GUI/Components/PoZePlot.h"
 
+//==================================================
 template<>
 struct juce::VariantConverter<PoZePlot::Point::Type>
 {
@@ -21,6 +21,7 @@ struct juce::VariantConverter<PoZePlot::Point::Type>
     }
 };
 
+//==================================================
 template <>
 struct juce::VariantConverter<juce::Range<float>>
 {
@@ -64,6 +65,7 @@ struct juce::VariantConverter<juce::Range<float>>
     }
 };
 
+//==================================================
 template <>
 struct juce::VariantConverter<PlotType>
 {

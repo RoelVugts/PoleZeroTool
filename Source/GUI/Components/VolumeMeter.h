@@ -2,6 +2,7 @@
 
 #include <JuceHeader.h>
 
+/** A very simple (green-yellow-red) volume meter.*/
 class VolumeMeter : public juce::Component, private juce::Timer, public juce::SettableTooltipClient
 {
 public:

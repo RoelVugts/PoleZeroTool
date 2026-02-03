@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Components/PoZePlot.h"
 #include "Components/DragBox.h"
+#include "Components/PoZePlot.h"
 #include <JuceHeader.h>
 
 namespace LAF
@@ -22,7 +22,6 @@ namespace LAF
 
         static const juce::Colour plotBackgroundColour{ 1, 3, 7 };
         static const juce::Colour plotGridColour{ 153, 153, 153 };
-
     }
 
     namespace Layout
@@ -33,7 +32,9 @@ namespace LAF
 
 }
 
-class PoZeToolLaf : public juce::LookAndFeel_V4, public PoZePlot::Point::LookAndFeelMethods
+//==================================================================
+// Custom Look and Feel
+class PoZeToolLaf : public juce::LookAndFeel_V4, public PoZePlot::Point::LookAndFeelMethods, public DragBox::LookAndFeelMethods
 {
 public:
 
@@ -60,7 +61,7 @@ public:
         }
     }
 
-    static void drawDragBoxBackground(juce::Graphics& g, DragBox& box)
+    void drawDragBoxBackground(juce::Graphics& g, DragBox& box) override
     {
         auto bounds = box.getLocalBounds().toFloat();
         const float cornerSize = std::min(bounds.getHeight(), bounds.getWidth()) * 0.4f;

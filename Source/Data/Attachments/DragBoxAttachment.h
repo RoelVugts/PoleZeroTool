@@ -64,9 +64,8 @@ private:
     void valueChanged (DragBox*) override
     {
         if (! ignoreCallbacks)
-        {
             attachment.setValueAsPartOfGesture (dragBox.getValue());
-        }
+
     }
 
     //===================================================================

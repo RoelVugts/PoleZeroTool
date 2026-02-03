@@ -22,29 +22,35 @@ public:
 
         auto bounds = getLocalBounds().toFloat();
         bounds = bounds.reduced (lineThickness * 0.5f);
-
         const float cornerSize = std::min(bounds.getHeight(), bounds.getWidth()) * 0.1f;
 
+        // Background
         g.setColour (LAF::Colours::darkBackgroundColour);
         g.fillRoundedRectangle (bounds, cornerSize);
 
+        // Outline
         g.setColour (LAF::Colours::buttonOutlineColour);
         g.drawRoundedRectangle (bounds, cornerSize, lineThickness);
 
+        // Margins
         bounds = bounds.reduced (LAF::Layout::defaultSpacing);
-
         const float contentHeight = bounds.getHeight() - LAF::Layout::defaultSpacing * 2.0f;
+
+        // Project link
         auto titleTextArea = bounds.removeFromTop (contentHeight * 0.4f);
         projectBtn.setBounds (titleTextArea.toNearestInt());
         bounds.removeFromTop (LAF::Layout::defaultSpacing);
 
+        // Company link
         auto companyTextArea = bounds.removeFromTop (contentHeight * 0.2f);
         companyBtn.setBounds (companyTextArea.toNearestInt());
 
+        // Developer link
         auto nameTextArea = bounds.removeFromTop (contentHeight * 0.2f);
         nameBtn.setBounds (nameTextArea.toNearestInt());
         bounds.removeFromTop (LAF::Layout::defaultSpacing);
 
+        // Version text
         auto versionArea = bounds.removeFromBottom(contentHeight * 0.2f);
         g.setColour (LAF::Colours::textColour.darker (0.8f));
         g.setFont (versionArea.getHeight() * 0.7f);
@@ -52,7 +58,7 @@ public:
     }
 
 private:
-    juce::HyperlinkButton projectBtn { "PoZeTool", juce::URL("https://github.com/RoelVugts/PoleZeroTool") };
-    juce::HyperlinkButton companyBtn { "RV Audio Design", juce::URL("https://rvaudiodesign.com") };
+    juce::HyperlinkButton projectBtn { ProjectInfo::projectName, juce::URL("https://github.com/RoelVugts/PoleZeroTool") };
+    juce::HyperlinkButton companyBtn { ProjectInfo::companyName, juce::URL("https://rvaudiodesign.com") };
     juce::HyperlinkButton nameBtn { "Roel Vugts", juce::URL("https://roelvugts.nl") };
 };

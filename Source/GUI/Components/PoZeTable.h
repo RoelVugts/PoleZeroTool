@@ -13,7 +13,6 @@ public:
         typeColumnId    = 1,
         magColumnId     = 2,
         angleColumnId   = 3
-
     };
 
     PoZeTableModel(PoleZeroState settings, juce::TableListBox& owner_) : state(settings), owner(owner_)

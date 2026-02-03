@@ -68,8 +68,10 @@ public:
     //==============================================================================
     juce::AudioProcessorValueTreeState apvts;
 
+    //==============================================================================
     std::function<void(double sr)> onSampleRateChange { nullptr };
 
+    //==============================================================================
     std::atomic<float> inputLevel[MAX_CHANNELS];
     std::atomic<float> outputLevel[MAX_CHANNELS];
     std::atomic<float> outputLevelImag[MAX_CHANNELS];

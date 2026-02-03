@@ -6,6 +6,7 @@
 
 class PoZeToolLaf;
 
+// Pole-Zero Plot
 class PoZePlot : public RoundedCornerComponent, public juce::SettableTooltipClient
 {
 public:
@@ -90,16 +91,24 @@ public:
         // Returns the points X value on the plot.
         double getYValue() const noexcept;
 
+        // Returns the points angle in radians
         double getAngle() const noexcept;
 
         // Returns the type (Pole or Zero)
         Type getType() const { return type; }
 
+        /** Set another point as a conjugate of this point.
+         * This will move those points together with one having the negative y value.
+         */
         void setConjugate(Point* conjugatePont);
 
+        // Returns true if this point has (and is) a conjugate of another point
         bool isConjugate() const { return conjugate != nullptr; }
+
+        // Returns a pointer to the conjugate point
         Point* getConjugate() const { return conjugate; }
 
+        // Updates the position based on the current value the point has
         void updatePosition();
         //======================================================================
         void paintWithinCorners (juce::Graphics& g) override;
@@ -115,6 +124,7 @@ public:
 
     private:
         //======================================================================
+        // Internal
         void mouseDown (const juce::MouseEvent& event) override;
         void mouseDrag (const juce::MouseEvent& event) override;
         void mouseUp (const juce::MouseEvent& event) override;
@@ -122,12 +132,14 @@ public:
         void mouseExit(const MouseEvent& event) override;
 
         //======================================================================
+        // Internal
         using juce::Component::keyPressed;
         using juce::Component::keyStateChanged;
 
         bool keyPressed(const KeyPress& key, Component* originatingComponent) override;
         bool keyStateChanged(bool isKeyDown, Component* originatingComponent) override;
         void updateDragMode();
+
         //======================================================================
         PoZeToolLaf* getCustomLookAndFeel() const;
         static juce::MouseCursor getRotatedMagnitudeCursor(float angle);

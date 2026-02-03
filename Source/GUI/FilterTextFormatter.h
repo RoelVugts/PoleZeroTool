@@ -3,6 +3,7 @@
 #include <JuceHeader.h>
 #include "../DSP/FilterDesign.h"
 
+/** Converts filter coefficients to readable (math) text.*/
 class FilterTextFormatter
 {
 public:

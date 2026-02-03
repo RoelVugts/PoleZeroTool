@@ -5,7 +5,7 @@
 //==============================================================================
 /** A wrapper around a tree that holds a list of other trees.
  *
- * @tparam ObjectType           Should be a sub-class of TreeWrapper
+ * @tparam ObjectType           Should be a derived from TreeWrapper
  *
  * @see TreeWrapper
  */

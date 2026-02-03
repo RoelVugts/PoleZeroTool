@@ -10,7 +10,7 @@ class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor
 {
 public:
     explicit AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor&);
-    ~AudioPluginAudioProcessorEditor() override;
+    ~AudioPluginAudioProcessorEditor() override = default;
 
     //==============================================================================
     void resized() override;

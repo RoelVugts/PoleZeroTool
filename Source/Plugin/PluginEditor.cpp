@@ -7,6 +7,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 {
     juce::ignoreUnused (processorRef);
 
+    //========================================================
     juce::LookAndFeel::setDefaultLookAndFeel (&laf);
 
     if (auto laf4 = dynamic_cast<juce::LookAndFeel_V4*> (&getLookAndFeel()))
@@ -16,27 +17,22 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
                                   LAF::Colours::darkBackgroundColour);
     }
 
-
+    //========================================================
     static constexpr int defaultWidth = 825;
     static constexpr int defaultHeight = 550;
 
+    //========================================================
     setSize (defaultWidth, defaultHeight);
     setResizable (true, true);
     constrainer.setMinimumSize (defaultWidth, defaultHeight);
     constrainer.setFixedAspectRatio ((double)defaultWidth / (double)defaultHeight);
     setConstrainer (&constrainer);
 
+    //========================================================
     addAndMakeVisible (gui);
-}
-
-AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
-{
 }
 
 void AudioPluginAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
-
     gui.setBounds (getLocalBounds());
 }

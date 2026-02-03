@@ -36,4 +36,5 @@ It also implements a filter so you can hear how the filter sounds.
 ### ToDo
 
 - Plot impulse response
-- Automatically place poles and zeros based on common filter types
+- Automatically place poles and zeros based on common filter types / presets
+- Undo / Redo

@@ -2,6 +2,8 @@
 
 #include <JuceHeader.h>
 
+/** A label surrounded by a box. If the label exceeds the size of the box, a scrollbar
+ *  will be shown.*/
 class BoxedLabel : public juce::Component, public juce::SettableTooltipClient
 {
 public:

@@ -2,6 +2,9 @@
 
 #include <JuceHeader.h>
 
+/** A wrapper around a ValueTree property. Similar to juce::CachedValue
+    but a bit simpler.
+ */
 template <class T>
 class TreePropertyWrapper
 {

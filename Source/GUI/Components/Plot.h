@@ -1,12 +1,11 @@
 #pragma once
 
-#include "DragBox.h"
-
 #include <JuceHeader.h>
 
-#include "../../DSP/FilterDesign.h"
+#include "DragBox.h"
 #include "../../Utils/MappedRange.h"
 
+/** Visualizes data on a 2-dimensional plot.*/
 class Plot : public RoundedCornerComponent, private DragBox::Listener, public juce::SettableTooltipClient
 {
 public:
@@ -201,6 +200,10 @@ public:
         updatePath();
     }
 
+    /** Sets the range (y-axis) of the plot.
+     *  @param range                The new range for the y axis
+     *  @param sendNotification     If true, will trigger a callback to the listeners
+     */
     void setRange(const MappedRange<float>& range, bool sendNotification) {
         yRange = range;
         maxRangeBox.setValue (yRange.end, true);
@@ -213,12 +216,9 @@ public:
             listeners.call([this](Listener& l) { l.rangeChanged (this); });
     }
 
-    void setMinMaxRange(float minValue, float maxValue)
-    {
-        minRangeBox.setRange ({ minValue, maxValue - minSpan });
-        maxRangeBox.setRange({ minValue + minSpan, maxValue });
-    }
-
+    /** Set the domain (x axis) of the plot.
+     *  @param domain                The new range for the x axis
+     */
     void setDomain(const MappedRange<float>& domain) {
         xRange = domain;
         setXTicks(xTicks);
@@ -226,6 +226,23 @@ public:
         repaint();
     }
 
+    /** Set the maximum allowed range for the plot.
+     *  This might be confusing since the setRange and setDomain functions also exist,
+     *  but those set the current visible range.\n\n
+     *
+     *  This sets the maximum allowed range for the plot, the user can use both drag boxes
+     *  to set the current visible range within the maximum allowed range.
+     *
+     *  @param minValue                Lower limit of the range
+     *  @param maxValue                Higher limit of the range
+     */
+    void setMinMaxRange(float minValue, float maxValue)
+    {
+        minRangeBox.setRange ({ minValue, maxValue - minSpan });
+        maxRangeBox.setRange({ minValue + minSpan, maxValue });
+    }
+
+    /** Will force the path to query for new data and repaint itself.*/
     void updatePath()
     {
         path.clear();
@@ -251,47 +268,70 @@ public:
         repaint();
     }
 
+    /** Sets the vertical grid lines.
+     *  @param ticks            The values at which the lines should be displayed.
+     */
     void setXTicks(const std::vector<float>& ticks)
     {
         xTicks = ticks;
         repaint();
     }
 
+    /** Sets the horizontal grid lines.
+     *  @param ticks            The values at which the lines should be displayed.
+     */
     void setYTicks(const std::vector<float>& ticks)
     {
         yTicks = ticks;
         repaint();
     }
 
+    /** Sets the lables to display next to the vertical grid lines.
+     *  @param labels            The strings to display. Note that the string will be displayed
+     *                           at the index of the corresponding grid line.
+     * @see setXTicks
+     */
     void setXLabels(const std::vector<juce::String>& labels)
     {
         xLabels = labels;
         repaint();
     }
 
+    /** Sets the lables to display next to the horizontal grid lines.
+     *  @param labels            The strings to display. Note that the string will be displayed
+     *                           at the index of the corresponding grid line.
+     * @see setYTicks
+     */
     void setYLabels(const std::vector<juce::String>& labels)
     {
         yLabels = labels;
         repaint();
     }
 
+    // Sets the title to display at the top of the plot
     void setPlotTitle(const juce::String& title_)
     {
         title = title_;
         repaint();
     }
 
+    // Sets the small text at the top left that indicates which unit the range
+    // is currently displaying.
     void setUnitText(const juce::String& text)
     {
         unit = text;
         repaint();
     }
 
-    // Returns the number of data points this plot will query.
-    // This will be equal to the amount of (logical) width pixels
+    /** Returns the number of data points this plot will query.
+     *  This will be equal to the amount of (logical) width pixels
+     */
     int getNumDataPoints() const { return (int)plotArea.getWidth(); }
 
+    // Returns the current visible range
     const MappedRange<float>& getXRange() const { return xRange; }
+
+    // Returns the current visible range
     const MappedRange<float>& getYRange() const { return yRange; }
 
     /** The plot will call this to get the y value to be drawn.

@@ -2,6 +2,7 @@
 
 #include <JuceHeader.h>
 
+/** A wrapper around a ValueTree.*/
 class TreeWrapper : public juce::ValueTree::Listener
 {
 public:

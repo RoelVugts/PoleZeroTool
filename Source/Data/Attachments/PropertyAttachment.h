@@ -8,7 +8,6 @@
 
 //===============================================================================
 // PropertyStorage
-
 template<typename T, bool = std::is_trivially_copyable_v<T>>
 struct PropertyStorage;
 

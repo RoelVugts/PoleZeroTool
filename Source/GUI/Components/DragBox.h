@@ -2,8 +2,13 @@
 
 #include <JuceHeader.h>
 
+// Forward declaration
 class PoZeToolLaf;
 
+
+/** A box with a value which can be adjusted by dragging vertically.
+ *  Double clicking also makes it a text editor so the value can be entered manually.
+ */
 class DragBox : public juce::Component, private juce::Label::Listener, public juce::SettableTooltipClient
 {
 public:
@@ -47,7 +52,7 @@ public:
     void setRange(const juce::NormalisableRange<float>& newRange);
     void setNumDecimalsToDisplay(int numDecimals);
 
-        /** Adjust the vertical drag sensitivity
+    /** Adjust the vertical drag sensitivity
      *
      * @param amount    Value between 0 and 10. Value of 1.0 is regular. Lower values result in lower sensitivity,
      *                  higher values in higher sensitivity.
@@ -68,12 +73,18 @@ public:
     };
 
     //======================================================================
+    // If the displayed value should not be a number then you can use this to determine
+    // what text should be displayed for which value.
     TextToValFn textToValFn { nullptr };
+
+    // If the displayed value should not be a number then you can use this to determine
+    // what text should be displayed for which value.
     ValToTextFn valToTextFn { nullptr };
 
 protected:
 
     //======================================================================
+    // Internal
     void mouseEnter(const MouseEvent&) override;
     void mouseExit(const MouseEvent&) override;
     void mouseDown(const juce::MouseEvent&) override;

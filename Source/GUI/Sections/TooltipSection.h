@@ -7,6 +7,7 @@
 class ToolTipSection : public juce::Component, public juce::SettableTooltipClient
 {
 public:
+
     ToolTipSection()
     {
         SettableTooltipClient::setTooltip ("Displays help text");
@@ -42,6 +43,7 @@ public:
     }
 
 private:
+
     void mouseEnter (const MouseEvent& event) override
     {
         if (auto* comp = dynamic_cast<juce::TooltipClient*> (event.eventComponent))

@@ -2,6 +2,7 @@
 
 #include <JuceHeader.h>
 
+// Company logo button
 class LogoButton : public juce::DrawableButton
 {
 public:
@@ -26,6 +27,4 @@ private:
         juce::DrawableButton::mouseExit(event);
         setAlpha (0.8f);
     }
-
-
 };

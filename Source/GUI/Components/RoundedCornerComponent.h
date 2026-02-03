@@ -41,7 +41,6 @@ public:
     //============================================================
     juce::Path* getClipPath() const { return clipPath.get(); }
 
-
     //============================================================
     /** Will paint within the rounded corners. Everything outside of the rounded
      *  corners will be clipped.
