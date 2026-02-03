@@ -32,3 +32,8 @@ It also implements a filter so you can hear how the filter sounds.
 - VST3
 - AU
 - Standalone
+
+### ToDo
+
+- Plot impulse response
+- Automatically place poles and zeros based on common filter types
