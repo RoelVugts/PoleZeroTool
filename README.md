@@ -33,8 +33,12 @@ It also implements a filter so you can hear how the filter sounds.
 - AU
 - Standalone
 
-### ToDo
+### To Do
 
 - Plot impulse response
 - Automatically place poles and zeros based on common filter types / presets
 - Undo / Redo
+
+### Credits
+PoZeTool was inspired by my Math / DSP teacher Pieter Suurmond: 
+https://ecomaan.nl/c/PZT/html/

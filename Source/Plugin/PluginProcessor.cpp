@@ -234,7 +234,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 {
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
-    for (int i = 0; i < PoZeParamID::ParameterCount; i++)
+    for (int i = 0; i < magic_enum::enum_count<PoZeParamID>(); i++)
     {
         const auto id = static_cast<PoZeParamID>(i);
         const juce::String& paramID = getParamID(id);
@@ -253,9 +253,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
             case PoZeParamID::Bypass:
                 params.push_back (std::make_unique<juce::AudioParameterBool>(juce::ParameterID(paramID, 1), paramName, false));
                 break;
-
-            case PoZeParamID::ParameterCount:
-                jassertfalse; break;
 
             default: jassertfalse; break;
         }
@@ -288,9 +285,6 @@ void AudioPluginAudioProcessor::parameterChanged (const juce::String& parameterI
             case PoZeParamID::Bypass:
                 bypassed.store(static_cast<bool>(newValue), std::memory_order_relaxed);
                 break;
-
-            case PoZeParamID::ParameterCount:
-                jassertfalse; break;
 
             default: jassertfalse; break;
         }

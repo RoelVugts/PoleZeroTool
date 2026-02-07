@@ -13,9 +13,6 @@ enum PoZeParamID
     Gain,
     AutoNormalise,
     Bypass,
-
-    // Keep last to get total parameter count
-    ParameterCount
 };
 
 enum class PlotType
@@ -24,12 +21,6 @@ enum class PlotType
     Phase,
     GroupDelay,
     PhaseDelay,
-};
-
-struct ParamMessage
-{
-    PoZeParamID id;
-    float value;
 };
 
 inline juce::String getParamID(PoZeParamID id)
