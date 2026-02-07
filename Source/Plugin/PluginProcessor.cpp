@@ -234,7 +234,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
 {
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
-    for (int i = 0; i < magic_enum::enum_count<PoZeParamID>(); i++)
+    for (int i = 0; i < (int)magic_enum::enum_count<PoZeParamID>(); i++)
     {
         const auto id = static_cast<PoZeParamID>(i);
         const juce::String& paramID = getParamID(id);
