@@ -26,7 +26,6 @@ public:
     , convertFrom0To1Func(std::move(from0To1Fn))
     , convertTo0To1Func(std::move(to0To1Fn))
     {
-
     }
 
     SampleType convertTo0to1(SampleType val) const
@@ -38,7 +37,6 @@ public:
     {
         return convertFrom0To1Func(start, end, val);
     }
-
 
     static MappedRange<SampleType> createExponentialRange(SampleType start, SampleType end, SampleType curve = SampleType(10.0))
     {

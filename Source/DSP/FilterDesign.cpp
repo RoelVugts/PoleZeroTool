@@ -38,13 +38,15 @@ FilterDesign::Response FilterDesign::getFreqResponse(double angle, bool applyGai
     std::complex<double> numerator(0.0f, 0.0f);
     std::complex<double> denumerator (0.0f, 0.0f);
 
-    for (int i = 0; i < (int)firCoefs.size(); i++) {
-        int power = (int)firCoefs.size() - (i + 1);
+    for (int i = 0; i < (int)firCoefs.size(); i++)
+    {
+        const int power = (int)firCoefs.size() - (i + 1);
         numerator += (std::pow(z, (double)power) * firCoefs[(size_t)i] * (applyGain ? gain : 1.0));
     }
 
-    for (int i = 0; i < (int)iirCoefs.size(); i++) {
-        int power = (int)iirCoefs.size() - (i + 1);
+    for (int i = 0; i < (int)iirCoefs.size(); i++)
+    {
+        const int power = (int)iirCoefs.size() - (i + 1);
         denumerator += std::pow(z, (double)power) * iirCoefs[(size_t)i];
     }
 
@@ -57,7 +59,6 @@ FilterDesign::Response FilterDesign::getFreqResponse(double angle, bool applyGai
 
     for (auto pole : poles)
         phaseShift -= MathFunctions::getAngleOfDifferenceVector (pole, z);
-
 
     const double phaseDelay = approximatelyEqual (angle, 0.0) ? 0.0
                                                               : -phaseShift / angle;
@@ -73,7 +74,6 @@ double FilterDesign::getGroupDelay (Response& a, Response& b)
     const double phaseDelta = a.phase - b.phase;
     return -phaseDelta / angleDelta;
 }
-
 
 FilterDesign::Response FilterDesign::getMaxMagnitudeResponse(const int numAngles) const
 {

@@ -60,12 +60,11 @@ public:
 
         std::ranges::copy_n(fir.begin(), numFirCoefs, firCoefs.begin());
         std::ranges::copy_n(iir.begin(), numIirCoefs, iirCoefs.begin());
-        numFirCoefsUsed = (int)fir.size();
-        numIirCoefsUsed = (int)iir.size();
+        numFirCoefsUsed = numFirCoefs;
+        numIirCoefsUsed = numIirCoefs;
     }
 
 private:
-
     static constexpr int maxCoefs { 128 };
 
     std::array<std::complex<double>, maxCoefs> iirCoefs; // Feedback coefficients

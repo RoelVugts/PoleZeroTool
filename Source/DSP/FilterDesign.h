@@ -104,7 +104,6 @@ public:
     bool isAutoNormalising() const { return autoNormalise; }
 
 private:
-
     void updateNormalisationGain();
 
     //=======================================================================
