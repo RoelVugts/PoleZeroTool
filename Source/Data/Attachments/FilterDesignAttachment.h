@@ -2,6 +2,7 @@
 
 #include "../../DSP/FilterDesign.h"
 #include "../PoleZeroState.h"
+#include "../../Utils/TripleBuffer.h"
 
 #include <JuceHeader.h>
 
@@ -37,24 +38,14 @@ public:
     }
 
     //=========================================================================
-    // Returns true if the filter coefficients have changed
-    bool filterChanged() const
+    // Gets the most recently updated coefficients in a thread safe
+    // and lock-free way
+    FilterDesign::CoefficientSet getCoefficients()
     {
-        return newCoefsReady.load(std::memory_order_acquire);
+        return coefficients.read();
     }
 
-    // Gets the most recently updated coefficients
-    FilterDesign::CoefficientSet getCoefficients() const
-    {
-        const int readBuffer = activeBuffer.load(std::memory_order_acquire);
-        return coefficients[readBuffer];
-    }
-
-    // Marks the coefficients as consumed.
-    void markCoefficientsAsConsumed()
-    {
-        newCoefsReady.store(false, std::memory_order_release);
-    }
+    [[nodiscard]] bool newCoefsReady() const { return coefficients.newDataReady(); }
 
 private:
     //=========================================================================
@@ -87,16 +78,10 @@ private:
             }
         }
 
-        // Write to the inactive buffer
-        const int writeBuffer = 1 - activeBuffer.load(std::memory_order_acquire);
-
         filterDesigner.setPoleZeros (poles, zeros);
-        coefficients[writeBuffer].iirCoefs = filterDesigner.getIIRCoefs();
-        coefficients[writeBuffer].firCoefs  = filterDesigner.getFIRCoefs();
 
-        // Swap buffers
-        activeBuffer.store(writeBuffer, std::memory_order_release);
-        newCoefsReady.store (true, std::memory_order_release);
+        FilterDesign::CoefficientSet newCoefs = filterDesigner.getCoefficientSet();
+        coefficients.write (newCoefs);
     }
 
     void filterGainChanged(FilterDesign* emitter) override
@@ -105,14 +90,8 @@ private:
             gainAttachment.setValueAsCompleteGesture ((float)emitter->getGain());
         });
 
-        // Write to the inactive buffer
-        const int writeBuffer = 1 - activeBuffer.load(std::memory_order_acquire);
-        coefficients[writeBuffer].iirCoefs = filterDesigner.getIIRCoefs();
-        coefficients[writeBuffer].firCoefs  = filterDesigner.getFIRCoefs();
-
-        // Swap buffers
-        activeBuffer.store(writeBuffer, std::memory_order_release);
-        newCoefsReady.store (true, std::memory_order_release);
+        FilterDesign::CoefficientSet newCoefs = filterDesigner.getCoefficientSet();
+        coefficients.write (newCoefs);
     }
 
     //=========================================================================
@@ -120,10 +99,7 @@ private:
     FilterDesign& filterDesigner;
 
     //=========================================================================
-    // 2 for double buffering
-    FilterDesign::CoefficientSet coefficients[2];
-    std::atomic<int> activeBuffer { 0 };
-    std::atomic<bool> newCoefsReady { false };
+    TripleBuffer<FilterDesign::CoefficientSet> coefficients;
 
     //=========================================================================
     juce::ParameterAttachment gainAttachment;

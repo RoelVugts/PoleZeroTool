@@ -14,6 +14,12 @@ std::vector<std::complex<double>> FilterDesign::getFIRCoefs() const
     return { view.begin(), view.end() };
 }
 
+FilterDesign::CoefficientSet FilterDesign::getCoefficientSet() const
+{
+    return { getIIRCoefs(), getFIRCoefs() };
+}
+
+
 void FilterDesign::setPoleZeros(std::vector<std::complex<double>>& poles_, std::vector<std::complex<double>>& zeros_)
 {
     poles = poles_;
