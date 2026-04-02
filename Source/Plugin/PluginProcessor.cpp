@@ -148,13 +148,11 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    if (filterDesignAttachment->filterChanged())
+    if (filterDesignAttachment->newCoefsReady())
     {
         const auto& coefs = filterDesignAttachment->getCoefficients();
         for (auto& f : filter)
             f.setCoefficients (coefs.iirCoefs, coefs.firCoefs);
-
-        filterDesignAttachment->markCoefficientsAsConsumed();
     }
 
     for (int channel = 0; channel < totalNumInputChannels; ++channel)

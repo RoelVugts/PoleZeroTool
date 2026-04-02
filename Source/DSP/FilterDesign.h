@@ -56,6 +56,8 @@ public:
     // Returns the feedforward coefficients
     std::vector<std::complex<double>> getFIRCoefs() const;
 
+    CoefficientSet getCoefficientSet() const;
+
     /** Get the frequency response for a specific frequency / angle.
      *
      * @param angle         The frequency in radians
@@ -104,7 +106,6 @@ public:
     bool isAutoNormalising() const { return autoNormalise; }
 
 private:
-
     void updateNormalisationGain();
 
     //=======================================================================

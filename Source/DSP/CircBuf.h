@@ -74,7 +74,6 @@ public:
     int getWriteIndex() const { return writeIndex; }
 
 private:
-
     std::vector<SampleType> data;
     int writeIndex { 0 };
 };

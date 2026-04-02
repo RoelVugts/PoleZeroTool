@@ -5,7 +5,7 @@ set(PRODUCT_NAME "PoZeTool")
 set(PLUGIN_VERSION 1.0.0)
 set(COMPANY_NAME "RV Audio Design")
 
-set(CMAKE_CXX_STANDARD 26)
+set(CMAKE_CXX_STANDARD 23)
 
 set(HARDENED_RUNTIME_ENABLED YES)
 set(HARDENED_RUNTIME_OPTIONS "com.apple.security.device.audio-input")

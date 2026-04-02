@@ -29,7 +29,6 @@ struct juce::VariantConverter<juce::Range<float>>
     {
         const uint64_t packed = static_cast<uint64_t> (static_cast<int64> (var));
 
-        // Extract real and imaginary part
         uint32_t startBits = static_cast<uint32_t> (packed >> 32);
         uint32_t endBits = static_cast<uint32_t> (packed & 0xffffffffu);
 
