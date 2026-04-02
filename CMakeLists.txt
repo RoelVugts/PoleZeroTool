@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 
 set(PROJECT_NAME PoZeTool)
 set(PRODUCT_NAME "PoZeTool")
-set(PLUGIN_VERSION 1.0.0)
+set(PLUGIN_VERSION 1.0.1)
 set(COMPANY_NAME "RV Audio Design")
 
 set(CMAKE_CXX_STANDARD 23)
